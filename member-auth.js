@@ -75,29 +75,6 @@
     return "目前無法完成操作，請稍後再試。";
   }
 
-  async function syncBrowserOrders() {
-    const key = "frea_demo_orders_v1";
-    let orders;
-    try { orders = JSON.parse(localStorage.getItem(key) || "[]"); } catch (error) { return; }
-    if (!Array.isArray(orders) || !orders.length) return;
-    let changed = false;
-    for (const order of orders) {
-      if (order.supabaseOrderNumber || !Array.isArray(order.items) || !order.items.length || !order.paymentProof || !order.paymentProof.data) continue;
-      const { data, error } = await client.functions.invoke("submit-order", {
-        body: {
-          items: order.items.map((item) => ({ id: item.id, quantity: item.quantity })),
-          shipping: order.shipping || {},
-          paymentProof: order.paymentProof
-        }
-      });
-      if (!error && data && data.orderNumber) {
-        order.supabaseOrderNumber = data.orderNumber;
-        changed = true;
-      }
-    }
-    if (changed) localStorage.setItem(key, JSON.stringify(orders));
-  }
-
   async function renderOrders() {
     const target = byId("orderList");
     const { data, error } = await client
@@ -143,7 +120,6 @@
     setField(deliveryForm, "address", address.address);
     setField(deliveryForm, "ezwayName", ezway.real_name);
     setField(deliveryForm, "ezwayPhone", ezway.mobile);
-    await syncBrowserOrders();
     await renderOrders();
     activateTab("profile");
     show("member", false);
