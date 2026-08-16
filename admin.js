@@ -85,7 +85,7 @@
       client.from("member_addresses").select("user_id,recipient_name,recipient_phone,postal_code,address,is_default").eq("is_default", true),
       client.from("ezway_profiles").select("user_id,real_name,mobile"),
       client.from("orders").select("id,user_id,order_number,status,currency,total_amount,created_at,updated_at,recipient_name,recipient_phone,postal_code,shipping_address,payment_proof_name,admin_note,tracking_number,order_items(product_name,specification,quantity,unit_price,line_total)").order("created_at", { ascending: false }),
-      client.from("personal_shopping_requests").select("id,request_number,user_id,customer_name,email,phone,line_id,note,items,status,quote_amount,admin_note,created_at,updated_at").order("created_at", { ascending: false })
+      client.from("personal_shopping_requests").select("id,request_number,user_id,customer_name,email,phone,line_id,note,items,status,quote_amount,quote_details,admin_note,created_at,updated_at").order("created_at", { ascending: false })
     ]);
     const failed = [profileResult, addressResult, ezwayResult, orderResult, personalResult].find(result => result.error);
     if (failed) {
@@ -134,6 +134,8 @@
     }
     target.innerHTML = filtered.map(request => {
       const items = Array.isArray(request.items) ? request.items : [];
+      const quote = request.quote_details && typeof request.quote_details === "object" ? request.quote_details : {};
+      const unitPrices = Array.isArray(quote.unit_prices) ? quote.unit_prices : [];
       const itemHtml = items.length ? '<ul class="admin-order-items">' + items.map(item => {
         const itemUrl = safeHttpUrl(item.url);
         return (
@@ -146,32 +148,75 @@
         '</h3><p class="admin-order-meta">' + escapeHtml(formatDate(request.created_at)) + " · " +
         escapeHtml(personalStatusLabels[request.status] || request.status) + '</p></div><div><strong>' +
         escapeHtml(request.customer_name) + '</strong><p class="admin-order-meta">' +
-        escapeHtml(request.email) + "／" + escapeHtml(request.phone) + '</p></div><strong class="admin-order-total">' +
+        escapeHtml(request.email) + "／" + escapeHtml(request.phone) + '</p></div><strong class="admin-order-total" data-quote-display>' +
         (request.quote_amount == null ? "尚未報價" : escapeHtml(formatMoney(request.quote_amount, "TWD"))) + '</strong></div>' +
         '<div class="admin-order-grid"><div><h4>代購品項</h4>' + itemHtml +
         '</div><div><h4>顧客資料與備註</h4><p>LINE ID：' + escapeHtml(request.line_id || "—") +
         '</p><p>' + escapeHtml(request.note || "無備註") + '</p></div></div>' +
+        '<div class="personal-quote-sheet"><h4>報價試算表</h4><div class="personal-quote-table">' +
+        '<div class="personal-quote-row personal-quote-head"><span>商品</span><span>數量</span><span>商品單價（JPY）</span><span>小計（JPY）</span></div>' +
+        items.map((item, index) => '<div class="personal-quote-row"><span>' + escapeHtml(item.name || "未填商品名稱") +
+          '</span><span>' + escapeHtml(item.quantity || 1) + '</span><input data-quote-unit data-quantity="' +
+          escapeHtml(item.quantity || 1) + '" type="number" min="0" step="1" value="' +
+          escapeHtml(unitPrices[index] ?? "") + '" placeholder="0"><strong data-quote-line>¥0</strong></div>').join("") +
+        '</div><div class="personal-quote-costs">' +
+        '<label>匯率（JPY → TWD）<input data-quote-rate type="number" min="0" step="0.0001" value="' + escapeHtml(quote.exchange_rate ?? "") + '" placeholder="例如 0.22"></label>' +
+        '<label>日本國內運費（JPY）<input data-quote-domestic type="number" min="0" step="1" value="' + escapeHtml(quote.domestic_shipping_jpy ?? "") + '" placeholder="0"></label>' +
+        '<label>關稅及手續費（TWD）<input data-quote-fees type="number" min="0" step="1" value="' + escapeHtml(quote.duties_and_fees_twd ?? "") + '" placeholder="0"></label>' +
+        '<label>國際運費（TWD）<input data-quote-international type="number" min="0" step="1" value="' + escapeHtml(quote.international_shipping_twd ?? "") + '" placeholder="0"></label>' +
+        '<label class="personal-quote-total">總金額（TWD）<output data-quote-total>NT$0</output></label></div>' +
+        '<p class="admin-order-meta">計算方式：（商品小計＋日本國內運費）× 匯率＋關稅及手續費＋國際運費</p></div>' +
         '<div class="admin-order-controls"><label>處理狀態<select data-personal-status>' +
-        personalStatusOptions(request.status) + '</select></label><label>報價金額（TWD）<input data-personal-quote type="number" min="0" value="' +
-        escapeHtml(request.quote_amount ?? "") + '" placeholder="尚未報價"></label><label>後台備註<textarea data-personal-note rows="2" placeholder="僅供管理使用">' +
+        personalStatusOptions(request.status) + '</select></label><label>後台備註<textarea data-personal-note rows="2" placeholder="僅供管理使用">' +
         escapeHtml(request.admin_note || "") + '</textarea></label><button class="admin-save" type="button" data-save-personal>儲存變更</button></div></article>';
     }).join("");
+    target.querySelectorAll("[data-personal-id]").forEach(recalculatePersonalQuote);
+  }
+
+  function quoteNumber(card, selector) {
+    return Math.max(0, Number(card.querySelector(selector)?.value) || 0);
+  }
+
+  function recalculatePersonalQuote(card) {
+    let productSubtotal = 0;
+    card.querySelectorAll("[data-quote-unit]").forEach(input => {
+      const line = Math.round(Math.max(0, Number(input.value) || 0) * Math.max(1, Number(input.dataset.quantity) || 1));
+      productSubtotal += line;
+      input.closest(".personal-quote-row").querySelector("[data-quote-line]").textContent = "¥" + line.toLocaleString("zh-TW");
+    });
+    const rate = quoteNumber(card, "[data-quote-rate]");
+    const domestic = quoteNumber(card, "[data-quote-domestic]");
+    const fees = quoteNumber(card, "[data-quote-fees]");
+    const international = quoteNumber(card, "[data-quote-international]");
+    const total = Math.round((productSubtotal + domestic) * rate + fees + international);
+    card.dataset.quoteTotal = String(total);
+    card.querySelector("[data-quote-total]").textContent = new Intl.NumberFormat("zh-TW", { style: "currency", currency: "TWD", maximumFractionDigits: 0 }).format(total);
+    card.querySelector("[data-quote-display]").textContent = total > 0 ? formatMoney(total, "TWD") : "尚未報價";
   }
 
   async function savePersonalRequest(card) {
     const id = card.dataset.personalId;
     const button = card.querySelector("[data-save-personal]");
-    const quoteText = card.querySelector("[data-personal-quote]").value.trim();
+    recalculatePersonalQuote(card);
+    const unitPrices = [...card.querySelectorAll("[data-quote-unit]")].map(input => Math.max(0, Math.round(Number(input.value) || 0)));
+    const quoteDetails = {
+      unit_prices: unitPrices,
+      exchange_rate: quoteNumber(card, "[data-quote-rate]"),
+      domestic_shipping_jpy: Math.round(quoteNumber(card, "[data-quote-domestic]")),
+      duties_and_fees_twd: Math.round(quoteNumber(card, "[data-quote-fees]")),
+      international_shipping_twd: Math.round(quoteNumber(card, "[data-quote-international]"))
+    };
     const updates = {
       status: card.querySelector("[data-personal-status]").value,
-      quote_amount: quoteText === "" ? null : Math.max(0, Math.round(Number(quoteText) || 0)),
+      quote_amount: Number(card.dataset.quoteTotal) || null,
+      quote_details: quoteDetails,
       admin_note: card.querySelector("[data-personal-note]").value.trim(),
       updated_at: new Date().toISOString()
     };
     button.disabled = true;
     button.textContent = "儲存中…";
     const { data, error } = await client.from("personal_shopping_requests").update(updates)
-      .eq("id", id).select("id,status,quote_amount,admin_note,updated_at").single();
+      .eq("id", id).select("id,status,quote_amount,quote_details,admin_note,updated_at").single();
     button.disabled = false;
     button.textContent = error ? "儲存失敗" : "已儲存";
     if (error) {
@@ -360,6 +405,10 @@
   byId("personalCards").addEventListener("click", event => {
     const button = event.target.closest("[data-save-personal]");
     if (button) savePersonalRequest(button.closest(".admin-order"));
+  });
+  byId("personalCards").addEventListener("input", event => {
+    if (!event.target.matches("[data-quote-unit],[data-quote-rate],[data-quote-domestic],[data-quote-fees],[data-quote-international]")) return;
+    recalculatePersonalQuote(event.target.closest(".admin-order"));
   });
   byId("adminLogout").addEventListener("click", async () => {
     await client.auth.signOut();

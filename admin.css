@@ -52,8 +52,21 @@
 .admin-order p{font-size:13px;margin:2px 0}.admin-order-items{margin:0;padding-left:18px;font-size:13px}
 .admin-order-controls{display:grid;grid-template-columns:190px 230px 1fr auto;gap:12px;align-items:end;margin-top:18px}
 .admin-order-controls label{display:grid;gap:6px;font-size:12px;color:var(--admin-muted)}
+.personal-quote-sheet{margin-top:20px;padding:20px;border:1px solid var(--admin-line);border-radius:10px;background:#faf7f2}
+.personal-quote-sheet>h4{margin-bottom:14px;color:var(--admin-ink)}
+.personal-quote-table{border-top:1px solid var(--admin-line)}
+.personal-quote-row{display:grid;grid-template-columns:minmax(180px,2fr) 80px minmax(150px,1fr) minmax(120px,1fr);gap:14px;align-items:center;padding:11px 0;border-bottom:1px solid var(--admin-line);font-size:13px}
+.personal-quote-head{padding:9px 0;color:var(--admin-muted);font-size:11px;letter-spacing:.04em}
+.personal-quote-row input,.personal-quote-costs input{width:100%;min-width:0;border:1px solid var(--admin-line);background:#fff;border-radius:8px;padding:10px 12px;color:var(--admin-ink)}
+.personal-quote-row strong{text-align:right;font-weight:500}
+.personal-quote-costs{display:grid;grid-template-columns:repeat(5,minmax(130px,1fr));gap:12px;margin-top:16px;align-items:end}
+.personal-quote-costs label{display:grid;gap:7px;color:var(--admin-muted);font-size:11px}
+.personal-quote-total{height:100%;padding:10px 14px;border-radius:8px;background:var(--admin-dark);color:#fff!important;align-content:center}
+.personal-quote-total output{display:block;color:#fff;font-size:21px;font-weight:600;white-space:nowrap}
 .admin-save{border:0;background:var(--admin-accent);color:#fff;padding:11px 18px;border-radius:8px;cursor:pointer}
 .admin-recent{display:flex;justify-content:space-between;gap:20px;padding:12px 0;border-bottom:1px solid var(--admin-line);font-size:13px}
 .admin-recent:last-child{border-bottom:0}.admin-recent small{display:block;color:var(--admin-muted)}
+@media(max-width:1180px){.personal-quote-costs{grid-template-columns:repeat(2,minmax(180px,1fr))}.personal-quote-total{grid-column:1/-1}}
 @media(max-width:980px){.admin-shell{grid-template-columns:1fr}.admin-sidebar{position:static;height:auto;padding:20px}.admin-sidebar nav{display:flex;overflow:auto;margin-top:18px}.admin-sidebar-foot{margin-top:18px}.admin-stats{grid-template-columns:repeat(2,1fr)}.admin-order-head,.admin-order-controls{grid-template-columns:1fr}.admin-order-grid{grid-template-columns:1fr}}
-@media(max-width:620px){.admin-login-card{padding:32px 24px}.admin-main{padding:28px 16px 50px}.admin-topbar{align-items:flex-start}.admin-stats{grid-template-columns:1fr 1fr}.admin-toolbar{grid-template-columns:1fr}.admin-toolbar span{text-align:left}.admin-order{padding:18px}}
+@media(max-width:620px){.admin-login-card{padding:32px 24px}.admin-main{padding:28px 16px 50px}.admin-topbar{align-items:flex-start}.admin-stats{grid-template-columns:1fr 1fr}.admin-toolbar{grid-template-columns:1fr}.admin-toolbar span{text-align:left}.admin-order{padding:18px}.personal-quote-sheet{padding:15px}.personal-quote-table{overflow-x:auto}.personal-quote-row{min-width:650px}.personal-quote-costs{grid-template-columns:1fr}}
+
