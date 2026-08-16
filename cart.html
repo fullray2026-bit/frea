@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>購物車｜fréa</title>
+<meta name="description" content="查看 fréa 購物車中的商品、數量與總價。">
+<link rel="stylesheet" href="style.css">
+<style>
+.cart-page{padding:72px 0 112px;min-height:62vh}
+.cart-head{display:flex;align-items:end;justify-content:space-between;gap:30px;margin-bottom:44px}
+.cart-head h1{font-size:42px;font-weight:400;margin:8px 0 0}
+.cart-kicker{color:var(--muted);font-size:13px;letter-spacing:.16em;text-transform:uppercase}
+.cart-back{color:var(--muted);font-size:14px}
+.cart-layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(300px,.65fr);gap:64px;align-items:start}
+.cart-labels,.cart-item{display:grid;grid-template-columns:minmax(240px,1.5fr) 150px 120px 120px;gap:20px;align-items:center}
+.cart-labels{padding:12px 0;border-top:1px solid #ddd3c7;border-bottom:1px solid #ddd3c7;color:var(--muted);font-size:11px;letter-spacing:.12em}
+.cart-item{padding:22px 0;border-bottom:1px solid #ddd3c7}
+.cart-product{display:grid;grid-template-columns:96px 1fr;gap:18px;align-items:center}
+.cart-image{width:96px;height:96px;background:#eee8df;border-radius:12px;overflow:hidden}
+.cart-image img{width:100%;height:100%;object-fit:contain}
+.cart-name{font-family:"Noto Serif TC","Yu Mincho","Hiragino Mincho ProN",serif;font-size:18px;line-height:1.5}
+.cart-spec{margin-top:6px;color:var(--muted);font-size:12px}
+.cart-unit,.cart-line-total{font-size:16px}
+.cart-quantity{display:grid;grid-template-columns:30px 44px 30px;align-items:center;border:1px solid #cfc2b5;border-radius:999px;overflow:hidden}
+.cart-quantity button{height:38px;border:0;background:transparent;font-size:18px;color:#4b3d32;cursor:pointer}
+.cart-quantity input{width:44px;height:38px;border:0;border-left:1px solid #e1d5c8;border-right:1px solid #e1d5c8;text-align:center;font:inherit;-moz-appearance:textfield}
+.cart-quantity input::-webkit-outer-spin-button,.cart-quantity input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.cart-remove{margin-top:10px;border:0;background:transparent;padding:0;color:var(--muted);font-size:12px;text-decoration:underline;cursor:pointer}
+.cart-summary{position:sticky;top:110px;padding:34px;border:1px solid #ddd3c7;border-radius:18px;background:#faf8f4}
+.cart-summary h2{font-size:25px;font-weight:400;margin:0 0 26px}
+.cart-summary-row{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:16px 0;border-top:1px solid #ddd3c7}
+.cart-summary-row.total{font-size:21px;border-bottom:1px solid #ddd3c7}
+.cart-summary-note{margin:18px 0 26px;color:var(--muted);font-size:12px;line-height:1.7}
+.cart-checkout{width:100%;min-height:52px;border:0;border-radius:999px;background:#4b3d32;color:#fff;font:inherit;font-size:16px;cursor:pointer}
+.cart-checkout:disabled{background:#c9beb3;cursor:not-allowed}
+.cart-empty{padding:80px 30px;text-align:center;background:#f7f3ee;border-radius:18px}
+.cart-empty h2{font-size:25px;font-weight:400;margin:0 0 12px}
+.cart-empty p{color:var(--muted);line-height:1.8;margin:0 0 28px}
+@media(max-width:850px){.cart-page{padding:46px 0 72px}.cart-head{display:block}.cart-back{display:inline-block;margin-top:18px}.cart-layout{grid-template-columns:1fr;gap:34px}.cart-labels{display:none}.cart-item{grid-template-columns:96px 1fr;gap:14px}.cart-product{grid-column:1/-1}.cart-unit:before{content:"單價：";color:var(--muted)}.cart-quantity{grid-column:2;width:104px}.cart-line-total{grid-column:2}.cart-line-total:before{content:"小計：";color:var(--muted)}.cart-summary{position:static}}
+</style>
+</head>
+<body>
+<header class="header"><div class="container header-inner"><a class="wordmark serif" href="index.html">fréa</a><div></div><div class="actions"><button class="icon" title="搜尋" aria-label="搜尋"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="14" r="9.5"></circle><path d="M21.2 21.2 28 28"></path></svg></button><a class="icon" title="會員登入" aria-label="會員登入" href="register.html"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M18 5h9v22h-9"></path><path d="M4 16h16"></path><path d="m14 10 6 6-6 6"></path></svg></a><button class="icon" title="購物車" aria-label="購物車"><svg viewBox="0 0 36 32" aria-hidden="true"><path d="M3 4h4l3.2 17h18.2l3.6-12H9"></path><circle cx="14" cy="27" r="1.8"></circle><circle cx="27" cy="27" r="1.8"></circle></svg></button></div></div></header>
+<main class="cart-page"><div class="container">
+<div class="cart-head"><div><div class="cart-kicker">Shopping Cart</div><h1 class="serif">購物車</h1></div><a class="cart-back" href="brand-kayanoya.html">← 繼續選購</a></div>
+<div id="cartEmpty" class="cart-empty" hidden><h2 class="serif">購物車目前是空的</h2><p>前往品牌頁選擇商品，再回到這裡確認內容。</p><a class="btn" href="brand-kayanoya.html">前往選購</a></div>
+<div id="cartContent" class="cart-layout" hidden>
+<section><div class="cart-labels"><span>商品</span><span>單價</span><span>數量</span><span>小計</span></div><div id="cartItems"></div></section>
+<aside class="cart-summary"><h2 class="serif">訂單摘要</h2><div class="cart-summary-row"><span>商品數量</span><strong id="cartItemCount">0</strong></div><div class="cart-summary-row total"><span>總價</span><strong id="cartGrandTotal">¥0</strong></div><p class="cart-summary-note">目前採用日本官方參考價，尚未包含運費、稅費及 fréa 正式台灣售價。</p><button class="cart-checkout" id="checkoutButton" type="button">確認結帳</button></aside>
+</div>
+</div></main>
+<footer class="footer"><div class="container"><div class="footer-grid"><div class="footer-brand"><img src="assets/logo_round.png" alt="fréa"><p>讓生活，回到它該有的溫度。</p><p>FUKUOKA, JAPAN</p></div><div><h4>關於 fréa</h4><a href="about.html">品牌故事</a><a href="contact.html">聯絡我們</a></div><div><h4>購物指南</h4><a href="#">購物流程</a><a href="#">付款方式</a><a href="#">配送方式</a><a href="returns.html">退換貨政策</a></div><div><h4>服務</h4><a href="personal-shopping.html">自選代購</a><a href="#">常見問題</a><a href="#">EZ WAY 說明</a></div><div><h4>品牌／社群</h4><a href="index.html#brands">Brands</a><a href="#">Instagram</a><a href="#">LINE</a></div></div><div class="copyright">© 2026 fréa. All rights reserved.</div></div></footer>
+<div class="toast"></div><script src="script.js"></script>
+<script>
+(function(){
+  const key="frea_demo_cart_v1";
+  const itemsElement=document.getElementById("cartItems");
+  const emptyElement=document.getElementById("cartEmpty");
+  const contentElement=document.getElementById("cartContent");
+  function readCart(){try{return JSON.parse(localStorage.getItem(key)||"[]");}catch(error){return [];}}
+  function saveCart(cart){localStorage.setItem(key,JSON.stringify(cart));}
+  function money(value,currency){return currency==="JPY"?"¥"+Number(value).toLocaleString("ja-JP"):Number(value).toLocaleString();}
+  function safe(text){const div=document.createElement("div");div.textContent=text||"";return div.innerHTML;}
+  function render(){
+    const cart=readCart().filter(item=>item.quantity>0);
+    saveCart(cart);
+    emptyElement.hidden=cart.length>0;
+    contentElement.hidden=cart.length===0;
+    if(!cart.length)return;
+    itemsElement.innerHTML=cart.map(item=>'<article class="cart-item" data-cart-id="'+safe(item.id)+'"><div class="cart-product"><div class="cart-image"><img src="'+safe(item.image)+'" alt="'+safe(item.name)+'"></div><div><div class="cart-name">'+safe(item.name)+'</div><div class="cart-spec">'+safe(item.spec)+'</div><button class="cart-remove" type="button" data-remove>移除商品</button></div></div><div class="cart-unit">'+money(item.price,item.currency)+'</div><div class="cart-quantity"><button type="button" data-change="-1" aria-label="減少數量">−</button><input data-quantity type="number" min="1" max="99" value="'+item.quantity+'" aria-label="數量"><button type="button" data-change="1" aria-label="增加數量">＋</button></div><div class="cart-line-total">'+money(item.price*item.quantity,item.currency)+'</div></article>').join("");
+    const quantity=cart.reduce((sum,item)=>sum+item.quantity,0);
+    const total=cart.reduce((sum,item)=>sum+item.price*item.quantity,0);
+    document.getElementById("cartItemCount").textContent=quantity+" 件";
+    document.getElementById("cartGrandTotal").textContent=money(total,"JPY");
+    bindRows();
+  }
+  function update(id,change,value){
+    const cart=readCart();
+    const item=cart.find(entry=>entry.id===id);
+    if(!item)return;
+    item.quantity=value==null?Math.min(99,Math.max(1,item.quantity+change)):Math.min(99,Math.max(1,Math.round(Number(value)||1)));
+    saveCart(cart);render();
+  }
+  function bindRows(){
+    document.querySelectorAll("[data-cart-id]").forEach(row=>{
+      const id=row.dataset.cartId;
+      row.querySelectorAll("[data-change]").forEach(button=>button.addEventListener("click",()=>update(id,Number(button.dataset.change),null)));
+      row.querySelector("[data-quantity]").addEventListener("change",event=>update(id,0,event.target.value));
+      row.querySelector("[data-remove]").addEventListener("click",()=>{saveCart(readCart().filter(item=>item.id!==id));render();});
+    });
+  }
+  document.getElementById("checkoutButton").addEventListener("click",()=>{if(typeof toast==="function")toast("確認結帳（目前為瀏覽器測試版）");});
+  render();
+})();
+</script>
+</body>
+</html>
