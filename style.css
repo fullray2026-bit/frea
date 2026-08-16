@@ -185,3 +185,23 @@
   }
 }
 
+
+
+/* Rev30: mobile presentation refinements */
+@media(max-width:640px){
+  .header-inner{height:60px}
+  .wordmark{font-size:26px}
+  .actions{gap:16px}
+  .icon{width:30px;height:30px}
+  .icon svg{width:24px;height:24px}
+  .icon[title="購物車"] svg{width:26px;height:24px}
+
+  .brand-grid--imageonly{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+  .brand-grid--imageonly .card:last-child{grid-column:1/-1;width:calc((100% - 14px)/2);justify-self:center}
+  .card-brand-imageonly .brand-photo{aspect-ratio:4/3}
+
+  .story-hero{height:300px}
+  .story-hero h1{font-size:27px;line-height:1.4}
+  .story-copy h2,.story-selection-head h2,.story-ending-copy h2{font-size:27px;line-height:1.45}
+  .story-quote-wrap blockquote{font-size:27px;line-height:1.5}
+}
