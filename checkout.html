@@ -45,7 +45,7 @@
 </form>
 </div></main>
 <footer class="footer"><div class="container"><div class="footer-grid"><div class="footer-brand"><img src="assets/logo_round.png" alt="fréa"><p>讓生活，回到它該有的溫度。</p><p>FUKUOKA, JAPAN</p></div><div><h4>關於 fréa</h4><a href="about.html">品牌故事</a><a href="contact.html">聯絡我們</a></div><div><h4>購物指南</h4><a href="#">購物流程</a><a href="#">付款方式</a><a href="#">配送方式</a><a href="returns.html">退換貨政策</a></div><div><h4>服務</h4><a href="personal-shopping.html">自選代購</a><a href="#">常見問題</a><a href="#">EZ WAY 說明</a></div><div><h4>品牌／社群</h4><a href="index.html#brands">Brands</a><a href="#">Instagram</a><a href="#">LINE</a></div></div><div class="copyright">© 2026 fréa. All rights reserved.</div></div></footer>
-<div class="toast"></div><script src="script.js"></script>
+<div class="toast"></div><script src="script.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.3/dist/umd/supabase.js"></script><script src="supabase-config.js"></script>
 <script>
 (function(){
   const CART_KEY="frea_demo_cart_v1",ORDERS_KEY="frea_demo_orders_v1",MEMBERS_KEY="frea_demo_members_v1",SESSION_KEY="frea_demo_session_v1";
@@ -56,23 +56,31 @@
   function cart(){return read(CART_KEY,[]).filter(item=>item.quantity>0);}
   function total(items){return items.reduce((sum,item)=>sum+item.price*item.quantity,0);}
   function setField(name,value){const field=form.elements.namedItem(name);if(field)field.value=value||"";}
-  function prefillMember(){
-    const email=localStorage.getItem(SESSION_KEY);if(!email)return;
-    const member=read(MEMBERS_KEY,[]).find(item=>item.email===email);if(!member)return;
-    const delivery=member.delivery||{};
-    setField("postalCode",delivery.postalCode);
+  async function prefillMember(){
+    ["postalCode","address","recipientPhone","recipientName"].forEach(name=>setField(name,""));
+    if(!window.supabase||!window.freaSupabaseConfig)return;
+    const client=window.supabase.createClient(window.freaSupabaseConfig.url,window.freaSupabaseConfig.publishableKey);
+    const {data:{session}}=await client.auth.getSession();
+    if(!session)return;
+    const [addressResult,ezwayResult]=await Promise.all([
+      client.from("member_addresses").select("postal_code,address").eq("user_id",session.user.id).eq("is_default",true).maybeSingle(),
+      client.from("ezway_profiles").select("real_name,mobile").eq("user_id",session.user.id).maybeSingle()
+    ]);
+    if(addressResult.error||ezwayResult.error)return;
+    const delivery=addressResult.data||{},ezway=ezwayResult.data||{};
+    setField("postalCode",delivery.postal_code);
     setField("address",delivery.address);
-    setField("recipientPhone",delivery.ezwayPhone||delivery.recipientPhone||member.phone);
-    setField("recipientName",delivery.ezwayName||delivery.recipientName||member.name);
+    setField("recipientPhone",ezway.mobile);
+    setField("recipientName",ezway.real_name);
   }
-  function render(){
+  async function render(){
     const items=cart();
     document.getElementById("checkoutEmpty").hidden=items.length>0;
     form.hidden=items.length===0;
     if(!items.length)return;
     document.getElementById("checkoutItems").innerHTML=items.map(item=>'<div class="checkout-item"><div class="checkout-item-name">'+safe(item.name)+'<small>'+safe(item.spec)+'</small></div><div class="checkout-qty">數量 '+item.quantity+'</div><div class="checkout-subtotal">'+money(item.price*item.quantity)+'</div></div>').join("");
     document.getElementById("checkoutTotal").textContent=money(total(items));
-    prefillMember();
+    await prefillMember();
   }
   function fileData(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file);});}
   function saveMemberOrder(order){
@@ -105,3 +113,4 @@
 </script>
 </body>
 </html>
+
