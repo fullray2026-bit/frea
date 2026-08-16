@@ -48,6 +48,12 @@
 .brand-actions{margin-top:36px}
 .brand-actions .btn{border-color:#fff;color:#fff}
 @media(max-width:760px){.brand-page{padding:44px 0 72px}.brand-back{margin-bottom:34px}.brand-intro,.brand-story,.brand-note{grid-template-columns:1fr;gap:30px}.brand-intro{margin-bottom:36px}.brand-wordmark{font-size:43px}.brand-lead{font-size:24px}.brand-hero{aspect-ratio:4/3;margin-bottom:60px;border-radius:16px}.brand-values{grid-template-columns:1fr;margin-bottom:60px}.brand-note{padding:38px 28px}.brand-story{margin-bottom:60px}.brand-products{margin-top:64px}.brand-products-head{display:block}.brand-products-note{margin-top:12px}.brand-product-labels{display:none}.brand-product-row{grid-template-columns:104px 1fr;gap:18px;padding:22px 0}.brand-product-thumb{width:104px;grid-row:1/5}.brand-product-name,.brand-product-spec,.brand-product-use,.brand-product-price,.brand-product-quantity,.brand-product-action{grid-column:2}.brand-product-name h3{font-size:19px}.brand-product-spec:before{content:"規格：";color:var(--muted)}.brand-product-use:before{content:"用途：";color:var(--muted)}.brand-product-price strong{font-size:18px}.brand-product-quantity:before{content:"數量";display:block;color:var(--muted);font-size:12px;margin-bottom:8px}.brand-cart-btn{margin-top:4px}}
+.brand-feature{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:72px;align-items:start;margin-bottom:88px}
+.brand-feature>.brand-hero{margin:0;aspect-ratio:auto!important;height:auto!important;background:transparent}
+.brand-feature>.brand-hero img{display:block;width:100%;height:auto!important;object-fit:contain!important;object-position:center}
+.brand-feature .brand-story{display:block;margin:0}
+.brand-feature .brand-story>.brand-kicker{margin-bottom:24px}
+@media(max-width:760px){.brand-feature{grid-template-columns:1fr;gap:42px;margin-bottom:60px}.brand-feature>.brand-hero{margin:0}.brand-feature .brand-story{margin:0}}
 </style>
 </head>
 <body>
@@ -59,13 +65,15 @@
 <div><div class="brand-wordmark" id="brand-name">茅乃舍</div><div class="brand-origin">Hisayama, Fukuoka</div></div>
 <p class="brand-lead">從福岡的里山出發，<br>讓旬味與食材回到日常餐桌。</p>
 </section>
-<figure class="brand-hero"><img src="assets/featured_kayanoya.png" alt="福岡久山町里山中的御料理茅乃舍"></figure>
+<div class="brand-feature">
+<figure class="brand-hero"><img src="assets/kayanoya_brand_story.png?v=kayanoya-story-1" alt="茅乃舍料理人與福岡久山町御料理茅乃舍"></figure>
 <section class="brand-story">
 <div class="brand-kicker">Brand Story</div>
 <div><h1>始於一座明治時代的醬油釀造坊，延續至今日的一餐一味。</h1>
 <p>茅乃舍的母體「久原本家」，源自 1893 年在福岡久原村、今日久山町開設的小型醬油釀造坊。歷經百餘年，始終在福岡製作調味料，累積對發酵、素材與滋味的理解。</p>
 <p>後來，久原本家在福岡里山開設「御料理 茅乃舍」，以當令食材、地方飲食智慧與不急於求成的料理方式為核心。從料理店客人希望在家也能重現滋味的心聲出發，逐漸發展出茅乃舍高湯與各式調味料，讓講究的味道更容易走進日常。</p><div style="border-top:1px solid #ddd3c7;margin-top:42px;padding-top:38px"><div class="brand-kicker" style="margin-bottom:16px">fréa Selection</div><h2 style="font-family:&quot;Noto Serif TC&quot;,&quot;Yu Mincho&quot;,&quot;Hiragino Mincho ProN&quot;,serif;font-size:28px;font-weight:400;line-height:1.6;margin:0 0 18px">我們為什麼選擇茅乃舍</h2><p>fréa 欣賞茅乃舍不以華麗取代本質的態度。它從素材與地方出發，透過簡單好用的形式，讓料理的時間變得從容，也讓每一天的餐桌更有溫度。未來上架的茅乃舍選品，會在這裡陸續呈現。</p></div></div>
 </section>
+</div>
 <section class="brand-values" aria-label="茅乃舍品牌特色">
 <article class="brand-value"><span>01 / ORIGIN</span><h2>福岡的里山原點</h2><p>品牌的料理哲學扎根於久山町的自然環境，重視四季流轉，以及地方所保存的飲食智慧。</p></article>
 <article class="brand-value"><span>02 / INGREDIENTS</span><h2>尊重素材本味</h2><p>選擇合適的素材，以時間和工夫引出原有風味，讓調味成為襯托，而不是掩蓋。</p></article>
