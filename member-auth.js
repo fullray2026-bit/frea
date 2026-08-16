@@ -232,12 +232,12 @@
   client.auth.onAuthStateChange((event, session) => {
     if (event === "SIGNED_OUT") show("login", false);
     if (event === "SIGNED_IN" && session && (!currentUser || currentUser.id !== session.user.id)) {
-      setTimeout(() => loadMember(session.user).catch(() => show("login", false)), 0);
+      setTimeout(() => loadMember(session.user).catch(async () => { await client.auth.signOut(); show("login", false); }), 0);
     }
   });
 
   client.auth.getSession().then(({ data }) => {
-    if (data.session) loadMember(data.session.user).catch(() => show("login", false));
+    if (data.session) loadMember(data.session.user).catch(async () => { await client.auth.signOut(); show("login", false); });
     else show("register", false);
   });
 })();
