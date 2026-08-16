@@ -50,6 +50,7 @@
 (function(){
   const CART_KEY="frea_demo_cart_v1",ORDERS_KEY="frea_demo_orders_v1",MEMBERS_KEY="frea_demo_members_v1",SESSION_KEY="frea_demo_session_v1";
   const form=document.getElementById("checkoutForm");
+  const supabaseClient=window.supabase&&window.freaSupabaseConfig?window.supabase.createClient(window.freaSupabaseConfig.url,window.freaSupabaseConfig.publishableKey):null;
   function read(key,fallback){try{return JSON.parse(localStorage.getItem(key)||JSON.stringify(fallback));}catch(error){return fallback;}}
   function money(value){return "¥"+Number(value).toLocaleString("ja-JP");}
   function safe(text){const div=document.createElement("div");div.textContent=text||"";return div.innerHTML;}
@@ -58,13 +59,12 @@
   function setField(name,value){const field=form.elements.namedItem(name);if(field)field.value=value||"";}
   async function prefillMember(){
     ["postalCode","address","recipientPhone","recipientName"].forEach(name=>setField(name,""));
-    if(!window.supabase||!window.freaSupabaseConfig)return;
-    const client=window.supabase.createClient(window.freaSupabaseConfig.url,window.freaSupabaseConfig.publishableKey);
-    const {data:{session}}=await client.auth.getSession();
+    if(!supabaseClient)return;
+    const {data:{session}}=await supabaseClient.auth.getSession();
     if(!session)return;
     const [addressResult,ezwayResult]=await Promise.all([
-      client.from("member_addresses").select("postal_code,address").eq("user_id",session.user.id).eq("is_default",true).maybeSingle(),
-      client.from("ezway_profiles").select("real_name,mobile").eq("user_id",session.user.id).maybeSingle()
+      supabaseClient.from("member_addresses").select("postal_code,address").eq("user_id",session.user.id).eq("is_default",true).maybeSingle(),
+      supabaseClient.from("ezway_profiles").select("real_name,mobile").eq("user_id",session.user.id).maybeSingle()
     ]);
     if(addressResult.error||ezwayResult.error)return;
     const delivery=addressResult.data||{},ezway=ezwayResult.data||{};
@@ -103,7 +103,19 @@
     if(!allowed.includes(file.type)){message.textContent="請上傳 JPG、PNG、WebP 或 PDF 檔案。";message.className="checkout-message error";return;}
     const data=new FormData(form);
     const now=new Date();
-    const order={number:"FR"+now.getFullYear()+String(now.getMonth()+1).padStart(2,"0")+String(now.getDate()).padStart(2,"0")+"-"+String(Date.now()).slice(-6),date:now.toLocaleDateString("zh-TW"),status:"待確認匯款",total:money(total(items)),currency:"JPY",items:items,shipping:{postalCode:String(data.get("postalCode")||"").trim(),address:String(data.get("address")||"").trim(),recipientPhone:String(data.get("recipientPhone")||"").trim(),recipientName:String(data.get("recipientName")||"").trim(),ezwayPhone:String(data.get("recipientPhone")||"").trim(),ezwayName:String(data.get("recipientName")||"").trim()},paymentProof:{name:file.name,type:file.type,size:file.size,data:await fileData(file)},createdAt:now.toISOString()};
+    const proofData=await fileData(file);
+    const shipping={postalCode:String(data.get("postalCode")||"").trim(),address:String(data.get("address")||"").trim(),recipientPhone:String(data.get("recipientPhone")||"").trim(),recipientName:String(data.get("recipientName")||"").trim(),ezwayPhone:String(data.get("recipientPhone")||"").trim(),ezwayName:String(data.get("recipientName")||"").trim()};
+    if(supabaseClient){
+      const {data:{session}}=await supabaseClient.auth.getSession();
+      if(session){
+        const submit=form.querySelector('[type="submit"]');submit.disabled=true;submit.textContent="訂單送出中…";
+        const {data:result,error}=await supabaseClient.functions.invoke("submit-order",{body:{items:items.map(item=>({id:item.id,quantity:item.quantity})),shipping:shipping,paymentProof:{name:file.name,type:file.type,size:file.size,data:proofData}}});
+        submit.disabled=false;submit.textContent="訂單送出";
+        if(error||!result||!result.orderNumber){message.textContent=result&&result.error?result.error:"訂單送出失敗，請稍後再試。";message.className="checkout-message error";return;}
+        localStorage.removeItem(CART_KEY);form.reset();form.hidden=true;document.getElementById("checkoutSuccess").hidden=false;document.getElementById("successOrderNumber").textContent="訂單編號："+result.orderNumber;window.scrollTo({top:0,behavior:"smooth"});return;
+      }
+    }
+    const order={number:"FR"+now.getFullYear()+String(now.getMonth()+1).padStart(2,"0")+String(now.getDate()).padStart(2,"0")+"-"+String(Date.now()).slice(-6),date:now.toLocaleDateString("zh-TW"),status:"待確認匯款",total:money(total(items)),currency:"JPY",items:items,shipping:shipping,paymentProof:{name:file.name,type:file.type,size:file.size,data:proofData},createdAt:now.toISOString()};
     const orders=read(ORDERS_KEY,[]);orders.unshift(order);
     try{localStorage.setItem(ORDERS_KEY,JSON.stringify(orders));}catch(error){message.textContent="瀏覽器儲存空間不足，請改用較小的匯款證明檔案。";message.className="checkout-message error";return;}
     saveMemberOrder(order);localStorage.removeItem(CART_KEY);form.reset();form.hidden=true;document.getElementById("checkoutSuccess").hidden=false;document.getElementById("successOrderNumber").textContent="訂單編號："+order.number;window.scrollTo({top:0,behavior:"smooth"});
