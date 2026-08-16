@@ -29,7 +29,7 @@
 .brand-products-head h2{font-family:"Noto Serif TC","Yu Mincho","Hiragino Mincho ProN",serif;font-size:34px;font-weight:400;margin:8px 0 0}
 .brand-products-note{color:var(--muted);font-size:14px;margin:0}
 .brand-product-list{border-top:1px solid #ddd3c7}
-.brand-product-labels,.brand-product-row{display:grid;grid-template-columns:150px minmax(210px,1.4fr) minmax(100px,.65fr) minmax(210px,1.25fr) minmax(150px,.75fr) 160px;gap:24px;align-items:center}
+.brand-product-labels,.brand-product-row{display:grid;grid-template-columns:140px minmax(190px,1.35fr) minmax(90px,.6fr) minmax(190px,1.15fr) minmax(135px,.7fr) 122px 150px;gap:24px;align-items:center}
 .brand-product-labels{padding:12px 0;color:var(--muted);font-size:11px;letter-spacing:.12em;text-transform:uppercase;border-bottom:1px solid #ddd3c7}
 .brand-product-row{padding:28px 0;border-bottom:1px solid #ddd3c7}
 .brand-product-thumb{width:150px;aspect-ratio:1/1;background:#eee8df;border-radius:14px;overflow:hidden;display:flex;align-items:center;justify-content:center}
@@ -39,7 +39,7 @@
 .brand-product-spec{font-size:15px;line-height:1.7}
 .brand-product-price strong{display:block;font-size:19px;font-weight:400}
 .brand-product-price span{display:block;margin-top:6px;color:var(--muted);font-size:10px;line-height:1.5}
-.brand-cart-btn{width:100%;min-height:48px;border:1px solid #4b3d32;border-radius:999px;background:#4b3d32;color:#fff;font:inherit;font-size:14px;cursor:pointer;transition:.2s}
+.brand-quantity{display:grid;grid-template-columns:34px 50px 34px;align-items:center;border:1px solid #cfc2b5;border-radius:999px;overflow:hidden;height:44px}.brand-quantity button{height:42px;border:0;background:transparent;color:#4b3d32;font-size:20px;cursor:pointer}.brand-quantity input{width:50px;height:42px;border:0;border-left:1px solid #e1d5c8;border-right:1px solid #e1d5c8;background:transparent;text-align:center;font:inherit;-moz-appearance:textfield}.brand-quantity input::-webkit-outer-spin-button,.brand-quantity input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}.brand-cart-btn{width:100%;min-height:48px;border:1px solid #4b3d32;border-radius:999px;background:#4b3d32;color:#fff;font:inherit;font-size:14px;cursor:pointer;transition:.2s}
 .brand-cart-btn:hover{background:#685546;border-color:#685546}
 .brand-note{padding:56px 64px;background:#4b3d32;color:#fff;border-radius:22px;display:grid;grid-template-columns:.55fr 1.45fr;gap:70px}
 .brand-note .brand-kicker{color:#cbbcad}
@@ -47,7 +47,7 @@
 .brand-note p{color:#eee7df;line-height:2;margin:0}
 .brand-actions{margin-top:36px}
 .brand-actions .btn{border-color:#fff;color:#fff}
-@media(max-width:760px){.brand-page{padding:44px 0 72px}.brand-back{margin-bottom:34px}.brand-intro,.brand-story,.brand-note{grid-template-columns:1fr;gap:30px}.brand-intro{margin-bottom:36px}.brand-wordmark{font-size:43px}.brand-lead{font-size:24px}.brand-hero{aspect-ratio:4/3;margin-bottom:60px;border-radius:16px}.brand-values{grid-template-columns:1fr;margin-bottom:60px}.brand-note{padding:38px 28px}.brand-story{margin-bottom:60px}.brand-products{margin-top:64px}.brand-products-head{display:block}.brand-products-note{margin-top:12px}.brand-product-labels{display:none}.brand-product-row{grid-template-columns:104px 1fr;gap:18px;padding:22px 0}.brand-product-thumb{width:104px;grid-row:1/5}.brand-product-name,.brand-product-spec,.brand-product-use,.brand-product-price,.brand-product-action{grid-column:2}.brand-product-name h3{font-size:19px}.brand-product-spec:before{content:"規格：";color:var(--muted)}.brand-product-use:before{content:"用途：";color:var(--muted)}.brand-product-price strong{font-size:18px}.brand-cart-btn{margin-top:4px}}
+@media(max-width:760px){.brand-page{padding:44px 0 72px}.brand-back{margin-bottom:34px}.brand-intro,.brand-story,.brand-note{grid-template-columns:1fr;gap:30px}.brand-intro{margin-bottom:36px}.brand-wordmark{font-size:43px}.brand-lead{font-size:24px}.brand-hero{aspect-ratio:4/3;margin-bottom:60px;border-radius:16px}.brand-values{grid-template-columns:1fr;margin-bottom:60px}.brand-note{padding:38px 28px}.brand-story{margin-bottom:60px}.brand-products{margin-top:64px}.brand-products-head{display:block}.brand-products-note{margin-top:12px}.brand-product-labels{display:none}.brand-product-row{grid-template-columns:104px 1fr;gap:18px;padding:22px 0}.brand-product-thumb{width:104px;grid-row:1/5}.brand-product-name,.brand-product-spec,.brand-product-use,.brand-product-price,.brand-product-quantity,.brand-product-action{grid-column:2}.brand-product-name h3{font-size:19px}.brand-product-spec:before{content:"規格：";color:var(--muted)}.brand-product-use:before{content:"用途：";color:var(--muted)}.brand-product-price strong{font-size:18px}.brand-product-quantity:before{content:"數量";display:block;color:var(--muted);font-size:12px;margin-bottom:8px}.brand-cart-btn{margin-top:4px}}
 </style>
 </head>
 <body>
@@ -74,13 +74,14 @@
 <section class="brand-products" aria-labelledby="selected-items">
 <div class="brand-products-head"><div><div class="brand-kicker">Selected Items</div><h2 id="selected-items">精選商品</h2></div><p class="brand-products-note">簡單了解，即刻加入購物車</p></div>
 <div class="brand-product-list">
-<div class="brand-product-labels" aria-hidden="true"><span>商品照片</span><span>商品名稱</span><span>規格</span><span>用途</span><span>價格</span><span></span></div>
+<div class="brand-product-labels" aria-hidden="true"><span>商品照片</span><span>商品名稱</span><span>規格</span><span>用途</span><span>價格</span><span>數量</span><span></span></div>
 <article class="brand-product-row">
 <div class="brand-product-thumb"><img src="https://www.kubara.jp/files/products/20260323143411_NSkKl9tX.jpg?1786504293=" alt="茅乃舍高湯30袋入"></div>
 <div class="brand-product-name"><h3>茅乃舍高湯（30袋入）</h3><p>以烤飛魚、鰹魚節、圓腹鯡與真昆布調和的經典和風高湯包。</p></div>
 <div class="brand-product-spec">8g × 30 袋</div>
 <p class="brand-product-use">味噌湯、煮物、蒸蛋、麵類湯底，亦可拆袋作為日常調味。</p>
 <div class="brand-product-price"><strong>¥2,268</strong><span>日本官方含稅參考價<br>fréa 售價尚未設定</span></div>
+<div class="brand-product-quantity"><div class="brand-quantity" aria-label="商品數量"><button type="button" id="decreaseKayanoyaDashi" aria-label="減少數量">−</button><input id="quantityKayanoyaDashi" type="number" min="1" max="99" value="1" inputmode="numeric" aria-label="數量"><button type="button" id="increaseKayanoyaDashi" aria-label="增加數量">＋</button></div></div>
 <div class="brand-product-action"><button class="brand-cart-btn" type="button" id="addKayanoyaDashi">加入購物車</button></div>
 </article>
 </div>
@@ -93,17 +94,24 @@
 <script>
 (function(){
   const button=document.getElementById("addKayanoyaDashi");
-  if(!button)return;
+  const quantityInput=document.getElementById("quantityKayanoyaDashi");
+  if(!button||!quantityInput)return;
+  function quantity(){const value=Math.round(Number(quantityInput.value)||1);return Math.min(99,Math.max(1,value));}
+  function setQuantity(value){quantityInput.value=Math.min(99,Math.max(1,value));}
+  document.getElementById("decreaseKayanoyaDashi").addEventListener("click",()=>setQuantity(quantity()-1));
+  document.getElementById("increaseKayanoyaDashi").addEventListener("click",()=>setQuantity(quantity()+1));
+  quantityInput.addEventListener("change",()=>setQuantity(quantity()));
   button.addEventListener("click",function(){
     const key="frea_demo_cart_v1";
     let cart=[];
     try{cart=JSON.parse(localStorage.getItem(key)||"[]");}catch(error){cart=[];}
     const id="kayanoya-dashi-30";
     const item=cart.find(entry=>entry.id===id);
-    if(item)item.quantity+=1;
-    else cart.push({id:id,name:"茅乃舍高湯（30袋入）",spec:"8g × 30 袋",price:2268,currency:"JPY",quantity:1,image:"https://www.kubara.jp/files/products/20260323143411_NSkKl9tX.jpg?1786504293="});
+    const selectedQuantity=quantity();
+    if(item)item.quantity+=selectedQuantity;
+    else cart.push({id:id,name:"茅乃舍高湯（30袋入）",spec:"8g × 30 袋",price:2268,currency:"JPY",quantity:selectedQuantity,image:"https://www.kubara.jp/files/products/20260323143411_NSkKl9tX.jpg?1786504293="});
     localStorage.setItem(key,JSON.stringify(cart));
-    if(typeof toast==="function")toast("已加入購物車（瀏覽器測試版）");
+    if(typeof toast==="function")toast("已加入 "+selectedQuantity+" 件商品（瀏覽器測試版）");
     button.textContent="已加入購物車";
     setTimeout(()=>button.textContent="加入購物車",1600);
   });
