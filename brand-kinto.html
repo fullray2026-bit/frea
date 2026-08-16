@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KINTO｜fréa 精選品牌</title>
+<meta name="description" content="fréa 精選 KINTO 日常器物與飲品容器，介紹品牌故事與日本官方參考價格。">
+<link rel="stylesheet" href="style.css">
+<style>
+.brand-page{padding:72px 0 112px}
+.brand-back{display:inline-block;margin-bottom:48px;color:var(--muted);font-size:14px;letter-spacing:.08em}
+.brand-intro{display:grid;grid-template-columns:minmax(220px,.7fr) minmax(0,1.3fr);gap:80px;align-items:end;margin-bottom:56px}
+.brand-wordmark{font-family:"Noto Serif TC","Yu Mincho","Hiragino Mincho ProN",serif;font-size:56px;font-weight:500;line-height:1;letter-spacing:.12em;color:var(--text)}
+.brand-origin{margin-top:20px;color:var(--muted);font-size:13px;letter-spacing:.18em;text-transform:uppercase}
+.brand-lead{font-family:"Noto Serif TC","Yu Mincho","Hiragino Mincho ProN",serif;font-size:30px;line-height:1.75;font-weight:400;margin:0}
+.brand-hero{margin:0 0 88px;border-radius:24px;overflow:hidden;aspect-ratio:16/7;background:#e8e1d7}
+.brand-hero img{display:block;width:100%;height:100%;object-fit:cover}
+.brand-story{display:grid;grid-template-columns:minmax(180px,.55fr) minmax(0,1.45fr);gap:80px;margin-bottom:88px}
+.brand-kicker{color:var(--muted);font-size:13px;letter-spacing:.16em;text-transform:uppercase}
+.brand-story h1{font-family:"Noto Serif TC","Yu Mincho","Hiragino Mincho ProN",serif;font-size:34px;font-weight:400;line-height:1.6;margin:0 0 28px}
+.brand-story p{font-size:16px;line-height:2.05;margin:0 0 18px;color:#544a42}
+.brand-values{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:88px}
+.brand-value{padding:34px 30px;border:1px solid #ddd3c7;border-radius:18px;background:#faf8f4}
+.brand-value span{display:block;color:var(--muted);font-size:12px;letter-spacing:.14em;margin-bottom:18px}
+.brand-value h2{font-family:"Noto Serif TC","Yu Mincho","Hiragino Mincho ProN",serif;font-size:23px;font-weight:400;margin:0 0 14px}
+.brand-value p{font-size:14px;line-height:1.9;margin:0;color:#62584f}
+.brand-products{margin-top:96px}
+.brand-products-head{display:flex;align-items:end;justify-content:space-between;gap:30px;margin-bottom:34px}
+.brand-products-head h2{font-family:"Noto Serif TC","Yu Mincho","Hiragino Mincho ProN",serif;font-size:34px;font-weight:400;margin:8px 0 0}
+.brand-products-note{color:var(--muted);font-size:14px;margin:0}
+.brand-product-list{border-top:1px solid #ddd3c7}
+.brand-product-labels,.brand-product-row{display:grid;grid-template-columns:140px minmax(190px,1.35fr) minmax(90px,.6fr) minmax(190px,1.15fr) minmax(135px,.7fr) 122px 150px;gap:24px;align-items:center}
+.brand-product-labels{padding:12px 0;color:var(--muted);font-size:11px;letter-spacing:.12em;text-transform:uppercase;border-bottom:1px solid #ddd3c7}
+.brand-product-row{padding:28px 0;border-bottom:1px solid #ddd3c7}
+.brand-product-thumb{width:150px;aspect-ratio:1/1;background:#eee8df;border-radius:14px;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.brand-product-thumb img{display:block;width:100%;height:100%;object-fit:contain}
+.brand-product-name h3{font-family:"Noto Serif TC","Yu Mincho","Hiragino Mincho ProN",serif;font-size:21px;font-weight:400;line-height:1.5;margin:0 0 8px}
+.brand-product-name p,.brand-product-use{font-size:13px;line-height:1.8;color:var(--muted);margin:0}
+.brand-product-spec{font-size:15px;line-height:1.7}
+.brand-product-price strong{display:block;font-size:19px;font-weight:400}
+.brand-product-price span{display:block;margin-top:6px;color:var(--muted);font-size:10px;line-height:1.5}
+.brand-quantity{display:grid;grid-template-columns:34px 50px 34px;align-items:center;border:1px solid #cfc2b5;border-radius:999px;overflow:hidden;height:44px}.brand-quantity button{height:42px;border:0;background:transparent;color:#4b3d32;font-size:20px;cursor:pointer}.brand-quantity input{width:50px;height:42px;border:0;border-left:1px solid #e1d5c8;border-right:1px solid #e1d5c8;background:transparent;text-align:center;font:inherit;-moz-appearance:textfield}.brand-quantity input::-webkit-outer-spin-button,.brand-quantity input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}.brand-cart-btn{width:100%;min-height:48px;border:1px solid #4b3d32;border-radius:999px;background:#4b3d32;color:#fff;font:inherit;font-size:14px;cursor:pointer;transition:.2s}
+.brand-cart-btn:hover{background:#685546;border-color:#685546}
+.brand-note{padding:56px 64px;background:#4b3d32;color:#fff;border-radius:22px;display:grid;grid-template-columns:.55fr 1.45fr;gap:70px}
+.brand-note .brand-kicker{color:#cbbcad}
+.brand-note h2{font-family:"Noto Serif TC","Yu Mincho","Hiragino Mincho ProN",serif;font-size:28px;font-weight:400;line-height:1.6;margin:0 0 20px}
+.brand-note p{color:#eee7df;line-height:2;margin:0}
+.brand-actions{margin-top:36px}
+.brand-actions .btn{border-color:#fff;color:#fff}
+@media(max-width:760px){.brand-page{padding:44px 0 72px}.brand-back{margin-bottom:34px}.brand-intro,.brand-story,.brand-note{grid-template-columns:1fr;gap:30px}.brand-intro{margin-bottom:36px}.brand-wordmark{font-size:43px}.brand-lead{font-size:24px}.brand-hero{aspect-ratio:4/3;margin-bottom:60px;border-radius:16px}.brand-values{grid-template-columns:1fr;margin-bottom:60px}.brand-note{padding:38px 28px}.brand-story{margin-bottom:60px}.brand-products{margin-top:64px}.brand-products-head{display:block}.brand-products-note{margin-top:12px}.brand-product-labels{display:none}.brand-product-row{grid-template-columns:104px 1fr;gap:18px;padding:22px 0}.brand-product-thumb{width:104px;grid-row:1/5}.brand-product-name,.brand-product-spec,.brand-product-use,.brand-product-price,.brand-product-quantity,.brand-product-action{grid-column:2}.brand-product-name h3{font-size:19px}.brand-product-spec:before{content:"規格：";color:var(--muted)}.brand-product-use:before{content:"用途：";color:var(--muted)}.brand-product-price strong{font-size:18px}.brand-product-quantity:before{content:"數量";display:block;color:var(--muted);font-size:12px;margin-bottom:8px}.brand-cart-btn{margin-top:4px}}
+</style>
+</head>
+<body>
+<header class="header"><div class="container header-inner"><a class="wordmark serif" href="index.html">fréa</a><div></div><div class="actions"><button class="icon" title="搜尋" aria-label="搜尋"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="14" r="9.5"></circle><path d="M21.2 21.2 28 28"></path></svg></button><a class="icon" title="會員登入" aria-label="會員登入" href="register.html"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M18 5h9v22h-9"></path><path d="M4 16h16"></path><path d="m14 10 6 6-6 6"></path></svg></a><button class="icon" title="購物車" aria-label="購物車"><svg viewBox="0 0 36 32" aria-hidden="true"><path d="M3 4h4l3.2 17h18.2l3.6-12H9"></path><circle cx="14" cy="27" r="1.8"></circle><circle cx="27" cy="27" r="1.8"></circle></svg></button></div></div></header>
+<main class="brand-page">
+<div class="container">
+<a class="brand-back" href="index.html#brands">← Featured Brands</a>
+<section class="brand-intro" aria-labelledby="brand-name">
+<div><div class="brand-wordmark" id="brand-name">KINTO</div><div class="brand-origin">Shiga, Japan</div></div>
+<p class="brand-lead">讓使用的舒適與器物的姿態，<br>自然融入每一天。</p>
+</section>
+<figure class="brand-hero"><img src="assets/featured_kinto.png" alt="KINTO 日常飲品器物"></figure>
+<section class="brand-story">
+<div class="brand-kicker">Brand Story</div>
+<div><h1>從日常動作出發，讓器物成為生活裡自然的陪伴。</h1>
+<p>KINTO 自日本滋賀出發，持續思考人與器物之間的關係，從飲水、用餐到居家空間，將細緻的使用感受融入簡潔而安靜的設計。</p>
+<p>品牌重視觸感、重量、開闔與飲用方式等真實細節，讓物件不只看起來美，也能在長時間使用後留下熟悉與依戀。</p>
+<div style="border-top:1px solid #ddd3c7;margin-top:42px;padding-top:38px"><div class="brand-kicker" style="margin-bottom:16px">fréa Selection</div><h2 style="font-family:&quot;Noto Serif TC&quot;,&quot;Yu Mincho&quot;,&quot;Hiragino Mincho ProN&quot;,serif;font-size:28px;font-weight:400;line-height:1.6;margin:0 0 18px">我們為什麼選擇 KINTO</h2><p>fréa 欣賞 KINTO 不張揚、卻處處回應使用者的設計。它把美感放進每天反覆發生的動作，讓喝水、喝咖啡與外出攜帶，都多一點舒服與從容。</p></div></div>
+</section>
+<section class="brand-values" aria-label="KINTO 品牌特色">
+<article class="brand-value"><span>01 / USABILITY</span><h2>從使用感受出發</h2><p>以人的動作與感官為起點，細緻調整握持、飲用、清潔與攜帶方式。</p></article>
+<article class="brand-value"><span>02 / BALANCE</span><h2>機能與姿態並重</h2><p>讓實用機能與簡潔輪廓彼此平衡，安靜融入不同生活場景。</p></article>
+<article class="brand-value"><span>03 / EVERYDAY</span><h2>陪伴日常移動</h2><p>從家中餐桌到通勤與旅行，器物都能自然延續熟悉的生活節奏。</p></article>
+</section>
+<section class="brand-products" aria-labelledby="selected-items">
+<div class="brand-products-head"><div><div class="brand-kicker">Selected Items</div><h2 id="selected-items">精選商品</h2></div><p class="brand-products-note">簡單了解，即刻加入購物車</p></div>
+<div class="brand-product-list">
+<div class="brand-product-labels" aria-hidden="true"><span>商品照片</span><span>商品名稱</span><span>規格</span><span>用途</span><span>價格</span><span>數量</span><span></span></div>
+<article class="brand-product-row" data-cart-product data-product-id="kinto-water-bottle-500" data-name="KINTO WATER BOTTLE 500ml" data-spec="500ml" data-price="1540" data-currency="JPY" data-image="https://kinto.co.jp/cdn/shop/files/20391_370a172b-3d22-44e0-8bc5-91cbc22a4ffb.jpg?v=1723083930&amp;width=1024">
+<div class="brand-product-thumb"><img src="https://kinto.co.jp/cdn/shop/files/20391_370a172b-3d22-44e0-8bc5-91cbc22a4ffb.jpg?v=1723083930&amp;width=1024" alt="KINTO WATER BOTTLE 500ml"></div>
+<div class="brand-product-name"><h3>KINTO WATER BOTTLE 500ml</h3><p>如玻璃般清透、重量僅約 75g 的日常水瓶，瓶蓋一圈即可開啟，附方便攜帶的提把。</p></div>
+<div class="brand-product-spec">500ml</div>
+<p class="brand-product-use">日常補水、通勤、運動與外出攜帶；可放入洗碗機清洗。</p>
+<div class="brand-product-price"><strong>¥1,540</strong><span>日本官方含稅參考價<br>fréa 售價尚未設定</span></div>
+<div class="brand-product-quantity"><div class="brand-quantity" aria-label="KINTO WATER BOTTLE 500ml商品數量"><button type="button" data-qty-action="decrease" aria-label="減少數量">−</button><input data-quantity type="number" min="1" max="99" value="1" inputmode="numeric" aria-label="數量"><button type="button" data-qty-action="increase" aria-label="增加數量">＋</button></div></div>
+<div class="brand-product-action"><button class="brand-cart-btn" data-add-cart type="button">加入購物車</button></div>
+</article>
+<article class="brand-product-row" data-cart-product data-product-id="kinto-travel-tumbler-500" data-name="KINTO TRAVEL TUMBLER 500ml" data-spec="500ml" data-price="3520" data-currency="JPY" data-image="https://kinto.co.jp/cdn/shop/products/20941_grande_3f0930bc-4186-4432-8db3-331153a719a4.jpg?v=1567658902&amp;width=1024">
+<div class="brand-product-thumb"><img src="https://kinto.co.jp/cdn/shop/products/20941_grande_3f0930bc-4186-4432-8db3-331153a719a4.jpg?v=1567658902&amp;width=1024" alt="KINTO TRAVEL TUMBLER 500ml"></div>
+<div class="brand-product-name"><h3>KINTO TRAVEL TUMBLER 500ml</h3><p>真空雙層不鏽鋼保溫杯，360 度皆可順暢飲用，保留飲品原本的香氣與口感。</p></div>
+<div class="brand-product-spec">500ml</div>
+<p class="brand-product-use">咖啡、茶與冷熱飲的通勤隨行使用；保溫、保冷皆適合。</p>
+<div class="brand-product-price"><strong>¥3,520</strong><span>日本官方含稅參考價<br>fréa 售價尚未設定</span></div>
+<div class="brand-product-quantity"><div class="brand-quantity" aria-label="KINTO TRAVEL TUMBLER 500ml商品數量"><button type="button" data-qty-action="decrease" aria-label="減少數量">−</button><input data-quantity type="number" min="1" max="99" value="1" inputmode="numeric" aria-label="數量"><button type="button" data-qty-action="increase" aria-label="增加數量">＋</button></div></div>
+<div class="brand-product-action"><button class="brand-cart-btn" data-add-cart type="button">加入購物車</button></div>
+</article>
+<article class="brand-product-row" data-cart-product data-product-id="kinto-day-off-tumbler-500" data-name="KINTO DAY OFF TUMBLER 500ml" data-spec="500ml" data-price="3850" data-currency="JPY" data-image="https://kinto.co.jp/cdn/shop/products/21091.jpg?v=1623983738&amp;width=1024">
+<div class="brand-product-thumb"><img src="https://kinto.co.jp/cdn/shop/products/21091.jpg?v=1623983738&amp;width=1024" alt="KINTO DAY OFF TUMBLER 500ml"></div>
+<div class="brand-product-name"><h3>KINTO DAY OFF TUMBLER 500ml</h3><p>圓潤輪廓與弧形提把帶來放鬆手感，兼具真空保溫結構與舒適飲用體驗。</p></div>
+<div class="brand-product-spec">500ml</div>
+<p class="brand-product-use">休假散步、野餐、辦公與日常外出，適合攜帶各式冷熱飲。</p>
+<div class="brand-product-price"><strong>¥3,850</strong><span>日本官方含稅參考價<br>fréa 售價尚未設定</span></div>
+<div class="brand-product-quantity"><div class="brand-quantity" aria-label="KINTO DAY OFF TUMBLER 500ml商品數量"><button type="button" data-qty-action="decrease" aria-label="減少數量">−</button><input data-quantity type="number" min="1" max="99" value="1" inputmode="numeric" aria-label="數量"><button type="button" data-qty-action="increase" aria-label="增加數量">＋</button></div></div>
+<div class="brand-product-action"><button class="brand-cart-btn" data-add-cart type="button">加入購物車</button></div>
+</article>
+</div>
+</section>
+</div>
+</main>
+<footer class="footer"><div class="container"><div class="footer-grid"><div class="footer-brand"><img src="assets/logo_round.png" alt="fréa"><p>讓生活，回到它該有的溫度。</p><p>FUKUOKA, JAPAN</p></div><div><h4>關於 fréa</h4><a href="about.html">品牌故事</a><a href="contact.html">聯絡我們</a></div><div><h4>購物指南</h4><a href="#">購物流程</a><a href="#">付款方式</a><a href="#">配送方式</a><a href="returns.html">退換貨政策</a><a href="terms.html">會員條款</a><a href="privacy.html">隱私權政策</a></div><div><h4>服務</h4><a href="personal-shopping.html">自選代購</a><a href="#">常見問題</a><a href="#">EZ WAY 說明</a></div></div><div class="copyright">© 2026 fréa. All rights reserved.</div></div></footer>
+<div class="toast"></div><script src="script.js"></script>
+<script>
+(function(){
+  const key="frea_demo_cart_v1";
+  function readCart(){try{return JSON.parse(localStorage.getItem(key)||"[]");}catch(error){return [];}}
+  function quantity(input){const value=Math.round(Number(input.value)||1);return Math.min(99,Math.max(1,value));}
+  function setQuantity(input,value){input.value=Math.min(99,Math.max(1,value));}
+  document.querySelectorAll("[data-cart-product]").forEach(function(row){
+    const input=row.querySelector("[data-quantity]");
+    row.querySelector('[data-qty-action="decrease"]').addEventListener("click",()=>setQuantity(input,quantity(input)-1));
+    row.querySelector('[data-qty-action="increase"]').addEventListener("click",()=>setQuantity(input,quantity(input)+1));
+    input.addEventListener("change",()=>setQuantity(input,quantity(input)));
+    row.querySelector("[data-add-cart]").addEventListener("click",function(){
+      const selectedQuantity=quantity(input);
+      const cart=readCart();
+      const id=row.dataset.productId;
+      const item=cart.find(entry=>entry.id===id);
+      if(item)item.quantity+=selectedQuantity;
+      else cart.push({id:id,name:row.dataset.name,spec:row.dataset.spec,price:Number(row.dataset.price),currency:row.dataset.currency,quantity:selectedQuantity,image:row.dataset.image});
+      localStorage.setItem(key,JSON.stringify(cart));
+      if(typeof toast==="function")toast("已加入 "+selectedQuantity+" 件商品（瀏覽器測試版）");
+      const button=this;
+      button.textContent="已加入購物車";
+      setTimeout(()=>button.textContent="加入購物車",1600);
+    });
+  });
+})();
+</script></body>
+</html>
+
