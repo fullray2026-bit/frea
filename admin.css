@@ -50,7 +50,7 @@
 .admin-order-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:18px;padding-top:18px;border-top:1px solid var(--admin-line)}
 .admin-order h4{font-size:12px;margin:0 0 7px;color:var(--admin-muted)}
 .admin-order p{font-size:13px;margin:2px 0}.admin-order-items{margin:0;padding-left:18px;font-size:13px}
-.admin-order-controls{display:grid;grid-template-columns:190px 1fr auto;gap:12px;align-items:end;margin-top:18px}
+.admin-order-controls{display:grid;grid-template-columns:190px 230px 1fr auto;gap:12px;align-items:end;margin-top:18px}
 .admin-order-controls label{display:grid;gap:6px;font-size:12px;color:var(--admin-muted)}
 .admin-save{border:0;background:var(--admin-accent);color:#fff;padding:11px 18px;border-radius:8px;cursor:pointer}
 .admin-recent{display:flex;justify-content:space-between;gap:20px;padding:12px 0;border-bottom:1px solid var(--admin-line);font-size:13px}
