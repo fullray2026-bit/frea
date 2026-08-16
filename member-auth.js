@@ -79,7 +79,7 @@
     const target = byId("orderList");
     const { data, error } = await client
       .from("orders")
-      .select("order_number,status,total_amount,currency,created_at")
+      .select("order_number,status,total_amount,currency,created_at,tracking_number")
       .order("created_at", { ascending: false });
     if (error) {
       target.innerHTML = '<div class="member-empty"><strong>暫時無法讀取訂單</strong><p>請稍後重新整理頁面。</p></div>';
@@ -89,11 +89,14 @@
       target.innerHTML = '<div class="member-empty"><strong>目前尚無訂單</strong><p>完成購物後，訂單編號、日期、金額與處理狀態會顯示在這裡。</p></div>';
       return;
     }
-    const statuses = { pending_payment: "待付款", payment_review: "對帳中", processing: "處理中", shipped: "已出貨", completed: "已完成", cancelled: "已取消" };
+    const statuses = { pending_payment: "待付款", payment_review: "對帳中", paid: "已收款", processing: "備貨中", shipped: "已出貨", completed: "已完成", cancelled: "已取消" };
     target.innerHTML = data.map((order) => {
       const date = new Intl.DateTimeFormat("zh-TW", { dateStyle: "medium" }).format(new Date(order.created_at));
       const total = new Intl.NumberFormat("zh-TW", { style: "currency", currency: order.currency || "TWD", maximumFractionDigits: 0 }).format(order.total_amount);
-      return '<article class="member-order"><div><strong>' + escapeHtml(order.order_number) + '</strong><small>' + escapeHtml(date) + ' · ' + escapeHtml(statuses[order.status] || order.status) + '</small></div><div>' + escapeHtml(total) + '</div></article>';
+      const tracking = order.status === "shipped" && order.tracking_number
+        ? '<small>出貨單號：' + escapeHtml(order.tracking_number) + '</small>'
+        : "";
+      return '<article class="member-order"><div><strong>' + escapeHtml(order.order_number) + '</strong><small>' + escapeHtml(date) + ' · ' + escapeHtml(statuses[order.status] || order.status) + '</small>' + tracking + '</div><div>' + escapeHtml(total) + '</div></article>';
     }).join("");
   }
 
@@ -241,4 +244,3 @@
     else show("register", false);
   });
 })();
-
