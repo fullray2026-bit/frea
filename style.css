@@ -205,3 +205,17 @@
   .story-copy h2,.story-selection-head h2,.story-ending-copy h2{font-size:27px;line-height:1.45}
   .story-quote-wrap blockquote{font-size:27px;line-height:1.5}
 }
+
+
+/* Rev31: restore mobile brand-story hero overlay */
+@media(max-width:640px){
+  .story-hero-overlay{
+    position:absolute;
+    inset:0;
+    padding:20px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(180deg,rgba(255,253,249,.04),rgba(255,253,249,.08));
+  }
+}
