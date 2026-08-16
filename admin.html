@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>後台管理｜fréa</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body class="admin-page">
+  <main>
+    <section class="admin-login" id="adminLogin">
+      <div class="admin-login-card">
+        <a class="admin-wordmark serif" href="index.html">fréa</a>
+        <p class="admin-eyebrow">ADMINISTRATION</p>
+        <h1>後台管理登入</h1>
+        <p class="admin-muted">僅限經授權的管理員使用。</p>
+        <form id="adminLoginForm">
+          <label>Email
+            <input type="email" name="email" autocomplete="username" required>
+          </label>
+          <label>密碼
+            <input type="password" name="password" autocomplete="current-password" required>
+          </label>
+          <button class="admin-primary" type="submit">登入後台</button>
+          <p class="admin-message" id="adminLoginMessage" role="status"></p>
+        </form>
+        <a class="admin-back" href="index.html">← 返回網站首頁</a>
+      </div>
+    </section>
+
+    <section class="admin-shell" id="adminShell" hidden>
+      <aside class="admin-sidebar">
+        <a class="admin-wordmark serif" href="index.html">fréa</a>
+        <p class="admin-eyebrow">ADMIN CENTER</p>
+        <nav>
+          <button class="admin-nav is-active" type="button" data-admin-view="overview">總覽</button>
+          <button class="admin-nav" type="button" data-admin-view="members">會員管理</button>
+          <button class="admin-nav" type="button" data-admin-view="orders">訂單管理</button>
+        </nav>
+        <div class="admin-sidebar-foot">
+          <span id="adminIdentity"></span>
+          <button type="button" id="adminLogout">登出</button>
+        </div>
+      </aside>
+
+      <div class="admin-main">
+        <header class="admin-topbar">
+          <div>
+            <p class="admin-eyebrow">FRÉA MANAGEMENT</p>
+            <h1 id="adminPageTitle">管理總覽</h1>
+          </div>
+          <button class="admin-refresh" type="button" id="adminRefresh">重新整理</button>
+        </header>
+        <p class="admin-message" id="adminGlobalMessage" role="status"></p>
+
+        <section class="admin-view" data-admin-panel="overview">
+          <div class="admin-stats">
+            <article><span>會員總數</span><strong id="statMembers">—</strong></article>
+            <article><span>全部訂單</span><strong id="statOrders">—</strong></article>
+            <article><span>待處理訂單</span><strong id="statPending">—</strong></article>
+            <article><span>已完成訂單</span><strong id="statCompleted">—</strong></article>
+          </div>
+          <div class="admin-card">
+            <h2>近期訂單</h2>
+            <div id="recentOrders"></div>
+          </div>
+        </section>
+
+        <section class="admin-view" data-admin-panel="members" hidden>
+          <div class="admin-toolbar">
+            <input id="memberSearch" type="search" placeholder="搜尋姓名、Email 或手機">
+            <span id="memberCount"></span>
+          </div>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead><tr><th>會員</th><th>聯絡方式</th><th>收件資料</th><th>EZ WAY</th><th>加入日期</th></tr></thead>
+              <tbody id="memberRows"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="admin-view" data-admin-panel="orders" hidden>
+          <div class="admin-toolbar">
+            <input id="orderSearch" type="search" placeholder="搜尋訂單編號、姓名或手機">
+            <select id="orderStatusFilter">
+              <option value="">全部狀態</option>
+              <option value="pending_payment">待匯款</option>
+              <option value="payment_review">待核款</option>
+              <option value="paid">已收款</option>
+              <option value="processing">備貨中</option>
+              <option value="shipped">已出貨</option>
+              <option value="completed">已完成</option>
+              <option value="cancelled">已取消</option>
+            </select>
+            <span id="orderCount"></span>
+          </div>
+          <div id="orderCards" class="admin-orders"></div>
+        </section>
+      </div>
+    </section>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.3/dist/umd/supabase.js"></script>
+  <script src="supabase-config.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
