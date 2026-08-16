@@ -24,13 +24,25 @@
 .brand-value span{display:block;color:var(--muted);font-size:12px;letter-spacing:.14em;margin-bottom:18px}
 .brand-value h2{font-family:"Noto Serif TC","Yu Mincho","Hiragino Mincho ProN",serif;font-size:23px;font-weight:400;margin:0 0 14px}
 .brand-value p{font-size:14px;line-height:1.9;margin:0;color:#62584f}
+.brand-products{margin-top:96px}
+.brand-products-head{display:flex;align-items:end;justify-content:space-between;gap:30px;margin-bottom:34px}
+.brand-products-head h2{font-family:"Noto Serif TC","Yu Mincho","Hiragino Mincho ProN",serif;font-size:34px;font-weight:400;margin:8px 0 0}
+.brand-products-note{color:var(--muted);font-size:14px;margin:0}
+.brand-product-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.brand-product{display:block;color:inherit}
+.brand-product-image{aspect-ratio:1/1;background:#eee8df;border-radius:18px;display:flex;align-items:center;justify-content:center;overflow:hidden;transition:transform .25s ease}
+.brand-product:hover .brand-product-image{transform:translateY(-3px)}
+.brand-product-mark{font-family:"Noto Serif TC","Yu Mincho","Hiragino Mincho ProN",serif;color:#b2a494;font-size:25px;letter-spacing:.12em}
+.brand-product-info{padding:20px 4px 0}
+.brand-product-status{color:var(--muted);font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+.brand-product-title{font-family:"Noto Serif TC","Yu Mincho","Hiragino Mincho ProN",serif;font-size:19px;font-weight:400;margin:8px 0 0}
 .brand-note{padding:56px 64px;background:#4b3d32;color:#fff;border-radius:22px;display:grid;grid-template-columns:.55fr 1.45fr;gap:70px}
 .brand-note .brand-kicker{color:#cbbcad}
 .brand-note h2{font-family:"Noto Serif TC","Yu Mincho","Hiragino Mincho ProN",serif;font-size:28px;font-weight:400;line-height:1.6;margin:0 0 20px}
 .brand-note p{color:#eee7df;line-height:2;margin:0}
 .brand-actions{margin-top:36px}
 .brand-actions .btn{border-color:#fff;color:#fff}
-@media(max-width:760px){.brand-page{padding:44px 0 72px}.brand-back{margin-bottom:34px}.brand-intro,.brand-story,.brand-note{grid-template-columns:1fr;gap:30px}.brand-intro{margin-bottom:36px}.brand-wordmark{font-size:43px}.brand-lead{font-size:24px}.brand-hero{aspect-ratio:4/3;margin-bottom:60px;border-radius:16px}.brand-values{grid-template-columns:1fr;margin-bottom:60px}.brand-note{padding:38px 28px}.brand-story{margin-bottom:60px}}
+@media(max-width:760px){.brand-page{padding:44px 0 72px}.brand-back{margin-bottom:34px}.brand-intro,.brand-story,.brand-note{grid-template-columns:1fr;gap:30px}.brand-intro{margin-bottom:36px}.brand-wordmark{font-size:43px}.brand-lead{font-size:24px}.brand-hero{aspect-ratio:4/3;margin-bottom:60px;border-radius:16px}.brand-values{grid-template-columns:1fr;margin-bottom:60px}.brand-note{padding:38px 28px}.brand-story{margin-bottom:60px}.brand-products{margin-top:64px}.brand-products-head{display:block}.brand-products-note{margin-top:12px}.brand-product-grid{grid-template-columns:1fr 1fr;gap:28px 14px}.brand-product-image{border-radius:14px}.brand-product-mark{font-size:19px}}
 </style>
 </head>
 <body>
@@ -53,6 +65,14 @@
 <article class="brand-value"><span>01 / ORIGIN</span><h2>福岡的里山原點</h2><p>品牌的料理哲學扎根於久山町的自然環境，重視四季流轉，以及地方所保存的飲食智慧。</p></article>
 <article class="brand-value"><span>02 / INGREDIENTS</span><h2>尊重素材本味</h2><p>選擇合適的素材，以時間和工夫引出原有風味，讓調味成為襯托，而不是掩蓋。</p></article>
 <article class="brand-value"><span>03 / EVERYDAY</span><h2>回到每日餐桌</h2><p>將料理店累積的經驗轉化為方便使用的高湯與調味料，讓一頓家常飯也能保有細緻層次。</p></article>
+</section>
+<section class="brand-products" aria-labelledby="selected-items">
+<div class="brand-products-head"><div><div class="brand-kicker">Selected Items</div><h2 id="selected-items">精選商品</h2></div><p class="brand-products-note">茅乃舎選品即將陸續上架</p></div>
+<div class="brand-product-grid">
+<article class="brand-product"><div class="brand-product-image"><span class="brand-product-mark">KAYANOYA</span></div><div class="brand-product-info"><div class="brand-product-status">Coming Soon</div><h3 class="brand-product-title">茅乃舎高湯系列</h3></div></article>
+<article class="brand-product"><div class="brand-product-image"><span class="brand-product-mark">KAYANOYA</span></div><div class="brand-product-info"><div class="brand-product-status">Coming Soon</div><h3 class="brand-product-title">日常調味料系列</h3></div></article>
+<article class="brand-product"><div class="brand-product-image"><span class="brand-product-mark">KAYANOYA</span></div><div class="brand-product-info"><div class="brand-product-status">Coming Soon</div><h3 class="brand-product-title">季節限定選品</h3></div></article>
+</div>
 </section>
 
 </div>
