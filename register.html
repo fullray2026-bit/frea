@@ -7,6 +7,27 @@
 .demo-member-card span{color:var(--muted);font-size:13px}
 .demo-member-card strong{font-weight:400;overflow-wrap:anywhere}
 [hidden]{display:none!important}
+
+.auth-card:has(#memberView:not([hidden])){max-width:920px}
+.member-head{margin-bottom:30px}
+.member-tabs{display:flex;gap:8px;margin-bottom:38px;border-bottom:1px solid #e1d5c8;overflow-x:auto}
+.member-tab{appearance:none;border:0;background:transparent;padding:14px 18px;color:var(--muted);font:inherit;white-space:nowrap;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.member-tab.is-active{color:var(--text);border-bottom-color:#a98a6b}
+.member-panel{min-height:330px}
+.member-section-head{display:flex;align-items:end;justify-content:space-between;gap:24px;margin-bottom:28px}
+.member-section-head h2{font-size:30px;font-weight:400;margin:6px 0 0}
+.member-section-head>p{font-size:13px;color:var(--muted);margin:0}
+.member-form-title{font-size:20px;font-weight:400;margin:30px 0 18px}
+.member-form-title:first-child{margin-top:0}
+.member-privacy-note{font-size:13px;line-height:1.8;color:var(--muted);margin:10px 0 24px}
+.member-empty{padding:64px 30px;text-align:center;background:#f7f3ee;border-radius:16px}
+.member-empty strong{display:block;font-family:"Noto Serif TC","Yu Mincho","Hiragino Mincho ProN",serif;font-size:22px;font-weight:400;margin-bottom:12px}
+.member-empty p{color:var(--muted);font-size:14px;line-height:1.8;margin:0}
+.member-order{padding:22px 0;border-top:1px solid #e1d5c8;display:grid;grid-template-columns:1fr auto;gap:20px}
+.member-order:last-child{border-bottom:1px solid #e1d5c8}
+.member-order small{display:block;color:var(--muted);margin-top:8px}
+.member-logout{display:block;margin:34px auto 0;border:0;background:transparent;text-decoration:underline;color:var(--muted);cursor:pointer;font:inherit}
+@media(max-width:760px){.member-section-head{display:block}.member-section-head>p{margin-top:10px}.member-tabs{gap:0}.member-tab{padding:12px 11px;font-size:14px}}
 </style></head><body><header class="header"><div class="container header-inner"><a class="wordmark serif" href="index.html">fréa</a><div></div><div class="actions"><button class="icon" title="搜尋" aria-label="搜尋"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="14" r="9.5"></circle><path d="M21.2 21.2 28 28"></path></svg></button><a class="icon" title="會員登入" aria-label="會員登入" href="register.html"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M18 5h9v22h-9"></path><path d="M4 16h16"></path><path d="m14 10 6 6-6 6"></path></svg></a><button class="icon" title="購物車" aria-label="購物車"><svg viewBox="0 0 36 32" aria-hidden="true"><path d="M3 4h4l3.2 17h18.2l3.6-12H9"></path><circle cx="14" cy="27" r="1.8"></circle><circle cx="27" cy="27" r="1.8"></circle></svg></button></div></div></header><main><section class="auth-wrap"><div class="container"><div class="auth-layout"><div class="auth-visual"><div class="auth-image"><img src="assets/brand_vertical.png" alt="fréa 會員加入"></div><div class="auth-benefits"><h3 class="serif">加入 fréa</h3><p>成為會員後，您可以更快速地完成結帳，並查看訂單紀錄、管理常用收件資訊，以及追蹤自選代購需求進度。</p><ul><li>快速結帳</li><li>查看訂單紀錄</li><li>管理收件資訊</li><li>追蹤代購需求</li></ul></div></div><div class="auth-panel"><div class="auth-card">
 <div id="registerView">
 <div class="auth-head"><div class="eyebrow">Create Account</div><h1 class="serif">會員註冊</h1><p>請填寫以下資料，建立您的 fréa 會員帳戶。</p></div>
@@ -41,14 +62,51 @@
 </form>
 </div>
 <div id="memberView" hidden>
-<div class="auth-head"><div class="eyebrow">Member Account</div><h1 class="serif">歡迎回來</h1><p id="memberGreeting"></p></div>
-<div class="demo-member-card">
-<div><span>Email</span><strong id="memberEmail"></strong></div>
-<div><span>姓名</span><strong id="memberName"></strong></div>
-<div><span>手機號碼</span><strong id="memberPhone"></strong></div>
+<div class="auth-head member-head"><div class="eyebrow">Member Account</div><h1 class="serif">會員中心</h1><p id="memberGreeting"></p></div>
+<nav class="member-tabs" aria-label="會員中心功能">
+<button class="member-tab is-active" type="button" data-member-tab="profile">基本資料</button>
+<button class="member-tab" type="button" data-member-tab="orders">訂單紀錄</button>
+<button class="member-tab" type="button" data-member-tab="delivery">收件與 EZ WAY</button>
+</nav>
+<section class="member-panel" data-member-panel="profile">
+<div class="member-section-head"><div><div class="eyebrow">Profile</div><h2 class="serif">會員基本資料</h2></div></div>
+<form id="profileForm" class="auth-form">
+<div class="form-grid">
+<div class="field full"><label>Email</label><input id="profileEmail" disabled></div>
+<div class="field"><label>姓名 *</label><input required name="name" autocomplete="name"></div>
+<div class="field"><label>手機號碼 *</label><input required type="tel" name="phone" autocomplete="tel"></div>
 </div>
-<button class="btn auth-btn" id="logoutButton" type="button">登出</button>
-<div class="auth-note"><span>此為測試版會員狀態，只在目前瀏覽器有效。</span></div>
+<div class="check-group"><label class="check-item"><input type="checkbox" name="newsletter"> <span>願意接收 fréa 新品、品牌與優惠資訊</span></label></div>
+<div class="auth-message" id="profileMessage" role="status"></div>
+<button class="btn auth-btn" type="submit">儲存基本資料</button>
+</form>
+</section>
+<section class="member-panel" data-member-panel="orders" hidden>
+<div class="member-section-head"><div><div class="eyebrow">Order History</div><h2 class="serif">訂單紀錄</h2></div></div>
+<div id="orderList"></div>
+</section>
+<section class="member-panel" data-member-panel="delivery" hidden>
+<div class="member-section-head"><div><div class="eyebrow">Delivery & Customs</div><h2 class="serif">收件與 EZ WAY 資訊</h2></div><p>供日後結帳與台灣實名通關使用。</p></div>
+<form id="deliveryForm" class="auth-form">
+<h3 class="member-form-title serif">常用收件資料</h3>
+<div class="form-grid">
+<div class="field"><label>收件人姓名</label><input name="recipientName" autocomplete="shipping name"></div>
+<div class="field"><label>收件人手機</label><input type="tel" name="recipientPhone" autocomplete="shipping tel"></div>
+<div class="field"><label>郵遞區號</label><input name="postalCode" inputmode="numeric" autocomplete="shipping postal-code"></div>
+<div class="field full"><label>收件地址</label><input name="address" autocomplete="shipping street-address" placeholder="縣市、區域、街道門牌"></div>
+</div>
+<h3 class="member-form-title serif">EZ WAY 實名通關資料</h3>
+<div class="form-grid">
+<div class="field"><label>實名認證姓名</label><input name="ezwayName" autocomplete="name"></div>
+<div class="field"><label>認證手機號碼</label><input type="tel" name="ezwayPhone" autocomplete="tel"></div>
+</div>
+<p class="member-privacy-note">為降低測試版的個資風險，本頁不要求也不保存身分證字號。姓名與手機應與 EZ WAY 易利委 App 的認證資料一致。</p>
+<div class="auth-message" id="deliveryMessage" role="status"></div>
+<button class="btn auth-btn" type="submit">儲存收件與通關資訊</button>
+</form>
+</section>
+<button class="member-logout" id="logoutButton" type="button">登出會員帳戶</button>
+<div class="auth-note"><span>此為測試版會員中心，資料只保存在目前瀏覽器。</span></div>
 </div>
 </div></div></div></div></section></main><footer class="footer"><div class="container"><div class="footer-grid"><div class="footer-brand"><img src="assets/logo_round.png" alt="fréa"><p>讓生活，回到它該有的溫度。</p><p>FUKUOKA, JAPAN</p></div><div><h4>關於 fréa</h4><a href="about.html">品牌故事</a><a href="contact.html">聯絡我們</a></div><div><h4>購物指南</h4><a href="#">購物流程</a><a href="#">付款方式</a><a href="#">配送方式</a><a href="returns.html">退換貨政策</a></div><div><h4>服務</h4><a href="personal-shopping.html">自選代購</a><a href="#">常見問題</a><a href="#">EZ WAY 說明</a></div><div><h4>品牌／社群</h4><a href="#brands">Brands</a><a href="#">Instagram</a><a href="#">LINE</a></div></div><div class="copyright">© 2026 fréa. All rights reserved.</div></div></footer><div class="toast"></div><script src="script.js"></script><script>
 (function(){
@@ -59,55 +117,62 @@
   const memberView=document.getElementById("memberView");
   const registerForm=document.getElementById("registerForm");
   const loginForm=document.getElementById("loginForm");
+  const profileForm=document.getElementById("profileForm");
+  const deliveryForm=document.getElementById("deliveryForm");
+  let currentEmail="";
 
-  function members(){
-    try{return JSON.parse(localStorage.getItem(MEMBERS_KEY)||"[]");}
-    catch(error){return [];}
-  }
+  function members(){try{return JSON.parse(localStorage.getItem(MEMBERS_KEY)||"[]");}catch(error){return [];}}
   function saveMembers(value){localStorage.setItem(MEMBERS_KEY,JSON.stringify(value));}
   function bytesToHex(bytes){return Array.from(bytes,b=>b.toString(16).padStart(2,"0")).join("");}
-  async function hashPassword(password,salt){
-    const data=new TextEncoder().encode(salt+password);
-    return bytesToHex(new Uint8Array(await crypto.subtle.digest("SHA-256",data)));
+  async function hashPassword(password,salt){const data=new TextEncoder().encode(salt+password);return bytesToHex(new Uint8Array(await crypto.subtle.digest("SHA-256",data)));}
+  function makeSalt(){const bytes=new Uint8Array(16);crypto.getRandomValues(bytes);return bytesToHex(bytes);}
+  function message(id,text,type){const el=document.getElementById(id);el.textContent=text;el.className="auth-message is-"+type;}
+  function clearMessages(){document.querySelectorAll(".auth-message").forEach(el=>{el.textContent="";el.className="auth-message";});}
+  function show(view){clearMessages();registerView.hidden=view!=="register";loginView.hidden=view!=="login";memberView.hidden=view!=="member";window.scrollTo({top:0,behavior:"smooth"});}
+  function getMember(email){return members().find(item=>item.email===email);}
+  function updateMember(email,changes){
+    const list=members();
+    const index=list.findIndex(item=>item.email===email);
+    if(index<0)return null;
+    list[index]=Object.assign({},list[index],changes,{updatedAt:new Date().toISOString()});
+    saveMembers(list);
+    return list[index];
   }
-  function makeSalt(){
-    const bytes=new Uint8Array(16);
-    crypto.getRandomValues(bytes);
-    return bytesToHex(bytes);
-  }
-  function message(id,text,type){
-    const el=document.getElementById(id);
-    el.textContent=text;
-    el.className="auth-message is-"+type;
-  }
-  function clearMessages(){
-    document.querySelectorAll(".auth-message").forEach(el=>{el.textContent="";el.className="auth-message";});
-  }
-  function show(view){
+  function setField(form,name,value){const field=form.elements.namedItem(name);if(field)field.value=value||"";}
+  function activateTab(name){
+    document.querySelectorAll("[data-member-tab]").forEach(button=>button.classList.toggle("is-active",button.dataset.memberTab===name));
+    document.querySelectorAll("[data-member-panel]").forEach(panel=>panel.hidden=panel.dataset.memberPanel!==name);
     clearMessages();
-    registerView.hidden=view!=="register";
-    loginView.hidden=view!=="login";
-    memberView.hidden=view!=="member";
-    window.scrollTo({top:0,behavior:"smooth"});
+  }
+  function renderOrders(member){
+    const target=document.getElementById("orderList");
+    const orders=Array.isArray(member.orders)?member.orders:[];
+    if(!orders.length){target.innerHTML='<div class="member-empty"><strong>目前尚無訂單</strong><p>完成購物後，訂單編號、日期、金額與處理狀態會顯示在這裡。</p></div>';return;}
+    target.innerHTML=orders.map(order=>'<article class="member-order"><div><strong>'+order.number+'</strong><small>'+order.date+' · '+order.status+'</small></div><div>'+order.total+'</div></article>').join("");
+  }
+  function populateMember(member){
+    currentEmail=member.email;
+    document.getElementById("memberGreeting").textContent=member.name+"，歡迎回到 fréa。";
+    document.getElementById("profileEmail").value=member.email;
+    setField(profileForm,"name",member.name);
+    setField(profileForm,"phone",member.phone);
+    profileForm.elements.newsletter.checked=Boolean(member.newsletter);
+    const delivery=member.delivery||{};
+    ["recipientName","recipientPhone","postalCode","address","ezwayName","ezwayPhone"].forEach(name=>setField(deliveryForm,name,delivery[name]));
+    renderOrders(member);
+    activateTab("profile");
   }
   function showMember(email){
-    const member=members().find(item=>item.email===email);
+    const member=getMember(email);
     if(!member){localStorage.removeItem(SESSION_KEY);show("login");return;}
-    document.getElementById("memberGreeting").textContent=member.name+"，您已成功登入 fréa 測試會員帳戶。";
-    document.getElementById("memberEmail").textContent=member.email;
-    document.getElementById("memberName").textContent=member.name;
-    document.getElementById("memberPhone").textContent=member.phone;
     show("member");
+    populateMember(member);
   }
 
   document.getElementById("showLogin").addEventListener("click",event=>{event.preventDefault();show("login");});
   document.getElementById("showRegister").addEventListener("click",event=>{event.preventDefault();show("register");});
-  document.getElementById("logoutButton").addEventListener("click",()=>{
-    localStorage.removeItem(SESSION_KEY);
-    loginForm.reset();
-    show("login");
-    message("loginMessage","您已登出。","success");
-  });
+  document.querySelectorAll("[data-member-tab]").forEach(button=>button.addEventListener("click",()=>activateTab(button.dataset.memberTab)));
+  document.getElementById("logoutButton").addEventListener("click",()=>{localStorage.removeItem(SESSION_KEY);currentEmail="";loginForm.reset();show("login");message("loginMessage","您已登出。","success");});
 
   registerForm.addEventListener("submit",async event=>{
     event.preventDefault();
@@ -120,23 +185,8 @@
     const list=members();
     if(list.some(item=>item.email===email)){message("registerMessage","此 Email 已經註冊，請直接登入。","error");return;}
     const salt=makeSalt();
-    const passwordHash=await hashPassword(password,salt);
-    const member={
-      email,
-      passwordHash,
-      salt,
-      name:String(data.get("name")||"").trim(),
-      phone:String(data.get("phone")||"").trim(),
-      newsletter:data.get("newsletter")==="on",
-      termsAccepted:true,
-      privacyAccepted:true,
-      createdAt:new Date().toISOString()
-    };
-    list.push(member);
-    saveMembers(list);
-    localStorage.setItem(SESSION_KEY,email);
-    registerForm.reset();
-    showMember(email);
+    const member={email,passwordHash:await hashPassword(password,salt),salt,name:String(data.get("name")||"").trim(),phone:String(data.get("phone")||"").trim(),newsletter:data.get("newsletter")==="on",termsAccepted:true,privacyAccepted:true,createdAt:new Date().toISOString(),orders:[],delivery:{}};
+    list.push(member);saveMembers(list);localStorage.setItem(SESSION_KEY,email);registerForm.reset();showMember(email);
   });
 
   loginForm.addEventListener("submit",async event=>{
@@ -144,14 +194,24 @@
     const data=new FormData(loginForm);
     const email=String(data.get("email")||"").trim().toLowerCase();
     const password=String(data.get("password")||"");
-    const member=members().find(item=>item.email===email);
-    if(!member||await hashPassword(password,member.salt)!==member.passwordHash){
-      message("loginMessage","Email 或密碼不正確。","error");
-      return;
-    }
-    localStorage.setItem(SESSION_KEY,email);
-    loginForm.reset();
-    showMember(email);
+    const member=getMember(email);
+    if(!member||await hashPassword(password,member.salt)!==member.passwordHash){message("loginMessage","Email 或密碼不正確。","error");return;}
+    localStorage.setItem(SESSION_KEY,email);loginForm.reset();showMember(email);
+  });
+
+  profileForm.addEventListener("submit",event=>{
+    event.preventDefault();
+    const data=new FormData(profileForm);
+    const member=updateMember(currentEmail,{name:String(data.get("name")||"").trim(),phone:String(data.get("phone")||"").trim(),newsletter:data.get("newsletter")==="on"});
+    if(member){document.getElementById("memberGreeting").textContent=member.name+"，歡迎回到 fréa。";message("profileMessage","基本資料已儲存在此瀏覽器。","success");}
+  });
+
+  deliveryForm.addEventListener("submit",event=>{
+    event.preventDefault();
+    const data=new FormData(deliveryForm);
+    const delivery={};
+    ["recipientName","recipientPhone","postalCode","address","ezwayName","ezwayPhone"].forEach(name=>delivery[name]=String(data.get(name)||"").trim());
+    if(updateMember(currentEmail,{delivery})){message("deliveryMessage","收件與 EZ WAY 資訊已儲存在此瀏覽器。","success");}
   });
 
   const session=localStorage.getItem(SESSION_KEY);
