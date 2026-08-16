@@ -50,6 +50,11 @@
 @media(max-width:760px){.brand-page{padding:44px 0 72px}.brand-back{margin-bottom:34px}.brand-intro,.brand-story,.brand-note{grid-template-columns:1fr;gap:30px}.brand-intro{margin-bottom:36px}.brand-wordmark{font-size:43px}.brand-lead{font-size:24px}.brand-hero{aspect-ratio:4/3;margin-bottom:60px;border-radius:16px}.brand-values{grid-template-columns:1fr;margin-bottom:60px}.brand-note{padding:38px 28px}.brand-story{margin-bottom:60px}.brand-products{margin-top:64px}.brand-products-head{display:block}.brand-products-note{margin-top:12px}.brand-product-labels{display:none}.brand-product-row{grid-template-columns:104px 1fr;gap:18px;padding:22px 0}.brand-product-thumb{width:104px;grid-row:1/5}.brand-product-name,.brand-product-spec,.brand-product-use,.brand-product-price,.brand-product-quantity,.brand-product-action{grid-column:2}.brand-product-name h3{font-size:19px}.brand-product-spec:before{content:"規格：";color:var(--muted)}.brand-product-use:before{content:"用途：";color:var(--muted)}.brand-product-price strong{font-size:18px}.brand-product-quantity:before{content:"數量";display:block;color:var(--muted);font-size:12px;margin-bottom:8px}.brand-cart-btn{margin-top:4px}}
 .brand-hero{aspect-ratio:auto;background:transparent}
 .brand-hero img{height:auto;object-fit:contain}
+.brand-feature{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:72px;align-items:start;margin-bottom:88px}
+.brand-feature .brand-hero{margin:0}
+.brand-feature .brand-story{display:block;margin:0}
+.brand-feature .brand-story>.brand-kicker{margin-bottom:24px}
+@media(max-width:760px){.brand-feature{grid-template-columns:1fr;gap:42px;margin-bottom:60px}.brand-feature .brand-hero{margin:0}.brand-feature .brand-story{margin:0}}
 </style>
 </head>
 <body>
@@ -61,7 +66,8 @@
 <div><div class="brand-wordmark" id="brand-name">KINTO</div><div class="brand-origin">Shiga, Japan</div></div>
 <p class="brand-lead">讓使用的舒適與器物的姿態，<br>自然融入每一天。</p>
 </section>
-<figure class="brand-hero"><img src="assets/featured_kinto.png" alt="KINTO 日常飲品器物"></figure>
+<div class="brand-feature">
+<figure class="brand-hero"><img src="assets/kinto_brand_coffee_logo.png" alt="KINTO 咖啡濾壺與官方標誌"></figure>
 <section class="brand-story">
 <div class="brand-kicker">Brand Story</div>
 <div><h1>從日常動作出發，讓器物成為生活裡自然的陪伴。</h1>
@@ -69,6 +75,7 @@
 <p>品牌重視觸感、重量、開闔與飲用方式等真實細節，讓物件不只看起來美，也能在長時間使用後留下熟悉與依戀。</p>
 <div style="border-top:1px solid #ddd3c7;margin-top:42px;padding-top:38px"><div class="brand-kicker" style="margin-bottom:16px">fréa Selection</div><h2 style="font-family:&quot;Noto Serif TC&quot;,&quot;Yu Mincho&quot;,&quot;Hiragino Mincho ProN&quot;,serif;font-size:28px;font-weight:400;line-height:1.6;margin:0 0 18px">我們為什麼選擇 KINTO</h2><p>fréa 欣賞 KINTO 不張揚、卻處處回應使用者的設計。它把美感放進每天反覆發生的動作，讓喝水、喝咖啡與外出攜帶，都多一點舒服與從容。</p></div></div>
 </section>
+</div>
 <section class="brand-values" aria-label="KINTO 品牌特色">
 <article class="brand-value"><span>01 / USABILITY</span><h2>從使用感受出發</h2><p>以人的動作與感官為起點，細緻調整握持、飲用、清潔與攜帶方式。</p></article>
 <article class="brand-value"><span>02 / BALANCE</span><h2>機能與姿態並重</h2><p>讓實用機能與簡潔輪廓彼此平衡，安靜融入不同生活場景。</p></article>
