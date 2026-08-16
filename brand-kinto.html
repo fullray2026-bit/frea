@@ -51,7 +51,8 @@
 .brand-hero{aspect-ratio:auto;background:transparent}
 .brand-hero img{height:auto;object-fit:contain}
 .brand-feature{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:72px;align-items:start;margin-bottom:88px}
-.brand-feature .brand-hero{margin:0}
+.brand-feature>.brand-hero{margin:0;aspect-ratio:1/1!important;height:auto!important}
+.brand-feature>.brand-hero img{width:100%;height:100%!important;object-fit:contain!important;object-position:center}
 .brand-feature .brand-story{display:block;margin:0}
 .brand-feature .brand-story>.brand-kicker{margin-bottom:24px}
 @media(max-width:760px){.brand-feature{grid-template-columns:1fr;gap:42px;margin-bottom:60px}.brand-feature .brand-hero{margin:0}.brand-feature .brand-story{margin:0}}
