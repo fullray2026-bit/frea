@@ -90,7 +90,7 @@
       row.querySelector("[data-remove]").addEventListener("click",()=>{saveCart(readCart().filter(item=>item.id!==id));render();});
     });
   }
-  document.getElementById("checkoutButton").addEventListener("click",()=>{if(typeof toast==="function")toast("確認結帳（目前為瀏覽器測試版）");});
+  document.getElementById("checkoutButton").addEventListener("click",()=>{if(readCart().length)location.href="checkout.html";});
   render();
 })();
 </script>
