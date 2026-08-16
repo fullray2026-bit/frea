@@ -71,7 +71,7 @@
       client.from("profiles").select("id,email,full_name,phone,newsletter,created_at").order("created_at", { ascending: false }),
       client.from("member_addresses").select("user_id,recipient_name,recipient_phone,postal_code,address,is_default").eq("is_default", true),
       client.from("ezway_profiles").select("user_id,real_name,mobile"),
-      client.from("orders").select("id,user_id,order_number,status,currency,total_amount,created_at,updated_at,recipient_name,recipient_phone,postal_code,shipping_address,payment_proof_name,admin_note,order_items(product_name,specification,quantity,unit_price,line_total)").order("created_at", { ascending: false })
+      client.from("orders").select("id,user_id,order_number,status,currency,total_amount,created_at,updated_at,recipient_name,recipient_phone,postal_code,shipping_address,payment_proof_name,admin_note,tracking_number,order_items(product_name,specification,quantity,unit_price,line_total)").order("created_at", { ascending: false })
     ]);
     const failed = [profileResult, addressResult, ezwayResult, orderResult].find(result => result.error);
     if (failed) {
@@ -178,7 +178,9 @@
         escapeHtml([order.postal_code, order.shipping_address].filter(Boolean).join(" ") || "未填地址") +
         '</p><p>匯款證明：' + escapeHtml(order.payment_proof_name || "未上傳") + "</p></div></div>" +
         '<div class="admin-order-controls"><label>訂單狀態<select data-order-status>' +
-        statusOptions(order.status) + '</select></label><label>後台備註<textarea data-order-note rows="2" placeholder="僅供管理使用">' +
+        statusOptions(order.status) + '</select></label><label data-tracking-wrap' + (order.status === "shipped" ? "" : " hidden") +
+        '>出貨單號<input data-tracking-number value="' + escapeHtml(order.tracking_number || "") +
+        '" placeholder="請輸入物流出貨單號"></label><label>後台備註<textarea data-order-note rows="2" placeholder="僅供管理使用">' +
         escapeHtml(order.admin_note || "") + '</textarea></label><button class="admin-save" type="button" data-save-order>儲存變更</button></div></article>';
     }).join("");
   }
@@ -187,13 +189,19 @@
     const id = card.dataset.orderId;
     const button = card.querySelector("[data-save-order]");
     const status = card.querySelector("[data-order-status]").value;
+    const trackingNumber = card.querySelector("[data-tracking-number]").value.trim();
     const note = card.querySelector("[data-order-note]").value.trim();
+    if (status === "shipped" && !trackingNumber) {
+      showMessage("adminGlobalMessage", "訂單狀態為「已出貨」時，請輸入出貨單號。", "error");
+      card.querySelector("[data-tracking-number]").focus();
+      return;
+    }
     button.disabled = true;
     button.textContent = "儲存中…";
     const { data, error } = await client.from("orders")
-      .update({ status, admin_note: note })
+      .update({ status, tracking_number: trackingNumber, admin_note: note })
       .eq("id", id)
-      .select("id,status,admin_note,updated_at")
+      .select("id,status,tracking_number,admin_note,updated_at")
       .single();
     button.disabled = false;
     button.textContent = error ? "儲存失敗" : "已儲存";
@@ -252,6 +260,13 @@
   byId("orderCards").addEventListener("click", event => {
     const button = event.target.closest("[data-save-order]");
     if (button) saveOrder(button.closest(".admin-order"));
+  });
+  byId("orderCards").addEventListener("change", event => {
+    if (!event.target.matches("[data-order-status]")) return;
+    const card = event.target.closest(".admin-order");
+    const trackingWrap = card.querySelector("[data-tracking-wrap]");
+    trackingWrap.hidden = event.target.value !== "shipped";
+    card.querySelector("[data-tracking-number]").required = event.target.value === "shipped";
   });
   byId("adminLogout").addEventListener("click", async () => {
     await client.auth.signOut();
