@@ -1,1 +1,160 @@
-<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>會員加入｜fréa</title><meta name="description" content="加入 fréa 會員，快速結帳、查看訂單紀錄、管理常用收件資訊與代購需求。"><link rel="stylesheet" href="style.css"></head><body><header class="header"><div class="container header-inner"><a class="wordmark serif" href="index.html">fréa</a><div></div><div class="actions"><button class="icon" title="搜尋" aria-label="搜尋"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="14" r="9.5"></circle><path d="M21.2 21.2 28 28"></path></svg></button><a class="icon" title="會員登入" aria-label="會員登入" href="register.html"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M18 5h9v22h-9"></path><path d="M4 16h16"></path><path d="m14 10 6 6-6 6"></path></svg></a><button class="icon" title="購物車" aria-label="購物車"><svg viewBox="0 0 36 32" aria-hidden="true"><path d="M3 4h4l3.2 17h18.2l3.6-12H9"></path><circle cx="14" cy="27" r="1.8"></circle><circle cx="27" cy="27" r="1.8"></circle></svg></button></div></div></header><main><section class="auth-wrap"><div class="container"><div class="auth-layout"><div class="auth-visual"><div class="auth-image"><img src="assets/brand_vertical.png" alt="fréa 會員加入"></div><div class="auth-benefits"><h3 class="serif">加入 fréa</h3><p>成為會員後，您可以更快速地完成結帳，並查看訂單紀錄、管理常用收件資訊，以及追蹤自選代購需求進度。</p><ul><li>快速結帳</li><li>查看訂單紀錄</li><li>管理收件資訊</li><li>追蹤代購需求</li></ul></div></div><div class="auth-panel"><div class="auth-card"><div class="auth-head"><div class="eyebrow">Create Account</div><h1 class="serif">會員註冊</h1><p>請填寫以下資料，建立您的 fréa 會員帳戶。</p></div><form id="registerForm" class="auth-form"><div class="form-grid"><div class="field full"><label>Email *</label><input required type="email" name="email" placeholder="you@example.com"></div><div class="field"><label>密碼 *</label><input required type="password" name="password" placeholder="至少 8 碼"></div><div class="field"><label>確認密碼 *</label><input required type="password" name="confirm_password" placeholder="再次輸入密碼"></div><div class="field"><label>姓名 *</label><input required name="name" placeholder="請輸入姓名"></div><div class="field"><label>手機號碼 *</label><input required name="phone" placeholder="請輸入手機號碼"></div></div><div class="check-group"><label class="check-item"><input required type="checkbox" name="terms"> <span>我已閱讀並同意 <a href="terms.html">會員條款</a></span></label><label class="check-item"><input required type="checkbox" name="privacy"> <span>我已閱讀並同意 <a href="privacy.html">隱私權政策</a></span></label><label class="check-item"><input type="checkbox" name="newsletter"> <span>願意接收 fréa 新品、品牌與優惠資訊</span></label></div><button class="btn auth-btn" type="submit">建立帳戶</button><div class="auth-note">已經有會員帳戶？ <a href="#">登入</a><br><span>第一版網站仍保留訪客結帳，加入會員可享有更方便的購物體驗。</span></div></form></div></div></div></div></section></main><footer class="footer"><div class="container"><div class="footer-grid"><div class="footer-brand"><img src="assets/logo_round.png" alt="fréa"><p>讓生活，回到它該有的溫度。</p><p>FUKUOKA, JAPAN</p></div><div><h4>關於 fréa</h4><a href="about.html">品牌故事</a><a href="contact.html">聯絡我們</a></div><div><h4>購物指南</h4><a href="#">購物流程</a><a href="#">付款方式</a><a href="#">配送方式</a><a href="returns.html">退換貨政策</a></div><div><h4>服務</h4><a href="personal-shopping.html">自選代購</a><a href="#">常見問題</a><a href="#">EZ WAY 說明</a></div><div><h4>品牌／社群</h4><a href="#brands">Brands</a><a href="#">Instagram</a><a href="#">LINE</a></div></div><div class="copyright">© 2026 fréa. All rights reserved.</div></div></footer><div class="toast"></div><script src="script.js"></script></body></html>
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>會員加入｜fréa</title><meta name="description" content="加入 fréa 會員，快速結帳、查看訂單紀錄、管理常用收件資訊與代購需求。"><link rel="stylesheet" href="style.css"><style>
+.auth-message{display:none;margin:4px 0 18px;padding:12px 15px;border-radius:8px;font-size:14px;line-height:1.6}
+.auth-message.is-error{display:block;background:#f8ece8;color:#8b3e2f}
+.auth-message.is-success{display:block;background:#edf4eb;color:#42613b}
+.demo-member-card{margin:34px 0;border-top:1px solid #e1d5c8}
+.demo-member-card>div{display:grid;grid-template-columns:110px 1fr;gap:20px;padding:18px 0;border-bottom:1px solid #e1d5c8}
+.demo-member-card span{color:var(--muted);font-size:13px}
+.demo-member-card strong{font-weight:400;overflow-wrap:anywhere}
+[hidden]{display:none!important}
+</style></head><body><header class="header"><div class="container header-inner"><a class="wordmark serif" href="index.html">fréa</a><div></div><div class="actions"><button class="icon" title="搜尋" aria-label="搜尋"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="14" r="9.5"></circle><path d="M21.2 21.2 28 28"></path></svg></button><a class="icon" title="會員登入" aria-label="會員登入" href="register.html"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M18 5h9v22h-9"></path><path d="M4 16h16"></path><path d="m14 10 6 6-6 6"></path></svg></a><button class="icon" title="購物車" aria-label="購物車"><svg viewBox="0 0 36 32" aria-hidden="true"><path d="M3 4h4l3.2 17h18.2l3.6-12H9"></path><circle cx="14" cy="27" r="1.8"></circle><circle cx="27" cy="27" r="1.8"></circle></svg></button></div></div></header><main><section class="auth-wrap"><div class="container"><div class="auth-layout"><div class="auth-visual"><div class="auth-image"><img src="assets/brand_vertical.png" alt="fréa 會員加入"></div><div class="auth-benefits"><h3 class="serif">加入 fréa</h3><p>成為會員後，您可以更快速地完成結帳，並查看訂單紀錄、管理常用收件資訊，以及追蹤自選代購需求進度。</p><ul><li>快速結帳</li><li>查看訂單紀錄</li><li>管理收件資訊</li><li>追蹤代購需求</li></ul></div></div><div class="auth-panel"><div class="auth-card">
+<div id="registerView">
+<div class="auth-head"><div class="eyebrow">Create Account</div><h1 class="serif">會員註冊</h1><p>請填寫以下資料，建立您的 fréa 會員帳戶。</p></div>
+<form id="registerForm" class="auth-form">
+<div class="form-grid">
+<div class="field full"><label>Email *</label><input required type="email" name="email" autocomplete="email" placeholder="you@example.com"></div>
+<div class="field"><label>密碼 *</label><input required minlength="8" type="password" name="password" autocomplete="new-password" placeholder="至少 8 碼"></div>
+<div class="field"><label>確認密碼 *</label><input required minlength="8" type="password" name="confirm_password" autocomplete="new-password" placeholder="再次輸入密碼"></div>
+<div class="field"><label>姓名 *</label><input required name="name" autocomplete="name" placeholder="請輸入姓名"></div>
+<div class="field"><label>手機號碼 *</label><input required type="tel" name="phone" autocomplete="tel" placeholder="請輸入手機號碼"></div>
+</div>
+<div class="check-group">
+<label class="check-item"><input required type="checkbox" name="terms"> <span>我已閱讀並同意 <a href="terms.html">會員條款</a></span></label>
+<label class="check-item"><input required type="checkbox" name="privacy"> <span>我已閱讀並同意 <a href="privacy.html">隱私權政策</a></span></label>
+<label class="check-item"><input type="checkbox" name="newsletter"> <span>願意接收 fréa 新品、品牌與優惠資訊</span></label>
+</div>
+<div class="auth-message" id="registerMessage" role="status"></div>
+<button class="btn auth-btn" type="submit">建立帳戶</button>
+<div class="auth-note">已經有會員帳戶？ <a href="#" id="showLogin">登入</a><br><span>此為同一瀏覽器使用的會員功能測試版。</span></div>
+</form>
+</div>
+<div id="loginView" hidden>
+<div class="auth-head"><div class="eyebrow">Member Login</div><h1 class="serif">會員登入</h1><p>輸入註冊時使用的 Email 與密碼。</p></div>
+<form id="loginForm" class="auth-form">
+<div class="form-grid">
+<div class="field full"><label>Email *</label><input required type="email" name="email" autocomplete="email" placeholder="you@example.com"></div>
+<div class="field full"><label>密碼 *</label><input required type="password" name="password" autocomplete="current-password" placeholder="請輸入密碼"></div>
+</div>
+<div class="auth-message" id="loginMessage" role="status"></div>
+<button class="btn auth-btn" type="submit">登入</button>
+<div class="auth-note">還沒有會員帳戶？ <a href="#" id="showRegister">建立帳戶</a><br><span>帳戶資料僅保存在目前使用的瀏覽器。</span></div>
+</form>
+</div>
+<div id="memberView" hidden>
+<div class="auth-head"><div class="eyebrow">Member Account</div><h1 class="serif">歡迎回來</h1><p id="memberGreeting"></p></div>
+<div class="demo-member-card">
+<div><span>Email</span><strong id="memberEmail"></strong></div>
+<div><span>姓名</span><strong id="memberName"></strong></div>
+<div><span>手機號碼</span><strong id="memberPhone"></strong></div>
+</div>
+<button class="btn auth-btn" id="logoutButton" type="button">登出</button>
+<div class="auth-note"><span>此為測試版會員狀態，只在目前瀏覽器有效。</span></div>
+</div>
+</div></div></div></div></section></main><footer class="footer"><div class="container"><div class="footer-grid"><div class="footer-brand"><img src="assets/logo_round.png" alt="fréa"><p>讓生活，回到它該有的溫度。</p><p>FUKUOKA, JAPAN</p></div><div><h4>關於 fréa</h4><a href="about.html">品牌故事</a><a href="contact.html">聯絡我們</a></div><div><h4>購物指南</h4><a href="#">購物流程</a><a href="#">付款方式</a><a href="#">配送方式</a><a href="returns.html">退換貨政策</a></div><div><h4>服務</h4><a href="personal-shopping.html">自選代購</a><a href="#">常見問題</a><a href="#">EZ WAY 說明</a></div><div><h4>品牌／社群</h4><a href="#brands">Brands</a><a href="#">Instagram</a><a href="#">LINE</a></div></div><div class="copyright">© 2026 fréa. All rights reserved.</div></div></footer><div class="toast"></div><script src="script.js"></script><script>
+(function(){
+  const MEMBERS_KEY="frea_demo_members_v1";
+  const SESSION_KEY="frea_demo_session_v1";
+  const registerView=document.getElementById("registerView");
+  const loginView=document.getElementById("loginView");
+  const memberView=document.getElementById("memberView");
+  const registerForm=document.getElementById("registerForm");
+  const loginForm=document.getElementById("loginForm");
+
+  function members(){
+    try{return JSON.parse(localStorage.getItem(MEMBERS_KEY)||"[]");}
+    catch(error){return [];}
+  }
+  function saveMembers(value){localStorage.setItem(MEMBERS_KEY,JSON.stringify(value));}
+  function bytesToHex(bytes){return Array.from(bytes,b=>b.toString(16).padStart(2,"0")).join("");}
+  async function hashPassword(password,salt){
+    const data=new TextEncoder().encode(salt+password);
+    return bytesToHex(new Uint8Array(await crypto.subtle.digest("SHA-256",data)));
+  }
+  function makeSalt(){
+    const bytes=new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    return bytesToHex(bytes);
+  }
+  function message(id,text,type){
+    const el=document.getElementById(id);
+    el.textContent=text;
+    el.className="auth-message is-"+type;
+  }
+  function clearMessages(){
+    document.querySelectorAll(".auth-message").forEach(el=>{el.textContent="";el.className="auth-message";});
+  }
+  function show(view){
+    clearMessages();
+    registerView.hidden=view!=="register";
+    loginView.hidden=view!=="login";
+    memberView.hidden=view!=="member";
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+  function showMember(email){
+    const member=members().find(item=>item.email===email);
+    if(!member){localStorage.removeItem(SESSION_KEY);show("login");return;}
+    document.getElementById("memberGreeting").textContent=member.name+"，您已成功登入 fréa 測試會員帳戶。";
+    document.getElementById("memberEmail").textContent=member.email;
+    document.getElementById("memberName").textContent=member.name;
+    document.getElementById("memberPhone").textContent=member.phone;
+    show("member");
+  }
+
+  document.getElementById("showLogin").addEventListener("click",event=>{event.preventDefault();show("login");});
+  document.getElementById("showRegister").addEventListener("click",event=>{event.preventDefault();show("register");});
+  document.getElementById("logoutButton").addEventListener("click",()=>{
+    localStorage.removeItem(SESSION_KEY);
+    loginForm.reset();
+    show("login");
+    message("loginMessage","您已登出。","success");
+  });
+
+  registerForm.addEventListener("submit",async event=>{
+    event.preventDefault();
+    const data=new FormData(registerForm);
+    const email=String(data.get("email")||"").trim().toLowerCase();
+    const password=String(data.get("password")||"");
+    const confirm=String(data.get("confirm_password")||"");
+    if(password.length<8){message("registerMessage","密碼至少需要 8 碼。","error");return;}
+    if(password!==confirm){message("registerMessage","兩次輸入的密碼不一致。","error");return;}
+    const list=members();
+    if(list.some(item=>item.email===email)){message("registerMessage","此 Email 已經註冊，請直接登入。","error");return;}
+    const salt=makeSalt();
+    const passwordHash=await hashPassword(password,salt);
+    const member={
+      email,
+      passwordHash,
+      salt,
+      name:String(data.get("name")||"").trim(),
+      phone:String(data.get("phone")||"").trim(),
+      newsletter:data.get("newsletter")==="on",
+      termsAccepted:true,
+      privacyAccepted:true,
+      createdAt:new Date().toISOString()
+    };
+    list.push(member);
+    saveMembers(list);
+    localStorage.setItem(SESSION_KEY,email);
+    registerForm.reset();
+    showMember(email);
+  });
+
+  loginForm.addEventListener("submit",async event=>{
+    event.preventDefault();
+    const data=new FormData(loginForm);
+    const email=String(data.get("email")||"").trim().toLowerCase();
+    const password=String(data.get("password")||"");
+    const member=members().find(item=>item.email===email);
+    if(!member||await hashPassword(password,member.salt)!==member.passwordHash){
+      message("loginMessage","Email 或密碼不正確。","error");
+      return;
+    }
+    localStorage.setItem(SESSION_KEY,email);
+    loginForm.reset();
+    showMember(email);
+  });
+
+  const session=localStorage.getItem(SESSION_KEY);
+  if(session){showMember(session);}
+})();
+</script></body></html>
