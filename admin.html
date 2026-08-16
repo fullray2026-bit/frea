@@ -37,6 +37,7 @@
           <button class="admin-nav is-active" type="button" data-admin-view="overview">總覽</button>
           <button class="admin-nav" type="button" data-admin-view="members">會員管理</button>
           <button class="admin-nav" type="button" data-admin-view="orders">訂單管理</button>
+          <button class="admin-nav" type="button" data-admin-view="personal">代購訂單管理</button>
         </nav>
         <div class="admin-sidebar-foot">
           <span id="adminIdentity"></span>
@@ -97,11 +98,31 @@
           </div>
           <div id="orderCards" class="admin-orders"></div>
         </section>
+
+        <section class="admin-view" data-admin-panel="personal" hidden>
+          <div class="admin-toolbar">
+            <input id="personalSearch" type="search" placeholder="搜尋代購編號、姓名、Email 或手機">
+            <select id="personalStatusFilter">
+              <option value="">全部狀態</option>
+              <option value="new">新需求</option>
+              <option value="reviewing">確認中</option>
+              <option value="quoted">已報價</option>
+              <option value="confirmed">顧客已確認</option>
+              <option value="purchased">日本已下單</option>
+              <option value="shipped">已寄出</option>
+              <option value="completed">已完成</option>
+              <option value="cancelled">已取消</option>
+            </select>
+            <span id="personalCount"></span>
+          </div>
+          <div id="personalCards" class="admin-orders"></div>
+        </section>
       </div>
     </section>
   </main>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.3/dist/umd/supabase.js"></script>
   <script src="supabase-config.js"></script>
-  <script src="admin.js?v=2"></script>
+  <script src="admin.js?v=personal-shopping-orders"></script>
 </body>
 </html>
+

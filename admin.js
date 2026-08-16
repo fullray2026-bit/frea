@@ -9,7 +9,7 @@
   const login = document.getElementById("adminLogin");
   const shell = document.getElementById("adminShell");
   const loginForm = document.getElementById("adminLoginForm");
-  const titles = { overview: "管理總覽", members: "會員管理", orders: "訂單管理" };
+  const titles = { overview: "管理總覽", members: "會員管理", orders: "訂單管理", personal: "代購訂單管理" };
   const statusLabels = {
     pending_payment: "待匯款",
     payment_review: "待核款",
@@ -19,10 +19,15 @@
     completed: "已完成",
     cancelled: "已取消"
   };
+  const personalStatusLabels = {
+    new: "新需求", reviewing: "確認中", quoted: "已報價", confirmed: "顧客已確認",
+    purchased: "日本已下單", shipped: "已寄出", completed: "已完成", cancelled: "已取消"
+  };
   let profiles = [];
   let addresses = [];
   let ezwayProfiles = [];
   let orders = [];
+  let personalRequests = [];
 
   const byId = id => document.getElementById(id);
   const escapeHtml = value => String(value ?? "")
@@ -31,6 +36,14 @@
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+  const safeHttpUrl = value => {
+    try {
+      const url = new URL(String(value || ""));
+      return ["http:", "https:"].includes(url.protocol) ? url.href : "";
+    } catch (_) {
+      return "";
+    }
+  };
   const formatDate = value => value ? new Intl.DateTimeFormat("zh-TW", {
     year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit"
   }).format(new Date(value)) : "—";
@@ -67,13 +80,14 @@
 
   async function loadData() {
     showMessage("adminGlobalMessage", "正在讀取最新資料…");
-    const [profileResult, addressResult, ezwayResult, orderResult] = await Promise.all([
+    const [profileResult, addressResult, ezwayResult, orderResult, personalResult] = await Promise.all([
       client.from("profiles").select("id,email,full_name,phone,newsletter,created_at").order("created_at", { ascending: false }),
       client.from("member_addresses").select("user_id,recipient_name,recipient_phone,postal_code,address,is_default").eq("is_default", true),
       client.from("ezway_profiles").select("user_id,real_name,mobile"),
-      client.from("orders").select("id,user_id,order_number,status,currency,total_amount,created_at,updated_at,recipient_name,recipient_phone,postal_code,shipping_address,payment_proof_name,admin_note,tracking_number,order_items(product_name,specification,quantity,unit_price,line_total)").order("created_at", { ascending: false })
+      client.from("orders").select("id,user_id,order_number,status,currency,total_amount,created_at,updated_at,recipient_name,recipient_phone,postal_code,shipping_address,payment_proof_name,admin_note,tracking_number,order_items(product_name,specification,quantity,unit_price,line_total)").order("created_at", { ascending: false }),
+      client.from("personal_shopping_requests").select("id,request_number,user_id,customer_name,email,phone,line_id,note,items,status,quote_amount,admin_note,created_at,updated_at").order("created_at", { ascending: false })
     ]);
-    const failed = [profileResult, addressResult, ezwayResult, orderResult].find(result => result.error);
+    const failed = [profileResult, addressResult, ezwayResult, orderResult, personalResult].find(result => result.error);
     if (failed) {
       showMessage("adminGlobalMessage", failed.error.message || "資料讀取失敗。", "error");
       return;
@@ -82,6 +96,7 @@
     addresses = addressResult.data || [];
     ezwayProfiles = ezwayResult.data || [];
     orders = orderResult.data || [];
+    personalRequests = personalResult.data || [];
     renderAll();
     showMessage("adminGlobalMessage", "資料更新時間：" + new Date().toLocaleTimeString("zh-TW"), "success");
   }
@@ -95,6 +110,78 @@
     renderRecentOrders();
     renderMembers();
     renderOrders();
+    renderPersonalRequests();
+  }
+
+  function personalStatusOptions(selected) {
+    return Object.entries(personalStatusLabels).map(([value, label]) =>
+      '<option value="' + value + '"' + (value === selected ? " selected" : "") + ">" + label + "</option>"
+    ).join("");
+  }
+
+  function renderPersonalRequests() {
+    const term = byId("personalSearch").value.trim().toLowerCase();
+    const status = byId("personalStatusFilter").value;
+    const filtered = personalRequests.filter(request => {
+      const searchable = [request.request_number, request.customer_name, request.email, request.phone].join(" ").toLowerCase();
+      return (!term || searchable.includes(term)) && (!status || request.status === status);
+    });
+    byId("personalCount").textContent = "共 " + filtered.length + " 筆";
+    const target = byId("personalCards");
+    if (!filtered.length) {
+      target.innerHTML = '<div class="admin-empty">目前沒有符合的代購需求。</div>';
+      return;
+    }
+    target.innerHTML = filtered.map(request => {
+      const items = Array.isArray(request.items) ? request.items : [];
+      const itemHtml = items.length ? '<ul class="admin-order-items">' + items.map(item => {
+        const itemUrl = safeHttpUrl(item.url);
+        return (
+        "<li>" + escapeHtml(item.name || "未填商品名稱") + "｜數量 " + escapeHtml(item.quantity || 1) +
+        (itemUrl ? '｜<a href="' + escapeHtml(itemUrl) + '" target="_blank" rel="noopener">商品連結</a>' : "") + "</li>"
+        );
+      }).join("") + "</ul>" : "<p>沒有商品明細</p>";
+      return '<article class="admin-order" data-personal-id="' + escapeHtml(request.id) + '">' +
+        '<div class="admin-order-head"><div><h3>' + escapeHtml(request.request_number) +
+        '</h3><p class="admin-order-meta">' + escapeHtml(formatDate(request.created_at)) + " · " +
+        escapeHtml(personalStatusLabels[request.status] || request.status) + '</p></div><div><strong>' +
+        escapeHtml(request.customer_name) + '</strong><p class="admin-order-meta">' +
+        escapeHtml(request.email) + "／" + escapeHtml(request.phone) + '</p></div><strong class="admin-order-total">' +
+        (request.quote_amount == null ? "尚未報價" : escapeHtml(formatMoney(request.quote_amount, "TWD"))) + '</strong></div>' +
+        '<div class="admin-order-grid"><div><h4>代購品項</h4>' + itemHtml +
+        '</div><div><h4>顧客資料與備註</h4><p>LINE ID：' + escapeHtml(request.line_id || "—") +
+        '</p><p>' + escapeHtml(request.note || "無備註") + '</p></div></div>' +
+        '<div class="admin-order-controls"><label>處理狀態<select data-personal-status>' +
+        personalStatusOptions(request.status) + '</select></label><label>報價金額（TWD）<input data-personal-quote type="number" min="0" value="' +
+        escapeHtml(request.quote_amount ?? "") + '" placeholder="尚未報價"></label><label>後台備註<textarea data-personal-note rows="2" placeholder="僅供管理使用">' +
+        escapeHtml(request.admin_note || "") + '</textarea></label><button class="admin-save" type="button" data-save-personal>儲存變更</button></div></article>';
+    }).join("");
+  }
+
+  async function savePersonalRequest(card) {
+    const id = card.dataset.personalId;
+    const button = card.querySelector("[data-save-personal]");
+    const quoteText = card.querySelector("[data-personal-quote]").value.trim();
+    const updates = {
+      status: card.querySelector("[data-personal-status]").value,
+      quote_amount: quoteText === "" ? null : Math.max(0, Math.round(Number(quoteText) || 0)),
+      admin_note: card.querySelector("[data-personal-note]").value.trim(),
+      updated_at: new Date().toISOString()
+    };
+    button.disabled = true;
+    button.textContent = "儲存中…";
+    const { data, error } = await client.from("personal_shopping_requests").update(updates)
+      .eq("id", id).select("id,status,quote_amount,admin_note,updated_at").single();
+    button.disabled = false;
+    button.textContent = error ? "儲存失敗" : "已儲存";
+    if (error) {
+      showMessage("adminGlobalMessage", error.message || "代購需求更新失敗。", "error");
+      return;
+    }
+    const request = personalRequests.find(item => String(item.id) === String(id));
+    if (request) Object.assign(request, data);
+    showMessage("adminGlobalMessage", "代購需求 " + (request?.request_number || id) + " 已更新。", "success");
+    renderPersonalRequests();
   }
 
   function renderRecentOrders() {
@@ -257,6 +344,8 @@
   byId("memberSearch").addEventListener("input", renderMembers);
   byId("orderSearch").addEventListener("input", renderOrders);
   byId("orderStatusFilter").addEventListener("change", renderOrders);
+  byId("personalSearch").addEventListener("input", renderPersonalRequests);
+  byId("personalStatusFilter").addEventListener("change", renderPersonalRequests);
   byId("orderCards").addEventListener("click", event => {
     const button = event.target.closest("[data-save-order]");
     if (button) saveOrder(button.closest(".admin-order"));
@@ -268,6 +357,10 @@
     trackingWrap.hidden = event.target.value !== "shipped";
     card.querySelector("[data-tracking-number]").required = event.target.value === "shipped";
   });
+  byId("personalCards").addEventListener("click", event => {
+    const button = event.target.closest("[data-save-personal]");
+    if (button) savePersonalRequest(button.closest(".admin-order"));
+  });
   byId("adminLogout").addEventListener("click", async () => {
     await client.auth.signOut();
     location.reload();
@@ -277,3 +370,4 @@
     if (ok) loadData();
   });
 })();
+
