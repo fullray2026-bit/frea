@@ -46,7 +46,7 @@
 </div>
 <div class="auth-message" id="registerMessage" role="status"></div>
 <button class="btn auth-btn" type="submit">建立帳戶</button>
-<div class="auth-note">已經有會員帳戶？ <a href="#" id="showLogin">登入</a><br><span>此為同一瀏覽器使用的會員功能測試版。</span></div>
+<div class="auth-note">已經有會員帳戶？ <a href="#" id="showLogin">登入</a><br><span>會員資料由 Supabase 安全保存。</span></div>
 </form>
 </div>
 <div id="loginView" hidden>
@@ -58,7 +58,7 @@
 </div>
 <div class="auth-message" id="loginMessage" role="status"></div>
 <button class="btn auth-btn" type="submit">登入</button>
-<div class="auth-note">還沒有會員帳戶？ <a href="#" id="showRegister">建立帳戶</a><br><span>帳戶資料僅保存在目前使用的瀏覽器。</span></div>
+<div class="auth-note">還沒有會員帳戶？ <a href="#" id="showRegister">建立帳戶</a><br><span>完成註冊後，請依畫面提示驗證 Email。</span></div>
 </form>
 </div>
 <div id="memberView" hidden>
@@ -106,10 +106,10 @@
 </form>
 </section>
 <button class="member-logout" id="logoutButton" type="button">登出會員帳戶</button>
-<div class="auth-note"><span>此為測試版會員中心，資料只保存在目前瀏覽器。</span></div>
+<div class="auth-note"><span>您的會員、收件與通關資料已安全儲存於正式會員系統。</span></div>
 </div>
 </div></div></div></div></section></main><footer class="footer"><div class="container"><div class="footer-grid"><div class="footer-brand"><img src="assets/logo_round.png" alt="fréa"><p>讓生活，回到它該有的溫度。</p><p>FUKUOKA, JAPAN</p></div><div><h4>關於 fréa</h4><a href="about.html">品牌故事</a><a href="contact.html">聯絡我們</a></div><div><h4>購物指南</h4><a href="#">購物流程</a><a href="#">付款方式</a><a href="#">配送方式</a><a href="returns.html">退換貨政策</a></div><div><h4>服務</h4><a href="personal-shopping.html">自選代購</a><a href="#">常見問題</a><a href="#">EZ WAY 說明</a></div><div><h4>品牌／社群</h4><a href="#brands">Brands</a><a href="#">Instagram</a><a href="#">LINE</a></div></div><div class="copyright">© 2026 fréa. All rights reserved.</div></div></footer><div class="toast"></div><script src="script.js"></script><script>
-(function(){
+(function(){return;
   const MEMBERS_KEY="frea_demo_members_v1";
   const SESSION_KEY="frea_demo_session_v1";
   const registerView=document.getElementById("registerView");
@@ -217,4 +217,5 @@
   const session=localStorage.getItem(SESSION_KEY);
   if(session){showMember(session);}
 })();
-</script></body></html>
+</script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.3/dist/umd/supabase.js"></script><script src="supabase-config.js"></script><script src="member-auth.js"></script></body></html>
+
