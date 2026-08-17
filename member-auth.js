@@ -88,21 +88,40 @@
 
   async function renderOrders() {
     const target = byId("orderList");
-    const { data, error } = await client
-      .from("orders")
-      .select("order_number,status,total_amount,currency,created_at,tracking_number")
-      .order("created_at", { ascending: false });
-    if (error) {
+    const [orderResult, personalResult] = await Promise.all([
+      client.from("orders")
+        .select("order_number,status,total_amount,currency,created_at,tracking_number")
+        .eq("user_id", currentUser.id)
+        .order("created_at", { ascending: false }),
+      client.from("personal_shopping_requests")
+        .select("request_number,status,quote_amount,created_at,items")
+        .eq("user_id", currentUser.id)
+        .order("created_at", { ascending: false })
+    ]);
+    if (orderResult.error || personalResult.error) {
       target.innerHTML = '<div class="member-empty"><strong>暫時無法讀取訂單</strong><p>請稍後重新整理頁面。</p></div>';
       return;
     }
+    const data = [
+      ...(orderResult.data || []).map(order => ({ ...order, kind: "order" })),
+      ...(personalResult.data || []).map(order => ({ ...order, kind: "personal" }))
+    ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     if (!data.length) {
       target.innerHTML = '<div class="member-empty"><strong>目前尚無訂單</strong><p>完成購物後，訂單編號、日期、金額與處理狀態會顯示在這裡。</p></div>';
       return;
     }
     const statuses = { pending_payment: "待付款", payment_review: "對帳中", paid: "已收款", processing: "備貨中", shipped: "已出貨", completed: "已完成", cancelled: "已取消" };
+    const personalStatuses = { new: "新需求", reviewing: "確認中", quoted: "已報價", confirmed: "已確認購買", purchased: "日本已下單", shipped: "已寄出", completed: "已完成", cancelled: "已取消" };
     target.innerHTML = data.map((order) => {
       const date = new Intl.DateTimeFormat("zh-TW", { dateStyle: "medium" }).format(new Date(order.created_at));
+      if (order.kind === "personal") {
+        const total = order.quote_amount == null
+          ? "尚未報價"
+          : new Intl.NumberFormat("zh-TW", { style: "currency", currency: "TWD", maximumFractionDigits: 0 }).format(order.quote_amount);
+        const itemNames = (Array.isArray(order.items) ? order.items : []).map(item => item.name).filter(Boolean).join("、");
+        const detail = itemNames ? '<small>代購品項：' + escapeHtml(itemNames) + '</small>' : "";
+        return '<article class="member-order"><div><strong>' + escapeHtml(order.request_number) + '</strong><small>自選代購 · ' + escapeHtml(date) + ' · ' + escapeHtml(personalStatuses[order.status] || order.status) + '</small>' + detail + '</div><div>' + escapeHtml(total) + '</div></article>';
+      }
       const total = new Intl.NumberFormat("zh-TW", { style: "currency", currency: order.currency || "TWD", maximumFractionDigits: 0 }).format(order.total_amount);
       const tracking = order.status === "shipped" && order.tracking_number
         ? '<small>出貨單號：' + escapeHtml(order.tracking_number) + '</small>'
@@ -263,3 +282,4 @@
     } else show("register", false);
   });
 })();
+
