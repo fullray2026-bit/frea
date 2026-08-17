@@ -38,3 +38,64 @@ if(itemList){
   });
 }
 
+// Site-wide product search. The catalogue is read from products.html so search
+// results always follow the products currently published on the site.
+(function initSiteSearch(){
+  const triggers=qsa('button.icon[aria-label="搜尋"]');
+  if(!triggers.length)return;
+
+  qsa('[data-cart-product]').forEach(row=>{
+    if(row.dataset.productId&&!row.id)row.id=row.dataset.productId;
+  });
+
+  const overlay=document.createElement('div');
+  overlay.className='site-search';
+  overlay.hidden=true;
+  overlay.innerHTML='<div class="site-search-backdrop" data-search-close></div><section class="site-search-panel" role="dialog" aria-modal="true" aria-labelledby="siteSearchTitle"><div class="site-search-head"><div><div class="site-search-kicker">SEARCH</div><h2 id="siteSearchTitle">搜尋商品</h2></div><button type="button" class="site-search-close" data-search-close aria-label="關閉搜尋">×</button></div><label class="site-search-field"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="14" r="9.5"></circle><path d="M21.2 21.2 28 28"></path></svg><input type="search" autocomplete="off" placeholder="輸入商品、品牌、規格或用途" aria-label="搜尋商品"></label><div class="site-search-status">請輸入關鍵字開始搜尋。</div><div class="site-search-results" aria-live="polite"></div></section>';
+  document.body.appendChild(overlay);
+
+  const input=qs('input',overlay),status=qs('.site-search-status',overlay),results=qs('.site-search-results',overlay);
+  let cataloguePromise;
+  const normalise=value=>String(value||'').toLocaleLowerCase('zh-Hant').replace(/\s+/g,' ').trim();
+  const productPageByBrand={
+    '茅乃舍':'brand-kayanoya.html','KINTO':'brand-kinto.html','家事問屋':'brand-kajidonya.html',
+    'AKOMEYA TOKYO':'brand-akomeya.html','福岡咖啡精選':'brand-fukuoka-coffee.html'
+  };
+  async function loadCatalogue(){
+    if(cataloguePromise)return cataloguePromise;
+    cataloguePromise=(async()=>{
+      const source=location.pathname.endsWith('/products.html')?document:await fetch('products.html',{cache:'no-cache'}).then(response=>{if(!response.ok)throw new Error('catalogue');return response.text()}).then(html=>new DOMParser().parseFromString(html,'text/html'));
+      return qsa('.all-products-group',source).flatMap(group=>{
+        const brand=qs('.all-products-brand h2',group)?.textContent.trim()||'';
+        const page=productPageByBrand[brand]||qs('.all-products-brand a',group)?.getAttribute('href')||'products.html';
+        return qsa('[data-cart-product]',group).map(row=>({
+          id:row.dataset.productId||'',brand,page,name:row.dataset.name||qs('.brand-product-name h3',row)?.textContent.trim()||'',
+          spec:row.dataset.spec||qs('.brand-product-spec',row)?.textContent.trim()||'',
+          description:qs('.brand-product-name p',row)?.textContent.trim()||'',use:qs('.brand-product-use',row)?.textContent.trim()||'',
+          image:row.dataset.image||qs('.brand-product-thumb img',row)?.getAttribute('src')||'',
+          search:normalise([brand,row.dataset.name,row.dataset.spec,row.textContent].join(' '))
+        }));
+      });
+    })();
+    return cataloguePromise;
+  }
+  function escapeHtml(value){return String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]))}
+  async function runSearch(){
+    const term=normalise(input.value);
+    if(!term){results.innerHTML='';status.textContent='請輸入關鍵字開始搜尋。';return}
+    status.textContent='搜尋中…';
+    try{
+      const catalogue=await loadCatalogue();
+      const matches=catalogue.filter(item=>item.search.includes(term)).slice(0,24);
+      status.textContent=matches.length?`找到 ${matches.length} 項商品`:'找不到符合的商品，請嘗試其他關鍵字。';
+      results.innerHTML=matches.map(item=>`<a class="site-search-result" href="${escapeHtml(item.page)}#${encodeURIComponent(item.id)}"><span class="site-search-thumb">${item.image?`<img src="${escapeHtml(item.image)}" alt="">`:''}</span><span class="site-search-copy"><small>${escapeHtml(item.brand)}</small><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(item.spec)}${item.use?'｜'+escapeHtml(item.use):''}</span></span><span class="site-search-arrow" aria-hidden="true">→</span></a>`).join('');
+    }catch(error){status.textContent='搜尋資料暫時無法載入，請稍後再試。';results.innerHTML=''}
+  }
+  function openSearch(){overlay.hidden=false;document.body.classList.add('search-open');requestAnimationFrame(()=>input.focus())}
+  function closeSearch(){overlay.hidden=true;document.body.classList.remove('search-open')}
+  triggers.forEach(trigger=>trigger.addEventListener('click',openSearch));
+  qsa('[data-search-close]',overlay).forEach(button=>button.addEventListener('click',closeSearch));
+  input.addEventListener('input',runSearch);
+  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!overlay.hidden)closeSearch()});
+  if(location.hash){const target=document.getElementById(decodeURIComponent(location.hash.slice(1)));if(target)setTimeout(()=>target.scrollIntoView({behavior:'smooth',block:'center'}),120)}
+})();
