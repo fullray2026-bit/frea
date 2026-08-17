@@ -28,10 +28,13 @@ if(itemList){
     const client=window.supabase.createClient(window.freaSupabaseConfig.url,window.freaSupabaseConfig.publishableKey);
     const {data:{user},error:userError}=await client.auth.getUser();
     if(userError||!user){location.href="register.html?view=login&return=personal-shopping.html";return}
+    const {data:profile,error:profileError}=await client.from("profiles").select("full_name,phone").eq("id",user.id).single();
+    if(profileError||!profile){message.hidden=false;message.textContent="無法讀取會員資料，請稍後再試。";return}
+    if(!String(profile.full_name||"").trim()||!String(profile.phone||"").trim()){message.hidden=false;message.textContent="請先至會員中心補齊姓名與手機，再送出代購需求。";return}
     const fd=new FormData(form);
     const requestNumber="PS"+new Date().toISOString().slice(0,10).replaceAll("-","")+"-"+crypto.randomUUID().slice(0,8).toUpperCase();
     button.disabled=true;button.textContent="送出中…";
-    const {error}=await client.from("personal_shopping_requests").insert({request_number:requestNumber,user_id:user?user.id:null,customer_name:String(fd.get("customer_name")||"").trim(),email:String(fd.get("email")||"").trim(),phone:String(fd.get("phone")||"").trim(),line_id:String(fd.get("line_id")||"").trim(),note:String(fd.get("note")||"").trim(),items});
+    const {error}=await client.from("personal_shopping_requests").insert({request_number:requestNumber,user_id:user.id,customer_name:String(profile.full_name||"").trim(),email:String(user.email||"").trim(),phone:String(profile.phone||"").trim(),line_id:"",note:String(fd.get("note")||"").trim(),items});
     button.disabled=false;button.textContent="送出代購需求";message.hidden=false;
     if(error){message.textContent="代購需求送出失敗，請稍後再試。";return}
     form.reset();itemList.innerHTML="";addRow();addRow();message.textContent="代購需求已成立，編號："+requestNumber+"。我們確認供貨與費用後會與您聯繫。";toast("代購需求已送出");
@@ -99,3 +102,4 @@ if(itemList){
   document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!overlay.hidden)closeSearch()});
   if(location.hash){const target=document.getElementById(decodeURIComponent(location.hash.slice(1)));if(target)setTimeout(()=>target.scrollIntoView({behavior:'smooth',block:'center'}),120)}
 })();
+
