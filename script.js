@@ -7,10 +7,11 @@ function addRow(v={}){
   const number=document.createElement("div");number.textContent=l.children.length+1;
   const name=document.createElement("input");name.dataset.itemName="";name.placeholder="商品名稱";name.maxLength=200;name.value=String(v.name||"");
   const url=document.createElement("input");url.dataset.itemUrl="";url.placeholder="商品連結";url.maxLength=1000;url.value=String(v.url||"");
+  const specification=document.createElement("input");specification.dataset.itemSpecification="";specification.placeholder="顏色及規格說明（無請填 X）";specification.maxLength=300;specification.value=String(v.specification||"");
   const quantity=document.createElement("input");quantity.dataset.itemQuantity="";quantity.type="number";quantity.min="1";quantity.max="99";quantity.value=String(v.qty||1);
   const remove=document.createElement("button");remove.type="button";remove.className="remove";remove.setAttribute("aria-label","移除商品");remove.textContent="×";
   remove.onclick=()=>{r.remove();qsa(".item-row",l).forEach((x,i)=>x.firstElementChild.textContent=i+1)};
-  r.append(number,name,url,quantity,remove);l.appendChild(r);
+  r.append(number,name,url,specification,quantity,remove);l.appendChild(r);
 }
 const itemList=qs("#itemList");
 if(itemList){
@@ -22,8 +23,8 @@ if(itemList){
   form.addEventListener("submit",async e=>{
     e.preventDefault();
     const message=qs("#personalFormMessage"),button=qs("#personalSubmit");
-    const items=qsa(".item-row",itemList).map(row=>({name:qs("[data-item-name]",row).value.trim(),url:qs("[data-item-url]",row).value.trim(),quantity:Math.min(99,Math.max(1,Math.round(Number(qs("[data-item-quantity]",row).value)||1)))})).filter(item=>item.name||item.url);
-    if(!items.length||items.some(item=>!item.name)){message.hidden=false;message.textContent="請至少完整填寫一項商品名稱。";return}
+    const items=qsa(".item-row",itemList).map(row=>({name:qs("[data-item-name]",row).value.trim(),url:qs("[data-item-url]",row).value.trim(),specification:qs("[data-item-specification]",row).value.trim(),quantity:Math.min(99,Math.max(1,Math.round(Number(qs("[data-item-quantity]",row).value)||1)))})).filter(item=>item.name||item.url||item.specification);
+    if(!items.length||items.some(item=>!item.name||!item.specification)){message.hidden=false;message.textContent="請完整填寫商品名稱及顏色與規格說明；若無顏色或規格，請填 X。";return}
     if(!window.supabase||!window.freaSupabaseConfig){message.hidden=false;message.textContent="系統目前無法連線，請稍後再試。";return}
     const client=window.supabase.createClient(window.freaSupabaseConfig.url,window.freaSupabaseConfig.publishableKey);
     const {data:{user},error:userError}=await client.auth.getUser();
