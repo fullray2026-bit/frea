@@ -139,7 +139,7 @@
       const itemHtml = items.length ? '<ul class="admin-order-items">' + items.map(item => {
         const itemUrl = safeHttpUrl(item.url);
         return (
-        "<li>" + escapeHtml(item.name || "未填商品名稱") + "｜數量 " + escapeHtml(item.quantity || 1) +
+        "<li>" + escapeHtml(item.name || "未填商品名稱") + "｜顏色及規格：" + escapeHtml(item.specification || "—") + "｜數量 " + escapeHtml(item.quantity || 1) +
         (itemUrl ? '｜<a href="' + escapeHtml(itemUrl) + '" target="_blank" rel="noopener">商品連結</a>' : "") + "</li>"
         );
       }).join("") + "</ul>" : "<p>沒有商品明細</p>";
