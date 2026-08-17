@@ -259,7 +259,7 @@
       loadMember(data.session.user).catch(async () => { await client.auth.signOut(); show("login", false); });
     } else if (returnTo || query.get("view") === "login") {
       show("login", false);
-      if (returnTo) message("loginMessage", "請先登入會員，再填寫自選代購需求。", "success");
+      if (returnTo) message("loginReturnMessage", "請先登入會員，再填寫自選代購需求。", "success");
     } else show("register", false);
   });
 })();
