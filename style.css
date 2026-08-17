@@ -358,3 +358,8 @@ body.search-open{overflow:hidden}.site-search[hidden]{display:none}.site-search{
 
 /* Desktop horizontal footer navigation */
 @media(min-width:981px){.footer-grid{grid-template-columns:minmax(250px,.78fr) minmax(0,1.72fr);grid-template-rows:auto auto;column-gap:clamp(72px,10vw,150px);row-gap:0}.footer-brand{grid-column:1;grid-row:1/3;padding-right:0}.footer-grid>div:nth-child(2),.footer-grid>div:nth-child(3){grid-column:2;display:flex;align-items:baseline;flex-wrap:wrap;gap:12px 28px}.footer-grid>div:nth-child(2){grid-row:1;padding:4px 0 25px;border-bottom:1px solid var(--line)}.footer-grid>div:nth-child(3){grid-row:2;padding:25px 0 4px}.footer-grid>div:nth-child(2) h4,.footer-grid>div:nth-child(3) h4{flex:0 0 132px;margin:0}.footer-grid>div:nth-child(2) a,.footer-grid>div:nth-child(3) a{margin:0;white-space:nowrap}.copyright{margin-top:42px}}
+
+
+/* Personal shopping item specification field */
+.item-row{grid-template-columns:40px 1fr 1.35fr 1fr 90px 42px}
+@media(max-width:640px){.item-row input:nth-of-type(2),.item-row input:nth-of-type(3),.item-row input:nth-of-type(4),.item-row .remove{grid-column:2}}
