@@ -19,6 +19,11 @@
   const loginForm = byId("loginForm");
   const profileForm = byId("profileForm");
   const deliveryForm = byId("deliveryForm");
+  const query = new URLSearchParams(window.location.search);
+  const returnTo = query.get("return") === "personal-shopping.html" ? "personal-shopping.html" : "";
+  const emailRedirectUrl = returnTo
+    ? new URL("register.html?view=login&return=personal-shopping.html", window.location.href).href
+    : "https://fullray2026-bit.github.io/frea/register.html";
   let currentUser = null;
   let currentAddressId = null;
 
@@ -34,6 +39,12 @@
       element.textContent = "";
       element.className = "auth-message";
     });
+  }
+
+  function redirectAfterAuth() {
+    if (!returnTo) return false;
+    window.location.replace(returnTo);
+    return true;
   }
 
   function show(view, scroll) {
@@ -146,7 +157,7 @@
       email,
       password,
       options: {
-        emailRedirectTo: "https://fullray2026-bit.github.io/frea/register.html",
+        emailRedirectTo: emailRedirectUrl,
         data: {
           full_name: String(data.get("name") || "").trim(),
           phone: String(data.get("phone") || "").trim(),
@@ -161,6 +172,7 @@
     if (error) return message("registerMessage", readableError(error), "error");
     registerForm.reset();
     if (authData.session) {
+      if (redirectAfterAuth()) return;
       await loadMember(authData.user);
     } else {
       message("registerMessage", "帳戶已建立。請到信箱點擊驗證連結，完成後即可登入。", "success");
@@ -181,6 +193,7 @@
     submit.textContent = "登入";
     if (error) return message("loginMessage", readableError(error), "error");
     loginForm.reset();
+    if (redirectAfterAuth()) return;
     try { await loadMember(authData.user); } catch (loadError) { message("loginMessage", readableError(loadError), "error"); }
   });
 
@@ -235,12 +248,18 @@
   client.auth.onAuthStateChange((event, session) => {
     if (event === "SIGNED_OUT") show("login", false);
     if (event === "SIGNED_IN" && session && (!currentUser || currentUser.id !== session.user.id)) {
+      if (redirectAfterAuth()) return;
       setTimeout(() => loadMember(session.user).catch(async () => { await client.auth.signOut(); show("login", false); }), 0);
     }
   });
 
   client.auth.getSession().then(({ data }) => {
-    if (data.session) loadMember(data.session.user).catch(async () => { await client.auth.signOut(); show("login", false); });
-    else show("register", false);
+    if (data.session) {
+      if (redirectAfterAuth()) return;
+      loadMember(data.session.user).catch(async () => { await client.auth.signOut(); show("login", false); });
+    } else if (returnTo || query.get("view") === "login") {
+      show("login", false);
+      if (returnTo) message("loginMessage", "請先登入會員，再填寫自選代購需求。", "success");
+    } else show("register", false);
   });
 })();
