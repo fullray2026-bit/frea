@@ -50,6 +50,7 @@
 </form>
 </div>
 <div id="loginView" hidden>
+<div class="auth-message" id="loginReturnMessage" role="status"></div>
 <div class="auth-head"><div class="eyebrow">Member Login</div><h1 class="serif">會員登入</h1><p>輸入註冊時使用的 Email 與密碼。</p></div>
 <form id="loginForm" class="auth-form">
 <div class="form-grid">
@@ -217,5 +218,5 @@
   const session=localStorage.getItem(SESSION_KEY);
   if(session){showMember(session);}
 })();
-</script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.3/dist/umd/supabase.js"></script><script src="supabase-config.js"></script><script src="member-auth.js?v=6"></script></body></html>
+</script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.3/dist/umd/supabase.js"></script><script src="supabase-config.js"></script><script src="member-auth.js?v=7"></script></body></html>
 
