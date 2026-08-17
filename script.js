@@ -26,7 +26,9 @@ if(itemList){
     if(!items.length||items.some(item=>!item.name)){message.hidden=false;message.textContent="請至少完整填寫一項商品名稱。";return}
     if(!window.supabase||!window.freaSupabaseConfig){message.hidden=false;message.textContent="系統目前無法連線，請稍後再試。";return}
     const client=window.supabase.createClient(window.freaSupabaseConfig.url,window.freaSupabaseConfig.publishableKey);
-    const {data:{user}}=await client.auth.getUser(),fd=new FormData(form);
+    const {data:{user},error:userError}=await client.auth.getUser();
+    if(userError||!user){location.href="register.html?view=login&return=personal-shopping.html";return}
+    const fd=new FormData(form);
     const requestNumber="PS"+new Date().toISOString().slice(0,10).replaceAll("-","")+"-"+crypto.randomUUID().slice(0,8).toUpperCase();
     button.disabled=true;button.textContent="送出中…";
     const {error}=await client.from("personal_shopping_requests").insert({request_number:requestNumber,user_id:user?user.id:null,customer_name:String(fd.get("customer_name")||"").trim(),email:String(fd.get("email")||"").trim(),phone:String(fd.get("phone")||"").trim(),line_id:String(fd.get("line_id")||"").trim(),note:String(fd.get("note")||"").trim(),items});
