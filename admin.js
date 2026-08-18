@@ -9,7 +9,8 @@
   const login = document.getElementById("adminLogin");
   const shell = document.getElementById("adminShell");
   const loginForm = document.getElementById("adminLoginForm");
-  const titles = { overview: "管理總覽", members: "會員管理", orders: "訂單管理", personal: "代購訂單管理" };
+  const titles = { overview: "管理總覽", members: "會員管理", orders: "訂單管理", personal: "代購訂單管理", products: "商品管理" };
+  const brandLabels = { kayanoya: "茅乃舍", kinto: "KINTO", kajidonya: "家事問屋", akomeya: "AKOMEYA TOKYO", "fukuoka-coffee": "福岡咖啡精選" };
   const statusLabels = {
     pending_payment: "待匯款",
     payment_review: "待核款",
@@ -28,6 +29,7 @@
   let ezwayProfiles = [];
   let orders = [];
   let personalRequests = [];
+  let products = [];
 
   const byId = id => document.getElementById(id);
   const escapeHtml = value => String(value ?? "")
@@ -80,14 +82,15 @@
 
   async function loadData() {
     showMessage("adminGlobalMessage", "正在讀取最新資料…");
-    const [profileResult, addressResult, ezwayResult, orderResult, personalResult] = await Promise.all([
+    const [profileResult, addressResult, ezwayResult, orderResult, personalResult, productResult] = await Promise.all([
       client.from("profiles").select("id,email,full_name,phone,newsletter,created_at").order("created_at", { ascending: false }),
       client.from("member_addresses").select("user_id,recipient_name,recipient_phone,postal_code,address,is_default").eq("is_default", true),
       client.from("ezway_profiles").select("user_id,real_name,mobile"),
       client.from("orders").select("id,user_id,order_number,status,currency,total_amount,created_at,updated_at,recipient_name,recipient_phone,postal_code,shipping_address,payment_proof_name,admin_note,tracking_number,order_items(product_name,specification,quantity,unit_price,line_total)").order("created_at", { ascending: false }),
-      client.from("personal_shopping_requests").select("id,request_number,user_id,customer_name,email,phone,line_id,note,items,status,quote_amount,quote_details,admin_note,created_at,updated_at").order("created_at", { ascending: false })
+      client.from("personal_shopping_requests").select("id,request_number,user_id,customer_name,email,phone,line_id,note,items,status,quote_amount,quote_details,admin_note,created_at,updated_at").order("created_at", { ascending: false }),
+      client.from("products").select("*").order("brand_code").order("sort_order").order("created_at")
     ]);
-    const failed = [profileResult, addressResult, ezwayResult, orderResult, personalResult].find(result => result.error);
+    const failed = [profileResult, addressResult, ezwayResult, orderResult, personalResult, productResult].find(result => result.error);
     if (failed) {
       showMessage("adminGlobalMessage", failed.error.message || "資料讀取失敗。", "error");
       return;
@@ -97,6 +100,7 @@
     ezwayProfiles = ezwayResult.data || [];
     orders = orderResult.data || [];
     personalRequests = personalResult.data || [];
+    products = productResult.data || [];
     renderAll();
     showMessage("adminGlobalMessage", "資料更新時間：" + new Date().toLocaleTimeString("zh-TW"), "success");
   }
@@ -111,6 +115,140 @@
     renderMembers();
     renderOrders();
     renderPersonalRequests();
+    renderProducts();
+  }
+
+  function productSlug(brand, name) {
+    const latin = String(name || "").normalize("NFKD").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 48);
+    return brand + "-" + (latin || "product") + "-" + Date.now().toString(36);
+  }
+
+  function renderProducts() {
+    const term = byId("productSearch").value.trim().toLowerCase();
+    const brand = byId("productBrandFilter").value;
+    const status = byId("productStatusFilter").value;
+    const filtered = products.filter(product => {
+      const searchable = [product.name, product.specification, product.usage_flavor, product.description].join(" ").toLowerCase();
+      const statusMatch = !status || (status === "active" ? product.is_active : !product.is_active);
+      return (!term || searchable.includes(term)) && (!brand || product.brand_code === brand) && statusMatch;
+    });
+    byId("productCount").textContent = "共 " + filtered.length + " 項";
+    const target = byId("productRows");
+    if (!filtered.length) {
+      target.innerHTML = '<div class="admin-empty">目前沒有符合的商品。</div>';
+      return;
+    }
+    target.innerHTML = filtered.map(product => '<article class="product-item" data-product-id="' + escapeHtml(product.id) + '">' +
+      '<img src="' + escapeHtml(product.image_url || "assets/logo_round.png") + '" alt="' + escapeHtml(product.name) + '">' +
+      '<div><h3>' + escapeHtml(product.name) + '</h3><small>' + escapeHtml(brandLabels[product.brand_code] || product.brand_code) +
+      ' · ' + escapeHtml(product.specification) + '</small><span class="product-status' + (product.is_active ? "" : " inactive") + '">' +
+      (product.is_active ? "上架中" : "已下架") + '</span></div><div class="product-meta"><p>' + escapeHtml(product.usage_flavor || "—") +
+      '</p></div><strong class="product-price">' + escapeHtml(formatMoney(product.price, product.currency)) +
+      '</strong><strong class="product-stock' + (Number(product.stock_quantity) === 0 ? " product-stock-zero" : "") + '">庫存 ' +
+      escapeHtml(product.stock_quantity) + '</strong><small class="product-sort">排序 ' + escapeHtml(product.sort_order) +
+      '</small><div class="product-actions"><button type="button" data-edit-product>編輯</button><button type="button" data-toggle-product>' +
+      (product.is_active ? "下架" : "上架") + '</button><button class="danger" type="button" data-delete-product>刪除</button></div></article>').join("");
+  }
+
+  function setProductPreview(url) {
+    const image = byId("productImagePreview");
+    const empty = byId("productPreviewEmpty");
+    image.hidden = !url;
+    empty.hidden = Boolean(url);
+    if (url) image.src = url;
+    else image.removeAttribute("src");
+  }
+
+  function openProductForm(product) {
+    const form = byId("productForm");
+    form.hidden = false;
+    form.reset();
+    byId("productId").value = product?.id || "";
+    byId("productExistingImage").value = product?.image_url || "";
+    byId("productStoragePath").value = product?.storage_path || "";
+    byId("productBrand").value = product?.brand_code || "";
+    byId("productName").value = product?.name || "";
+    byId("productSpecification").value = product?.specification || "";
+    byId("productUsage").value = product?.usage_flavor || "";
+    byId("productDescription").value = product?.description || "";
+    byId("productPrice").value = product?.price ?? "";
+    byId("productCurrency").value = product?.currency || "JPY";
+    byId("productStock").value = product?.stock_quantity ?? 0;
+    byId("productSort").value = product?.sort_order ?? 0;
+    byId("productActive").value = String(product?.is_active ?? true);
+    byId("productFormTitle").textContent = product ? "編輯商品" : "新增商品";
+    setProductPreview(product?.image_url || "");
+    showMessage("productFormMessage", "");
+    form.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  async function uploadProductImage(file, brand, slug) {
+    if (!file) return null;
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) throw new Error("商品照片僅接受 JPG、PNG 或 WebP。");
+    if (file.size > 3 * 1024 * 1024) throw new Error("商品照片不可超過 3MB。");
+    const extension = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "");
+    const path = brand + "/" + slug + "-" + Date.now() + "." + extension;
+    const { error } = await client.storage.from("product-images").upload(path, file, { cacheControl: "3600", upsert: false });
+    if (error) throw error;
+    return { path, url: client.storage.from("product-images").getPublicUrl(path).data.publicUrl };
+  }
+
+  async function saveProduct(event) {
+    event.preventDefault();
+    const id = byId("productId").value;
+    const brand = byId("productBrand").value;
+    const name = byId("productName").value.trim();
+    const file = byId("productImage").files[0];
+    if (!id && !file) {
+      showMessage("productFormMessage", "新增商品時請上傳商品照片。", "error");
+      return;
+    }
+    const button = byId("productSave");
+    button.disabled = true;
+    button.textContent = "儲存中…";
+    try {
+      const slug = id ? products.find(item => item.id === id)?.slug : productSlug(brand, name);
+      const uploaded = await uploadProductImage(file, brand, slug);
+      const payload = {
+        brand_code: brand, name, description: byId("productDescription").value.trim(),
+        specification: byId("productSpecification").value.trim(), usage_flavor: byId("productUsage").value.trim(),
+        price: Number(byId("productPrice").value), currency: byId("productCurrency").value,
+        stock_quantity: Math.max(0, Math.round(Number(byId("productStock").value) || 0)),
+        sort_order: Math.round(Number(byId("productSort").value) || 0), is_active: byId("productActive").value === "true",
+        image_url: uploaded?.url || byId("productExistingImage").value,
+        storage_path: uploaded?.path || byId("productStoragePath").value || null,
+        updated_at: new Date().toISOString()
+      };
+      if (!id) payload.slug = slug;
+      const query = id ? client.from("products").update(payload).eq("id", id) : client.from("products").insert(payload);
+      const { error } = await query;
+      if (error) throw error;
+      showMessage("adminGlobalMessage", "商品「" + name + "」已儲存。", "success");
+      byId("productForm").hidden = true;
+      await loadData();
+    } catch (error) {
+      showMessage("productFormMessage", error.message || "商品儲存失敗。", "error");
+    } finally {
+      button.disabled = false;
+      button.textContent = "儲存商品";
+    }
+  }
+
+  async function toggleProduct(id) {
+    const product = products.find(item => item.id === id);
+    if (!product) return;
+    const { error } = await client.from("products").update({ is_active: !product.is_active, updated_at: new Date().toISOString() }).eq("id", id);
+    if (error) return showMessage("adminGlobalMessage", error.message || "商品狀態更新失敗。", "error");
+    await loadData();
+  }
+
+  async function deleteProduct(id) {
+    const product = products.find(item => item.id === id);
+    if (!product || !confirm("確定要刪除商品「" + product.name + "」嗎？此動作無法復原。")) return;
+    const { error } = await client.from("products").delete().eq("id", id);
+    if (error) return showMessage("adminGlobalMessage", error.message || "商品刪除失敗。", "error");
+    if (product.storage_path) await client.storage.from("product-images").remove([product.storage_path]);
+    await loadData();
   }
 
   function personalStatusOptions(selected) {
@@ -391,6 +529,25 @@
   byId("orderStatusFilter").addEventListener("change", renderOrders);
   byId("personalSearch").addEventListener("input", renderPersonalRequests);
   byId("personalStatusFilter").addEventListener("change", renderPersonalRequests);
+  byId("productSearch").addEventListener("input", renderProducts);
+  byId("productBrandFilter").addEventListener("change", renderProducts);
+  byId("productStatusFilter").addEventListener("change", renderProducts);
+  byId("productCreate").addEventListener("click", () => openProductForm());
+  byId("productCancel").addEventListener("click", () => { byId("productForm").hidden = true; });
+  byId("productForm").addEventListener("submit", saveProduct);
+  byId("productImage").addEventListener("change", event => {
+    const file = event.target.files[0];
+    if (!file) return setProductPreview(byId("productExistingImage").value);
+    setProductPreview(URL.createObjectURL(file));
+  });
+  byId("productRows").addEventListener("click", event => {
+    const item = event.target.closest("[data-product-id]");
+    if (!item) return;
+    const id = item.dataset.productId;
+    if (event.target.closest("[data-edit-product]")) openProductForm(products.find(product => product.id === id));
+    if (event.target.closest("[data-toggle-product]")) toggleProduct(id);
+    if (event.target.closest("[data-delete-product]")) deleteProduct(id);
+  });
   byId("orderCards").addEventListener("click", event => {
     const button = event.target.closest("[data-save-order]");
     if (button) saveOrder(button.closest(".admin-order"));
@@ -419,4 +576,3 @@
     if (ok) loadData();
   });
 })();
-
