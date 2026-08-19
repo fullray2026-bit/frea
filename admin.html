@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>後台管理｜fréa</title>
   <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="admin.css?v=quote-calculator">
+  <link rel="stylesheet" href="admin.css?v=operations-management-1">
 </head>
 <body class="admin-page">
   <main>
@@ -38,6 +38,9 @@
           <button class="admin-nav" type="button" data-admin-view="members">會員管理</button>
           <button class="admin-nav" type="button" data-admin-view="orders">訂單管理</button>
           <button class="admin-nav" type="button" data-admin-view="personal">代購訂單管理</button>
+          <button class="admin-nav" type="button" data-admin-view="master">商品主檔</button>
+          <button class="admin-nav" type="button" data-admin-view="costs">商品成本試算</button>
+          <button class="admin-nav" type="button" data-admin-view="purchases">進貨管理</button>
           <button class="admin-nav" type="button" data-admin-view="products">商品管理</button>
         </nav>
         <div class="admin-sidebar-foot">
@@ -67,6 +70,33 @@
             <h2>近期訂單</h2>
             <div id="recentOrders"></div>
           </div>
+        </section>
+
+        <section class="admin-view" data-admin-panel="master" hidden>
+          <div class="admin-toolbar"><input id="masterSearch" type="search" placeholder="搜尋商品編號、名稱、品牌或來源網址"><button class="admin-primary" id="masterCreate" type="button">＋ 新增候選商品</button><span id="masterCount"></span></div>
+          <form class="admin-card product-form" id="masterForm" hidden>
+            <div class="product-form-head"><div><p class="admin-eyebrow">PRODUCT MASTER</p><h2 id="masterFormTitle">新增候選商品</h2></div><button class="product-cancel" id="masterCancel" type="button">取消</button></div>
+            <input id="masterId" type="hidden"><input id="masterExistingImage" type="hidden"><input id="masterStoragePath" type="hidden">
+            <div class="product-form-grid">
+              <label>商品編號 *<input id="masterCode" required placeholder="例如 PRD-001"></label><label class="product-wide">商品來源網址<input id="masterSourceUrl" type="url" placeholder="https://"></label>
+              <label>品牌名稱 *<input id="masterBrandName" required></label><label>前台品牌位置<select id="masterBrandCode"><option value="">尚未指定</option><option value="kayanoya">茅乃舍</option><option value="kinto">KINTO</option><option value="kajidonya">家事問屋</option><option value="akomeya">AKOMEYA TOKYO</option><option value="fukuoka-coffee">福岡咖啡精選</option></select></label>
+              <label class="product-wide">商品名稱 *<input id="masterName" required></label><label>規格<input id="masterSpecification"></label><label>用途／風味<input id="masterUsage"></label>
+              <label>型號<input id="masterModel"></label><label>JAN／條碼<input id="masterBarcode"></label><label>參考售價（JPY）<input id="masterReferencePrice" type="number" min="0"></label><label>商品重量（g）<input id="masterWeight" type="number" min="0"></label>
+              <label class="product-wide">簡短介紹<textarea id="masterDescription" rows="3"></textarea></label><label class="product-wide">內部備註<textarea id="masterNotes" rows="3"></textarea></label>
+              <label class="product-wide">商品照片<input id="masterImage" type="file" accept="image/jpeg,image/png,image/webp"></label><label>確認狀態<select id="masterStatus"><option value="pending_review">待確認</option><option value="confirmed">已確認</option><option value="costed">已試算</option><option value="ready_to_publish">待上架</option><option value="archived">封存</option></select></label>
+              <div class="product-preview"><img id="masterImagePreview" alt="商品圖片預覽" hidden><span id="masterPreviewEmpty">尚未選擇圖片</span></div>
+            </div><div class="product-form-actions"><button class="admin-primary" id="masterSave" type="submit">儲存商品主檔</button><p class="admin-message" id="masterFormMessage" role="status"></p></div>
+          </form><div id="masterRows" class="product-list"></div>
+        </section>
+
+        <section class="admin-view" data-admin-panel="costs" hidden>
+          <form class="admin-card" id="costForm"><p class="admin-eyebrow">COST CALCULATOR</p><h2>商品成本試算</h2><input id="costId" type="hidden"><div class="product-form-grid">
+            <label class="product-wide">商品主檔 *<select id="costProduct" required></select></label><label>方案名稱<input id="costName" value="基本方案"></label><label>進貨單價（JPY）<input id="costPurchase" type="number" min="0" required></label><label>數量<input id="costQuantity" type="number" min="1" value="1"></label><label>匯率<input id="costRate" type="number" min="0" step="0.0001"></label><label>日本國內運費（JPY）<input id="costJapanShipping" type="number" min="0"></label><label>商品重量（g）<input id="costWeight" type="number" min="0"></label><label>包材重量（kg）<input id="costPackingWeight" type="number" min="0" step="0.01"></label><label>國際運費（TWD／kg）<input id="costFreightRate" type="number" min="0"></label><label>關稅（TWD）<input id="costDuty" type="number" min="0"></label><label>報關及其他費用（TWD）<input id="costCustoms" type="number" min="0"></label><label>台灣端費用（TWD）<input id="costLocal" type="number" min="0"></label><label>手續費率（%）<input id="costCommission" type="number" min="0" step="0.1"></label><label>平台費率（%）<input id="costPlatform" type="number" min="0" step="0.1"></label><label>目標毛利率（%）<input id="costMargin" type="number" min="0" step="0.1"></label><label>實際銷售價（TWD）*<input id="costSalePrice" type="number" min="0" required></label>
+          </div><div class="cost-summary"><span>預估總成本 <strong id="costCalculated">NT$0</strong></span><span>建議售價 <strong id="costSuggested">NT$0</strong></span><label><input id="costSelected" type="checkbox"> 指定為上架採用方案</label></div><div class="product-form-actions"><button class="admin-primary" type="submit">儲存成本方案</button><p class="admin-message" id="costMessage"></p></div></form><div id="costRows" class="admin-orders"></div>
+        </section>
+
+        <section class="admin-view" data-admin-panel="purchases" hidden>
+          <div class="admin-grid-two"><form class="admin-card" id="supplierForm"><p class="admin-eyebrow">SUPPLIERS</p><h2>供應商</h2><div class="stack-form"><label>供應商編號<input id="supplierCode" required></label><label>供應商名稱<input id="supplierName" required></label><label>網站<input id="supplierWebsite" type="url"></label><label>備註<textarea id="supplierNotes" rows="3"></textarea></label><button class="admin-primary" type="submit">新增供應商</button></div></form><form class="admin-card" id="purchaseForm"><p class="admin-eyebrow">PURCHASE ORDER</p><h2>建立進貨單</h2><div class="stack-form"><label>供應商<select id="purchaseSupplier"></select></label><label>商品<select id="purchaseProduct" required></select></label><label>數量<input id="purchaseQuantity" type="number" min="1" value="1"></label><label>單價（JPY）<input id="purchaseUnitCost" type="number" min="0"></label><label>備註<textarea id="purchaseNotes" rows="3"></textarea></label><button class="admin-primary" type="submit">建立進貨單</button></div></form></div><div id="purchaseRows" class="admin-orders"></div>
         </section>
 
         <section class="admin-view" data-admin-panel="members" hidden>
@@ -135,6 +165,7 @@
               <option value="active">上架中</option>
               <option value="inactive">已下架</option>
             </select>
+            <select id="productCandidate"><option value="">從待上架主檔選擇</option></select>
             <button class="admin-primary" id="productCreate" type="button">＋ 新增商品</button>
             <span id="productCount"></span>
           </div>
@@ -145,6 +176,7 @@
               <button class="product-cancel" id="productCancel" type="button">取消</button>
             </div>
             <input id="productId" type="hidden">
+            <input id="productMasterId" type="hidden"><input id="productCostScenarioId" type="hidden">
             <input id="productExistingImage" type="hidden">
             <input id="productStoragePath" type="hidden">
             <div class="product-form-grid">
@@ -176,6 +208,6 @@
   </main>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.3/dist/umd/supabase.js"></script>
   <script src="supabase-config.js"></script>
-  <script src="admin.js?v=product-management-1"></script>
+  <script src="admin.js?v=operations-management-1"></script>
 </body>
 </html>

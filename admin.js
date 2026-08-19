@@ -9,7 +9,7 @@
   const login = document.getElementById("adminLogin");
   const shell = document.getElementById("adminShell");
   const loginForm = document.getElementById("adminLoginForm");
-  const titles = { overview: "管理總覽", members: "會員管理", orders: "訂單管理", personal: "代購訂單管理", products: "商品管理" };
+  const titles = { overview: "管理總覽", members: "會員管理", orders: "訂單管理", personal: "代購訂單管理", master: "商品主檔", costs: "商品成本試算", purchases: "進貨管理", products: "商品管理" };
   const brandLabels = { kayanoya: "茅乃舍", kinto: "KINTO", kajidonya: "家事問屋", akomeya: "AKOMEYA TOKYO", "fukuoka-coffee": "福岡咖啡精選" };
   const statusLabels = {
     pending_payment: "待匯款",
@@ -30,6 +30,10 @@
   let orders = [];
   let personalRequests = [];
   let products = [];
+  let masterProducts = [];
+  let costScenarios = [];
+  let suppliers = [];
+  let purchaseOrders = [];
 
   const byId = id => document.getElementById(id);
   const escapeHtml = value => String(value ?? "")
@@ -82,15 +86,19 @@
 
   async function loadData() {
     showMessage("adminGlobalMessage", "正在讀取最新資料…");
-    const [profileResult, addressResult, ezwayResult, orderResult, personalResult, productResult] = await Promise.all([
+    const [profileResult, addressResult, ezwayResult, orderResult, personalResult, productResult, masterResult, costResult, supplierResult, purchaseResult] = await Promise.all([
       client.from("profiles").select("id,email,full_name,phone,newsletter,created_at").order("created_at", { ascending: false }),
       client.from("member_addresses").select("user_id,recipient_name,recipient_phone,postal_code,address,is_default").eq("is_default", true),
       client.from("ezway_profiles").select("user_id,real_name,mobile"),
       client.from("orders").select("id,user_id,order_number,status,currency,total_amount,created_at,updated_at,recipient_name,recipient_phone,postal_code,shipping_address,payment_proof_name,admin_note,tracking_number,order_items(product_name,specification,quantity,unit_price,line_total)").order("created_at", { ascending: false }),
       client.from("personal_shopping_requests").select("id,request_number,user_id,customer_name,email,phone,line_id,note,items,status,quote_amount,quote_details,admin_note,created_at,updated_at").order("created_at", { ascending: false }),
-      client.from("products").select("*").order("brand_code").order("sort_order").order("created_at")
+      client.from("products").select("*").order("brand_code").order("sort_order").order("created_at"),
+      client.from("product_master").select("*").order("created_at", { ascending: false }),
+      client.from("cost_scenarios").select("*").order("created_at", { ascending: false }),
+      client.from("suppliers").select("*").order("name"),
+      client.from("purchase_orders").select("*,suppliers(name),purchase_order_items(*,product_master(name,product_code))").order("created_at", { ascending: false })
     ]);
-    const failed = [profileResult, addressResult, ezwayResult, orderResult, personalResult, productResult].find(result => result.error);
+    const failed = [profileResult, addressResult, ezwayResult, orderResult, personalResult, productResult, masterResult, costResult, supplierResult, purchaseResult].find(result => result.error);
     if (failed) {
       showMessage("adminGlobalMessage", failed.error.message || "資料讀取失敗。", "error");
       return;
@@ -101,6 +109,10 @@
     orders = orderResult.data || [];
     personalRequests = personalResult.data || [];
     products = productResult.data || [];
+    masterProducts = masterResult.data || [];
+    costScenarios = costResult.data || [];
+    suppliers = supplierResult.data || [];
+    purchaseOrders = purchaseResult.data || [];
     renderAll();
     showMessage("adminGlobalMessage", "資料更新時間：" + new Date().toLocaleTimeString("zh-TW"), "success");
   }
@@ -116,12 +128,75 @@
     renderOrders();
     renderPersonalRequests();
     renderProducts();
+    renderMasterProducts();
+    renderCosts();
+    renderPurchases();
   }
 
   function productSlug(brand, name) {
     const latin = String(name || "").normalize("NFKD").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 48);
     return brand + "-" + (latin || "product") + "-" + Date.now().toString(36);
   }
+
+  const masterStatusLabels = { pending_review: "待確認", confirmed: "已確認", costed: "已試算", ready_to_publish: "待上架", published: "已上架", archived: "已封存" };
+
+  function setMasterPreview(url) {
+    const image = byId("masterImagePreview");
+    image.hidden = !url; byId("masterPreviewEmpty").hidden = Boolean(url);
+    if (url) image.src = url; else image.removeAttribute("src");
+  }
+
+  function openMasterForm(item) {
+    const form = byId("masterForm"); form.hidden = false; form.reset();
+    byId("masterId").value = item?.id || ""; byId("masterCode").value = item?.product_code || "";
+    byId("masterSourceUrl").value = item?.source_url || ""; byId("masterBrandName").value = item?.brand_name || "";
+    byId("masterBrandCode").value = item?.storefront_brand_code || ""; byId("masterName").value = item?.name || "";
+    byId("masterSpecification").value = item?.specification || ""; byId("masterUsage").value = item?.usage_flavor || "";
+    byId("masterDescription").value = item?.description || ""; byId("masterModel").value = item?.model || "";
+    byId("masterBarcode").value = item?.barcode || ""; byId("masterReferencePrice").value = item?.reference_price_jpy || 0;
+    byId("masterWeight").value = item?.weight_g || 0; byId("masterNotes").value = item?.notes || "";
+    byId("masterStatus").value = item?.status === "published" ? "ready_to_publish" : (item?.status || "pending_review");
+    byId("masterExistingImage").value = item?.image_url || ""; byId("masterStoragePath").value = item?.storage_path || "";
+    byId("masterFormTitle").textContent = item ? "編輯商品主檔" : "新增候選商品"; setMasterPreview(item?.image_url || "");
+  }
+
+  function renderMasterProducts() {
+    const term = byId("masterSearch").value.trim().toLowerCase();
+    const rows = masterProducts.filter(item => [item.product_code,item.name,item.brand_name,item.source_url].join(" ").toLowerCase().includes(term));
+    byId("masterCount").textContent = "共 " + rows.length + " 項";
+    byId("masterRows").innerHTML = rows.length ? rows.map(item => '<article class="product-item" data-master-id="'+escapeHtml(item.id)+'"><img src="'+escapeHtml(item.image_url||"assets/logo_round.png")+'" alt=""><div><h3>'+escapeHtml(item.name)+'</h3><small>'+escapeHtml(item.product_code)+' · '+escapeHtml(item.brand_name)+'</small><span class="product-status">'+escapeHtml(masterStatusLabels[item.status]||item.status)+'</span></div><div class="product-meta"><p>'+escapeHtml(item.specification||"—")+'</p><small class="master-source">'+escapeHtml(item.source_url||"無來源網址")+'</small></div><strong>'+escapeHtml(formatMoney(item.reference_price_jpy,"JPY"))+'</strong><div class="product-actions"><button type="button" data-edit-master>編輯</button></div></article>').join("") : '<div class="admin-empty">目前尚無商品主檔。</div>';
+    const ready=masterProducts.filter(item=>item.status==="ready_to_publish"&&!item.published_product_id&&item.storefront_brand_code);
+    byId("productCandidate").innerHTML='<option value="">從待上架主檔選擇（'+ready.length+'）</option>'+ready.map(item=>'<option value="'+item.id+'">'+escapeHtml(item.product_code+'｜'+item.name)+'</option>').join("");
+  }
+
+  async function saveMaster(event) {
+    event.preventDefault(); const id=byId("masterId").value; const file=byId("masterImage").files[0];
+    try {
+      const uploaded=await uploadProductImage(file,"master",byId("masterCode").value.toLowerCase().replace(/[^a-z0-9-]/g,"-")||"candidate");
+      const payload={product_code:byId("masterCode").value.trim(),source_url:byId("masterSourceUrl").value.trim(),brand_name:byId("masterBrandName").value.trim(),storefront_brand_code:byId("masterBrandCode").value||null,name:byId("masterName").value.trim(),specification:byId("masterSpecification").value.trim(),usage_flavor:byId("masterUsage").value.trim(),description:byId("masterDescription").value.trim(),model:byId("masterModel").value.trim(),barcode:byId("masterBarcode").value.trim(),reference_price_jpy:Number(byId("masterReferencePrice").value)||0,weight_g:Number(byId("masterWeight").value)||0,notes:byId("masterNotes").value.trim(),status:byId("masterStatus").value,image_url:uploaded?.url||byId("masterExistingImage").value,storage_path:uploaded?.path||byId("masterStoragePath").value||null,updated_at:new Date().toISOString()};
+      const {error}=id?await client.from("product_master").update(payload).eq("id",id):await client.from("product_master").insert(payload); if(error) throw error;
+      byId("masterForm").hidden=true; await loadData();
+    } catch(error){showMessage("masterFormMessage",error.message||"商品主檔儲存失敗。","error");}
+  }
+
+  function calcCost() {
+    const n=id=>Math.max(0,Number(byId(id).value)||0), qty=Math.max(1,n("costQuantity")), rate=n("costRate"), weight=(n("costWeight")/1000+n("costPackingWeight"))*qty;
+    const base=((n("costPurchase")*qty+n("costJapanShipping"))*rate+weight*n("costFreightRate")+n("costDuty")+n("costCustoms")+n("costLocal"))/qty;
+    const fee=(n("costCommission")+n("costPlatform"))/100, total=base/(1-fee||1), margin=n("costMargin")/100, suggested=total/(1-margin||1);
+    byId("costCalculated").textContent=formatMoney(Math.round(total),"TWD"); byId("costSuggested").textContent=formatMoney(Math.round(suggested),"TWD"); return {total:Math.round(total),suggested:Math.round(suggested)};
+  }
+
+  function renderCosts() {
+    const options=masterProducts.filter(x=>x.status!=="archived").map(x=>'<option value="'+x.id+'">'+escapeHtml(x.product_code+'｜'+x.name)+'</option>').join("");
+    byId("costProduct").innerHTML='<option value="">請選擇商品</option>'+options; byId("purchaseProduct").innerHTML='<option value="">請選擇商品</option>'+options;
+    byId("costRows").innerHTML=costScenarios.length?costScenarios.map(s=>{const p=masterProducts.find(x=>x.id===s.product_master_id);return '<article class="admin-order"><div class="admin-order-head"><div><h3>'+escapeHtml(p?.name||"未知商品")+'</h3><p class="admin-order-meta">'+escapeHtml(s.scenario_name)+(s.is_selected?' · 上架採用方案':'')+'</p></div><strong>'+escapeHtml(formatMoney(s.actual_sale_price_twd,"TWD"))+'</strong></div></article>';}).join(""):'<div class="admin-empty">尚無成本方案。</div>';
+  }
+
+  async function saveCost(event){event.preventDefault();const calculated=calcCost(),productId=byId("costProduct").value,pct=id=>(Number(byId(id).value)||0)/100;if(byId("costSelected").checked)await client.from("cost_scenarios").update({is_selected:false}).eq("product_master_id",productId);const payload={product_master_id:productId,scenario_name:byId("costName").value.trim()||"基本方案",purchase_price_jpy:Number(byId("costPurchase").value)||0,quantity:Math.max(1,Number(byId("costQuantity").value)||1),exchange_rate:Number(byId("costRate").value)||0,japan_shipping_jpy:Number(byId("costJapanShipping").value)||0,product_weight_g:Number(byId("costWeight").value)||0,packing_weight_kg:Number(byId("costPackingWeight").value)||0,freight_rate_twd_kg:Number(byId("costFreightRate").value)||0,duty_twd:Number(byId("costDuty").value)||0,customs_twd:Number(byId("costCustoms").value)||0,local_cost_twd:Number(byId("costLocal").value)||0,commission_rate:pct("costCommission"),platform_rate:pct("costPlatform"),target_margin_rate:pct("costMargin"),actual_sale_price_twd:Number(byId("costSalePrice").value)||0,calculated_cost_twd:calculated.total,suggested_price_twd:calculated.suggested,is_selected:byId("costSelected").checked};const {error}=await client.from("cost_scenarios").insert(payload);if(error)return showMessage("costMessage",error.message,"error");await client.from("product_master").update({status:payload.is_selected?"ready_to_publish":"costed",updated_at:new Date().toISOString()}).eq("id",productId);event.target.reset();await loadData();}
+
+  function renderPurchases(){byId("purchaseSupplier").innerHTML='<option value="">未指定供應商</option>'+suppliers.map(s=>'<option value="'+s.id+'">'+escapeHtml(s.name)+'</option>').join("");byId("purchaseRows").innerHTML=purchaseOrders.length?purchaseOrders.map(o=>'<article class="admin-order"><div class="admin-order-head"><div><h3>'+escapeHtml(o.order_number)+'</h3><p class="admin-order-meta">'+escapeHtml(o.suppliers?.name||"未指定供應商")+' · '+escapeHtml(o.status)+'</p></div></div><ul class="admin-order-items">'+(o.purchase_order_items||[]).map(i=>'<li>'+escapeHtml(i.product_master?.name||"")+' × '+i.quantity+'｜'+escapeHtml(formatMoney(i.unit_cost,o.currency))+'</li>').join("")+'</ul></article>').join(""):'<div class="admin-empty">尚無進貨單。</div>';}
+  async function saveSupplier(event){event.preventDefault();const {error}=await client.from("suppliers").insert({supplier_code:byId("supplierCode").value.trim(),name:byId("supplierName").value.trim(),website:byId("supplierWebsite").value.trim(),notes:byId("supplierNotes").value.trim()});if(error)return showMessage("adminGlobalMessage",error.message,"error");event.target.reset();await loadData();}
+  async function savePurchase(event){event.preventDefault();const number="PO"+new Date().toISOString().replace(/\D/g,"").slice(0,14),{data,error}=await client.from("purchase_orders").insert({order_number:number,supplier_id:byId("purchaseSupplier").value||null,notes:byId("purchaseNotes").value.trim()}).select("id").single();if(error)return showMessage("adminGlobalMessage",error.message,"error");const itemError=(await client.from("purchase_order_items").insert({purchase_order_id:data.id,product_master_id:byId("purchaseProduct").value,quantity:Math.max(1,Number(byId("purchaseQuantity").value)||1),unit_cost:Number(byId("purchaseUnitCost").value)||0})).error;if(itemError)return showMessage("adminGlobalMessage",itemError.message,"error");event.target.reset();await loadData();}
 
   function renderProducts() {
     const term = byId("productSearch").value.trim().toLowerCase();
@@ -164,6 +239,8 @@
     form.hidden = false;
     form.reset();
     byId("productId").value = product?.id || "";
+    byId("productMasterId").value = product?.product_master_id || "";
+    byId("productCostScenarioId").value = product?.cost_scenario_id || "";
     byId("productExistingImage").value = product?.image_url || "";
     byId("productStoragePath").value = product?.storage_path || "";
     byId("productBrand").value = product?.brand_code || "";
@@ -182,6 +259,8 @@
     form.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
+  function openProductFromMaster(masterId){const item=masterProducts.find(x=>x.id===masterId);if(!item)return openProductForm();const scenario=costScenarios.find(x=>x.product_master_id===item.id&&x.is_selected);openProductForm({product_master_id:item.id,cost_scenario_id:scenario?.id||"",brand_code:item.storefront_brand_code,name:item.name,specification:item.specification,usage_flavor:item.usage_flavor,description:item.description,price:scenario?.actual_sale_price_twd||0,currency:"TWD",stock_quantity:0,sort_order:0,is_active:true,image_url:item.image_url,storage_path:item.storage_path});}
+
   async function uploadProductImage(file, brand, slug) {
     if (!file) return null;
     if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) throw new Error("商品照片僅接受 JPG、PNG 或 WebP。");
@@ -199,7 +278,7 @@
     const brand = byId("productBrand").value;
     const name = byId("productName").value.trim();
     const file = byId("productImage").files[0];
-    if (!id && !file) {
+    if (!id && !file && !byId("productExistingImage").value) {
       showMessage("productFormMessage", "新增商品時請上傳商品照片。", "error");
       return;
     }
@@ -217,12 +296,18 @@
         sort_order: Math.round(Number(byId("productSort").value) || 0), is_active: byId("productActive").value === "true",
         image_url: uploaded?.url || byId("productExistingImage").value,
         storage_path: uploaded?.path || byId("productStoragePath").value || null,
+        product_master_id: byId("productMasterId").value || null,
+        cost_scenario_id: byId("productCostScenarioId").value || null,
         updated_at: new Date().toISOString()
       };
       if (!id) payload.slug = slug;
       const query = id ? client.from("products").update(payload).eq("id", id) : client.from("products").insert(payload);
       const { error } = await query;
       if (error) throw error;
+      if (!id && payload.product_master_id) {
+        const created = await client.from("products").select("id").eq("slug", slug).single();
+        await client.from("product_master").update({ status: "published", published_product_id: created.data?.id || null, updated_at: new Date().toISOString() }).eq("id", payload.product_master_id);
+      }
       showMessage("adminGlobalMessage", "商品「" + name + "」已儲存。", "success");
       byId("productForm").hidden = true;
       await loadData();
@@ -532,7 +617,7 @@
   byId("productSearch").addEventListener("input", renderProducts);
   byId("productBrandFilter").addEventListener("change", renderProducts);
   byId("productStatusFilter").addEventListener("change", renderProducts);
-  byId("productCreate").addEventListener("click", () => openProductForm());
+  byId("productCreate").addEventListener("click", () => openProductFromMaster(byId("productCandidate").value));
   byId("productCancel").addEventListener("click", () => { byId("productForm").hidden = true; });
   byId("productForm").addEventListener("submit", saveProduct);
   byId("productImage").addEventListener("change", event => {
@@ -548,6 +633,16 @@
     if (event.target.closest("[data-toggle-product]")) toggleProduct(id);
     if (event.target.closest("[data-delete-product]")) deleteProduct(id);
   });
+  byId("masterSearch").addEventListener("input",renderMasterProducts);
+  byId("masterCreate").addEventListener("click",()=>openMasterForm());
+  byId("masterCancel").addEventListener("click",()=>{byId("masterForm").hidden=true;});
+  byId("masterForm").addEventListener("submit",saveMaster);
+  byId("masterImage").addEventListener("change",event=>{const file=event.target.files[0];setMasterPreview(file?URL.createObjectURL(file):byId("masterExistingImage").value);});
+  byId("masterRows").addEventListener("click",event=>{const row=event.target.closest("[data-master-id]");if(row&&event.target.closest("[data-edit-master]"))openMasterForm(masterProducts.find(x=>x.id===row.dataset.masterId));});
+  byId("costForm").addEventListener("input",calcCost);
+  byId("costForm").addEventListener("submit",saveCost);
+  byId("supplierForm").addEventListener("submit",saveSupplier);
+  byId("purchaseForm").addEventListener("submit",savePurchase);
   byId("orderCards").addEventListener("click", event => {
     const button = event.target.closest("[data-save-order]");
     if (button) saveOrder(button.closest(".admin-order"));
