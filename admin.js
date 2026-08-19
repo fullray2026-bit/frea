@@ -25,6 +25,8 @@
     purchased: "日本已下單", shipped: "已寄出", completed: "已完成", cancelled: "已取消"
   };
   let profiles = [];
+  let memberAccounts = [];
+  let membershipApplications = [];
   let addresses = [];
   let ezwayProfiles = [];
   let orders = [];
@@ -86,8 +88,10 @@
 
   async function loadData() {
     showMessage("adminGlobalMessage", "正在讀取最新資料…");
-    const [profileResult, addressResult, ezwayResult, orderResult, personalResult, productResult, masterResult, costResult, supplierResult, purchaseResult] = await Promise.all([
+    const [profileResult, accountResult, applicationResult, addressResult, ezwayResult, orderResult, personalResult, productResult, masterResult, costResult, supplierResult, purchaseResult] = await Promise.all([
       client.from("profiles").select("id,email,full_name,phone,newsletter,created_at").order("created_at", { ascending: false }),
+      client.from("member_accounts").select("*").order("created_at", { ascending: false }),
+      client.from("membership_applications").select("*").order("created_at", { ascending: false }),
       client.from("member_addresses").select("user_id,recipient_name,recipient_phone,postal_code,address,is_default").eq("is_default", true),
       client.from("ezway_profiles").select("user_id,real_name,mobile"),
       client.from("orders").select("id,user_id,order_number,status,currency,total_amount,created_at,updated_at,recipient_name,recipient_phone,postal_code,shipping_address,payment_proof_name,admin_note,tracking_number,order_items(product_name,specification,quantity,unit_price,line_total)").order("created_at", { ascending: false }),
@@ -98,12 +102,14 @@
       client.from("suppliers").select("*").order("name"),
       client.from("purchase_orders").select("*,suppliers(name),purchase_order_items(*,product_master(name,product_code))").order("created_at", { ascending: false })
     ]);
-    const failed = [profileResult, addressResult, ezwayResult, orderResult, personalResult, productResult, masterResult, costResult, supplierResult, purchaseResult].find(result => result.error);
+    const failed = [profileResult, accountResult, applicationResult, addressResult, ezwayResult, orderResult, personalResult, productResult, masterResult, costResult, supplierResult, purchaseResult].find(result => result.error);
     if (failed) {
       showMessage("adminGlobalMessage", failed.error.message || "資料讀取失敗。", "error");
       return;
     }
     profiles = profileResult.data || [];
+    memberAccounts = accountResult.data || [];
+    membershipApplications = applicationResult.data || [];
     addresses = addressResult.data || [];
     ezwayProfiles = ezwayResult.data || [];
     orders = orderResult.data || [];
@@ -177,7 +183,7 @@
     event.preventDefault(); const id=byId("masterId").value; const file=byId("masterImage").files[0];
     try {
       const uploaded=await uploadProductImage(file,"master",byId("masterCode").value.toLowerCase().replace(/[^a-z0-9-]/g,"-")||"candidate");
-      const payload={product_code:byId("masterCode").value.trim(),source_url:byId("masterSourceUrl").value.trim(),brand_name:byId("masterBrandName").value.trim(),storefront_brand_code:byId("masterBrandCode").value||null,name:byId("masterName").value.trim(),specification:byId("masterSpecification").value.trim(),usage_flavor:byId("masterUsage").value.trim(),description:byId("masterDescription").value.trim(),model:byId("masterModel").value.trim(),barcode:byId("masterBarcode").value.trim(),reference_price_jpy:Number(byId("masterReferencePrice").value)||0,weight_g:Number(byId("masterWeight").value)||0,notes:byId("masterNotes").value.trim(),status:byId("masterStatus").value,image_url:uploaded?.url||byId("masterExistingImage").value,storage_path:uploaded?.path||byId("masterStoragePath").value||null,updated_at:new Date().toISOString()};
+      const payload={source_url:byId("masterSourceUrl").value.trim(),brand_name:byId("masterBrandName").value.trim(),storefront_brand_code:byId("masterBrandCode").value||null,name:byId("masterName").value.trim(),specification:byId("masterSpecification").value.trim(),usage_flavor:byId("masterUsage").value.trim(),description:byId("masterDescription").value.trim(),model:byId("masterModel").value.trim(),barcode:byId("masterBarcode").value.trim(),reference_price_jpy:Number(byId("masterReferencePrice").value)||0,weight_g:Number(byId("masterWeight").value)||0,notes:byId("masterNotes").value.trim(),status:byId("masterStatus").value,image_url:uploaded?.url||byId("masterExistingImage").value,storage_path:uploaded?.path||byId("masterStoragePath").value||null,updated_at:new Date().toISOString()};
       const {error}=id?await client.from("product_master").update(payload).eq("id",id):await client.from("product_master").insert(payload); if(error) throw error;
       byId("masterForm").hidden=true; await loadData();
     } catch(error){showMessage("masterFormMessage",error.message||"商品主檔儲存失敗。","error");}
@@ -553,27 +559,47 @@
   function renderMembers() {
     const term = byId("memberSearch").value.trim().toLowerCase();
     const filtered = profiles.filter(profile =>
-      [profile.full_name, profile.email, profile.phone].some(value => String(value || "").toLowerCase().includes(term))
+      [profile.full_name, profile.email, profile.phone, memberAccounts.find(x=>x.user_id===profile.id)?.member_number].some(value => String(value || "").toLowerCase().includes(term))
     );
     byId("memberCount").textContent = "共 " + filtered.length + " 位";
     const target = byId("memberRows");
     if (!filtered.length) {
-      target.innerHTML = '<tr><td colspan="5"><div class="admin-empty">目前沒有符合的會員資料。</div></td></tr>';
+      target.innerHTML = '<tr><td colspan="6"><div class="admin-empty">目前沒有符合的會員資料。</div></td></tr>';
       return;
     }
     target.innerHTML = filtered.map(profile => {
-      const address = addresses.find(item => item.user_id === profile.id) || {};
-      const ezway = ezwayProfiles.find(item => item.user_id === profile.id) || {};
+      const account = memberAccounts.find(item => item.user_id === profile.id) || {};
+      const application = membershipApplications.find(item => item.user_id === profile.id) || {};
+      const typeLabels={A01:"fréa 內部專用",B01:"企業會員",C01:"團購主／部落客",D01:"一般會員"};
+      const reviewLabels={not_required:"不需審核",draft:"資料未完成",submitted:"待審核",under_review:"審核中",approved:"已通過",changes_requested:"待補件",rejected:"未通過"};
+      const applicationDetail=account.member_type==="B01"?[application.company_name,application.tax_id,application.representative_name].filter(Boolean).join("／"):account.member_type==="C01"?application.community_links:"—";
       return "<tr><td><strong>" + escapeHtml(profile.full_name || "未填姓名") +
-        "</strong><small>" + escapeHtml(profile.email || "—") + "</small></td><td>" +
-        escapeHtml(profile.phone || "—") + "</td><td><strong>" +
-        escapeHtml(address.recipient_name || "—") + "</strong><small>" +
-        escapeHtml([address.postal_code, address.address].filter(Boolean).join(" ") || "尚未填寫") +
-        "</small><small>" + escapeHtml(address.recipient_phone || "") + "</small></td><td><strong>" +
-        escapeHtml(ezway.real_name || "—") + "</strong><small>" +
-        escapeHtml(ezway.mobile || "尚未填寫") + "</small></td><td>" +
+        "</strong><small>" + escapeHtml(profile.email || "—") + "</small></td><td><strong>"+escapeHtml(account.member_number||"—")+"</strong><small>"+escapeHtml(typeLabels[account.member_type]||"—")+"</small></td><td>" +
+        escapeHtml(profile.phone || "—") + "</td><td><strong>"+escapeHtml(reviewLabels[application.status||account.review_status]||"—")+"</strong><small>"+escapeHtml(applicationDetail||"—")+"</small>"+(application.proof_path?'<button class="member-proof" type="button" data-proof-path="'+escapeHtml(application.proof_path)+'">查看證明</button>':"")+"</td><td><div class=\"member-admin-controls\"><select data-member-type=\""+escapeHtml(profile.id)+"\"><option value=\"A01\""+(account.member_type==="A01"?" selected":"")+">A01</option><option value=\"B01\""+(account.member_type==="B01"?" selected":"")+">B01</option><option value=\"C01\""+(account.member_type==="C01"?" selected":"")+">C01</option><option value=\"D01\""+(account.member_type==="D01"?" selected":"")+">D01</option></select>"+(["B01","C01"].includes(account.member_type)?'<select data-review-status="'+escapeHtml(profile.id)+'"><option value="submitted">待審核</option><option value="under_review"'+(application.status==="under_review"?" selected":"")+'>審核中</option><option value="approved"'+(application.status==="approved"?" selected":"")+'>通過</option><option value="changes_requested"'+(application.status==="changes_requested"?" selected":"")+'>補件</option><option value="rejected"'+(application.status==="rejected"?" selected":"")+'>拒絕</option></select>':"")+'<button type="button" data-save-member="'+escapeHtml(profile.id)+'">儲存</button></div></td><td>' +
         escapeHtml(formatDate(profile.created_at)) + "</td></tr>";
     }).join("");
+  }
+
+  async function saveMemberClassification(userId){
+    const account=memberAccounts.find(x=>x.user_id===userId); if(!account)return;
+    const memberType=document.querySelector('[data-member-type="'+CSS.escape(userId)+'"]').value;
+    const typeResult=await client.from("member_accounts").update({member_type:memberType,updated_at:new Date().toISOString()}).eq("user_id",userId);
+    if(typeResult.error)return showMessage("adminGlobalMessage",typeResult.error.message,"error");
+    let application=membershipApplications.find(x=>x.user_id===userId);
+    if(["B01","C01"].includes(memberType)&&!application){
+      const createResult=await client.from("membership_applications").insert({user_id:userId,requested_type:memberType,status:"draft"});
+      if(createResult.error)return showMessage("adminGlobalMessage",createResult.error.message,"error");
+      application={user_id:userId,requested_type:memberType,status:"draft"};
+    }else if(["B01","C01"].includes(memberType)&&account.member_type!==memberType){
+      const resetResult=await client.from("membership_applications").update({requested_type:memberType,status:"draft",reviewed_at:null,reviewed_by:null,updated_at:new Date().toISOString()}).eq("user_id",userId);
+      if(resetResult.error)return showMessage("adminGlobalMessage",resetResult.error.message,"error");
+    }
+    const review=document.querySelector('[data-review-status="'+CSS.escape(userId)+'"]');
+    if(review&&application){
+      const status=review.value; const result=await client.from("membership_applications").update({status,reviewed_at:new Date().toISOString(),reviewed_by:(await client.auth.getUser()).data.user.id,updated_at:new Date().toISOString()}).eq("user_id",userId);
+      if(result.error)return showMessage("adminGlobalMessage",result.error.message,"error");
+    }
+    await loadData();
   }
 
   function statusOptions(selected) {
@@ -693,6 +719,16 @@
   });
   byId("adminRefresh").addEventListener("click", loadData);
   byId("memberSearch").addEventListener("input", renderMembers);
+  byId("memberRows").addEventListener("click", async event => {
+    const save = event.target.closest("[data-save-member]");
+    if (save) return saveMemberClassification(save.dataset.saveMember);
+    const proof = event.target.closest("[data-proof-path]");
+    if (proof) {
+      const result = await client.storage.from("membership-documents").createSignedUrl(proof.dataset.proofPath, 120);
+      if (result.error) return showMessage("adminGlobalMessage", result.error.message || "無法開啟證明文件。", "error");
+      window.open(result.data.signedUrl, "_blank", "noopener");
+    }
+  });
   byId("orderSearch").addEventListener("input", renderOrders);
   byId("orderStatusFilter").addEventListener("change", renderOrders);
   byId("personalSearch").addEventListener("input", renderPersonalRequests);

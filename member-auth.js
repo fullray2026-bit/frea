@@ -19,6 +19,7 @@
   const loginForm = byId("loginForm");
   const profileForm = byId("profileForm");
   const deliveryForm = byId("deliveryForm");
+  const membershipForm = byId("membershipForm");
   const query = new URLSearchParams(window.location.search);
   const returnTo = query.get("return") === "personal-shopping.html" ? "personal-shopping.html" : "";
   const emailRedirectUrl = returnTo
@@ -26,6 +27,10 @@
     : "https://fullray2026-bit.github.io/frea/register.html";
   let currentUser = null;
   let currentAddressId = null;
+  let currentMemberAccount = null;
+  let currentApplication = null;
+  const memberTypeLabels = { A01: "A01 fréa 內部專用", B01: "B01 企業會員", C01: "C01 團購主／部落客", D01: "D01 一般會員" };
+  const reviewLabels = { not_required: "一般會員", draft: "資料尚未送出", submitted: "待審核", under_review: "審核中", approved: "審核通過", changes_requested: "請補充資料", rejected: "審核未通過" };
 
   function message(id, text, type) {
     const element = byId(id);
@@ -68,6 +73,33 @@
       panel.hidden = panel.dataset.memberPanel !== name;
     });
     clearMessages();
+  }
+
+  function toggleRegistrationFields() {
+    const type = registerForm.elements.member_type.value;
+    byId("businessFields").hidden = type !== "B01";
+    byId("creatorFields").hidden = type !== "C01";
+    registerForm.querySelectorAll("#businessFields input,#businessFields select").forEach(el => el.required = type === "B01" && el.name !== "proof_file");
+    registerForm.querySelectorAll("#creatorFields textarea,#creatorFields input").forEach(el => el.required = type === "C01");
+  }
+
+  function fillApplication(account, application) {
+    currentMemberAccount = account || {};
+    currentApplication = application || null;
+    byId("memberNumber").textContent = account?.member_number || "—";
+    byId("memberTypeLabel").textContent = memberTypeLabels[account?.member_type] || "—";
+    byId("wholesaleStatus").textContent = account?.wholesale_approved ? "批發採購會員" : (account?.member_type === "B01" || account?.member_type === "C01" ? "審核中／未通過" : "一般採購");
+    const status = byId("membershipStatus");
+    const needsReview = ["B01","C01"].includes(account?.member_type);
+    membershipForm.hidden = !needsReview || application?.status === "approved" || application?.status === "under_review" || application?.status === "submitted";
+    status.textContent = needsReview ? (reviewLabels[application?.status || account?.review_status || "draft"] || "待處理") : "目前會員類別不需要額外審核。";
+    status.className = "application-status" + (["draft","submitted","under_review","changes_requested"].includes(application?.status) ? " is-pending" : application?.status === "rejected" ? " is-rejected" : "");
+    if (!needsReview) return;
+    byId("applicationType").value = memberTypeLabels[account.member_type];
+    document.querySelectorAll(".business-application").forEach(el => el.hidden = account.member_type !== "B01");
+    document.querySelectorAll(".creator-application").forEach(el => el.hidden = account.member_type !== "C01");
+    ["company_name","tax_id","company_address","company_phone","representative_name","proof_type","community_links","applicant_note"].forEach(name => setField(membershipForm,name,application?.[name]));
+    membershipForm.elements.join_permission.checked = Boolean(application?.join_permission);
   }
 
   function escapeHtml(value) {
@@ -132,15 +164,18 @@
 
   async function loadMember(user) {
     currentUser = user;
-    const [profileResult, addressResult, ezwayResult] = await Promise.all([
+    const [profileResult, addressResult, ezwayResult, accountResult, applicationResult] = await Promise.all([
       client.from("profiles").select("full_name,phone,newsletter").eq("id", user.id).single(),
       client.from("member_addresses").select("id,recipient_name,recipient_phone,postal_code,address").eq("user_id", user.id).eq("is_default", true).maybeSingle(),
-      client.from("ezway_profiles").select("real_name,mobile").eq("user_id", user.id).maybeSingle()
+      client.from("ezway_profiles").select("real_name,mobile").eq("user_id", user.id).maybeSingle(),
+      client.from("member_accounts").select("member_number,member_type,review_status,wholesale_approved").eq("user_id", user.id).maybeSingle(),
+      client.from("membership_applications").select("*").eq("user_id", user.id).maybeSingle()
     ]);
     if (profileResult.error) throw profileResult.error;
     const profile = profileResult.data;
     const address = addressResult.data || {};
     const ezway = ezwayResult.data || {};
+    fillApplication(accountResult.data, applicationResult.data);
     currentAddressId = address.id || null;
     byId("memberGreeting").textContent = (profile.full_name || "會員") + "，歡迎回到 fréa。";
     byId("profileEmail").value = user.email || "";
@@ -161,6 +196,8 @@
   byId("showLogin").addEventListener("click", (event) => { event.preventDefault(); show("login"); });
   byId("showRegister").addEventListener("click", (event) => { event.preventDefault(); show("register"); });
   document.querySelectorAll("[data-member-tab]").forEach((button) => button.addEventListener("click", () => activateTab(button.dataset.memberTab)));
+  byId("memberType").addEventListener("change", toggleRegistrationFields);
+  toggleRegistrationFields();
 
   registerForm.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -168,6 +205,7 @@
     const data = new FormData(registerForm);
     const email = String(data.get("email") || "").trim().toLowerCase();
     const password = String(data.get("password") || "");
+    const memberType = String(data.get("member_type") || "D01");
     if (password.length < 8) return message("registerMessage", "密碼至少需要 8 碼。", "error");
     if (password !== String(data.get("confirm_password") || "")) return message("registerMessage", "兩次輸入的密碼不一致。", "error");
     submit.disabled = true;
@@ -183,6 +221,15 @@
           newsletter: data.get("newsletter") === "on",
           terms_accepted: true,
           privacy_accepted: true
+          ,member_type: memberType
+          ,company_name: String(data.get("company_name") || "").trim()
+          ,company_address: String(data.get("company_address") || "").trim()
+          ,company_phone: String(data.get("company_phone") || "").trim()
+          ,tax_id: String(data.get("tax_id") || "").trim()
+          ,representative_name: String(data.get("representative_name") || "").trim()
+          ,proof_type: String(data.get("proof_type") || "").trim()
+          ,community_links: String(data.get("community_links") || "").trim()
+          ,join_permission: data.get("join_permission") === "on"
         }
       }
     });
@@ -196,6 +243,27 @@
     } else {
       message("registerMessage", "帳戶已建立。請到信箱點擊驗證連結，完成後即可登入。", "success");
     }
+  });
+
+  membershipForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const data = new FormData(membershipForm);
+    const type = currentMemberAccount?.member_type;
+    const file = data.get("proof_file");
+    if (type === "B01" && !currentApplication?.proof_path && !(file instanceof File && file.size)) return message("membershipMessage", "請選擇公司證明文件。", "error");
+    if (file instanceof File && file.size > 5 * 1024 * 1024) return message("membershipMessage", "證明文件不可超過 5MB。", "error");
+    let proofPath = currentApplication?.proof_path || null;
+    if (file instanceof File && file.size) {
+      const ext = (file.name.split(".").pop() || "file").toLowerCase().replace(/[^a-z0-9]/g, "");
+      proofPath = currentUser.id + "/qualification-" + Date.now() + "." + ext;
+      const upload = await client.storage.from("membership-documents").upload(proofPath, file, { upsert: false, contentType: file.type });
+      if (upload.error) return message("membershipMessage", readableError(upload.error), "error");
+    }
+    const payload = { requested_type: type, status: "submitted", company_name: String(data.get("company_name")||"").trim(), company_address: String(data.get("company_address")||"").trim(), company_phone: String(data.get("company_phone")||"").trim(), tax_id: String(data.get("tax_id")||"").trim(), representative_name: String(data.get("representative_name")||"").trim(), proof_type: String(data.get("proof_type")||"").trim(), proof_path: proofPath, community_links: String(data.get("community_links")||"").trim(), join_permission: data.get("join_permission") === "on", applicant_note: String(data.get("applicant_note")||"").trim(), submitted_at: new Date().toISOString(), updated_at: new Date().toISOString() };
+    const result = currentApplication ? await client.from("membership_applications").update(payload).eq("id", currentApplication.id).select().single() : await client.from("membership_applications").insert({ ...payload, user_id: currentUser.id }).select().single();
+    if (result.error) return message("membershipMessage", readableError(result.error), "error");
+    fillApplication(currentMemberAccount, result.data);
+    message("membershipMessage", "審核資料已送出。", "success");
   });
 
   loginForm.addEventListener("submit", async (event) => {
@@ -282,4 +350,3 @@
     } else show("register", false);
   });
 })();
-

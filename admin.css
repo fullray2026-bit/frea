@@ -42,6 +42,7 @@
 .admin-table th,.admin-table td{padding:15px 17px;text-align:left;vertical-align:top;border-bottom:1px solid var(--admin-line);font-size:13px}
 .admin-table th{font-size:11px;letter-spacing:.08em;color:var(--admin-muted);background:#faf7f2}
 .admin-table tbody tr:last-child td{border-bottom:0}.admin-table strong,.admin-table small{display:block}.admin-table small{color:var(--admin-muted);margin-top:3px}
+.member-admin-controls{display:grid;gap:7px;min-width:140px}.member-admin-controls select,.member-admin-controls button,.member-proof{border:1px solid var(--admin-line);background:#fff;color:var(--admin-ink);padding:7px 9px;border-radius:7px;font-size:12px}.member-admin-controls button,.member-proof{cursor:pointer}.member-proof{margin-top:8px}
 .admin-orders{display:grid;gap:16px}
 .admin-order{padding:22px}
 .admin-order-head{display:grid;grid-template-columns:1.2fr 1fr auto;gap:18px;align-items:start}

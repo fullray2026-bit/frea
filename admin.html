@@ -78,7 +78,7 @@
             <div class="product-form-head"><div><p class="admin-eyebrow">PRODUCT MASTER</p><h2 id="masterFormTitle">新增候選商品</h2></div><button class="product-cancel" id="masterCancel" type="button">取消</button></div>
             <input id="masterId" type="hidden"><input id="masterExistingImage" type="hidden"><input id="masterStoragePath" type="hidden">
             <div class="product-form-grid">
-              <label>商品編號 *<input id="masterCode" required placeholder="例如 PRD-001"></label><label class="product-wide">商品來源網址<input id="masterSourceUrl" type="url" placeholder="https://"></label>
+              <label>商品編號<input id="masterCode" readonly placeholder="儲存後自動產生 FR-000001"></label><label class="product-wide">商品來源網址<input id="masterSourceUrl" type="url" placeholder="https://"></label>
               <label>品牌名稱 *<input id="masterBrandName" required></label><label>前台品牌位置<select id="masterBrandCode"><option value="">尚未指定</option><option value="kayanoya">茅乃舍</option><option value="kinto">KINTO</option><option value="kajidonya">家事問屋</option><option value="akomeya">AKOMEYA TOKYO</option><option value="fukuoka-coffee">福岡咖啡精選</option></select></label>
               <label class="product-wide">商品名稱 *<input id="masterName" required></label><label>規格<input id="masterSpecification"></label><label>用途／風味<input id="masterUsage"></label>
               <label>型號<input id="masterModel"></label><label>JAN／條碼<input id="masterBarcode"></label><label>參考售價（JPY）<input id="masterReferencePrice" type="number" min="0"></label><label>商品重量（g）<input id="masterWeight" type="number" min="0"></label>
@@ -113,7 +113,7 @@
           </div>
           <div class="admin-table-wrap">
             <table class="admin-table">
-              <thead><tr><th>會員</th><th>聯絡方式</th><th>收件資料</th><th>EZ WAY</th><th>加入日期</th></tr></thead>
+              <thead><tr><th>會員</th><th>類別／編號</th><th>聯絡方式</th><th>審核資料</th><th>資格與操作</th><th>加入日期</th></tr></thead>
               <tbody id="memberRows"></tbody>
             </table>
           </div>
@@ -215,6 +215,6 @@
   </main>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.3/dist/umd/supabase.js"></script>
   <script src="supabase-config.js"></script>
-  <script src="admin.js?v=operations-management-1"></script>
+  <script src="admin.js?v=member-classification-1"></script>
 </body>
 </html>

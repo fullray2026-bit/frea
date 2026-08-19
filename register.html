@@ -28,10 +28,11 @@
 .member-order small{display:block;color:var(--muted);margin-top:8px}
 #orderList{max-height:330px;overflow-y:auto;overscroll-behavior:contain;padding-right:10px;scrollbar-gutter:stable}
 .member-logout{display:block;margin:34px auto 0;border:0;background:transparent;text-decoration:underline;color:var(--muted);cursor:pointer;font:inherit}
+.member-identity{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:0 0 24px}.member-identity>div{padding:14px 16px;border:1px solid #e1d5c8;border-radius:10px;background:#faf7f2}.member-identity span{display:block;font-size:11px;color:var(--muted);margin-bottom:5px}.member-identity strong{font-weight:500}.membership-extra{grid-column:1/-1;padding:18px;border:1px solid #e1d5c8;border-radius:12px;background:#faf7f2}.membership-extra h3{margin:0 0 14px;font-size:18px;font-weight:400}.membership-help{grid-column:1/-1;margin:0;color:var(--muted);font-size:13px;line-height:1.7}.application-status{padding:14px 16px;border-radius:10px;background:#edf4eb;color:#42613b;margin-bottom:20px}.application-status.is-pending{background:#f7f1e8;color:#7c6248}.application-status.is-rejected{background:#f8ece8;color:#8b3e2f}
 #loginView .auth-head p{margin-bottom:4px}
 #loginForm .form-grid{margin-bottom:20px}
 @media(min-width:981px){.auth-layout{align-items:start}.auth-image{height:auto;aspect-ratio:2/3}.auth-image img{height:100%;object-fit:cover}}
-@media(max-width:760px){.member-section-head{display:block}.member-section-head>p{margin-top:10px}.member-tabs{gap:0}.member-tab{padding:12px 11px;font-size:14px}}
+@media(max-width:760px){.member-section-head{display:block}.member-section-head>p{margin-top:10px}.member-tabs{gap:0}.member-tab{padding:12px 11px;font-size:14px}.member-identity{grid-template-columns:1fr}}
 </style></head><body><header class="header"><div class="container header-inner"><a class="wordmark serif" href="index.html">fréa</a><div></div><div class="actions"><button class="icon" title="搜尋" aria-label="搜尋"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="14" r="9.5"></circle><path d="M21.2 21.2 28 28"></path></svg></button><a class="icon" title="會員登入" aria-label="會員登入" href="register.html"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M18 5h9v22h-9"></path><path d="M4 16h16"></path><path d="m14 10 6 6-6 6"></path></svg></a><a class="icon" title="購物車" aria-label="購物車" href="cart.html"><svg viewBox="0 0 36 32" aria-hidden="true"><path d="M3 4h4l3.2 17h18.2l3.6-12H9"></path><circle cx="14" cy="27" r="1.8"></circle><circle cx="27" cy="27" r="1.8"></circle></svg></a></div></div></header><main><section class="auth-wrap"><div class="container"><div class="auth-layout"><div class="auth-visual"><div class="auth-image"><img src="assets/brand_vertical.png" alt="fréa 會員加入"></div></div><div class="auth-panel"><div class="auth-card">
 <div id="registerView">
 <div class="auth-head"><div class="eyebrow">Create Account</div><h1 class="serif">會員註冊</h1><p>請填寫以下資料，建立您的 fréa 會員帳戶。</p></div>
@@ -42,6 +43,9 @@
 <div class="field"><label>確認密碼 *</label><input required minlength="8" type="password" name="confirm_password" autocomplete="new-password" placeholder="再次輸入密碼"></div>
 <div class="field"><label>姓名 *</label><input required name="name" autocomplete="name" placeholder="請輸入姓名"></div>
 <div class="field"><label>手機號碼 *</label><input required type="tel" name="phone" autocomplete="tel" placeholder="請輸入手機號碼"></div>
+<div class="field full"><label>會員類別 *</label><select required name="member_type" id="memberType"><option value="D01">D01 一般會員</option><option value="B01">B01 企業會員（需審核）</option><option value="C01">C01 團購主／部落客（需審核）</option></select></div>
+<div class="membership-extra" id="businessFields" hidden><h3 class="serif">企業會員審核資料</h3><div class="form-grid"><div class="field"><label>公司名稱 *</label><input name="company_name"></div><div class="field"><label>統一編號 *</label><input name="tax_id"></div><div class="field full"><label>公司地址 *</label><input name="company_address"></div><div class="field"><label>公司電話 *</label><input name="company_phone"></div><div class="field"><label>負責人姓名 *</label><input name="representative_name"></div><div class="field full"><label>證明類型 *</label><select name="proof_type"><option value="">請選擇</option><option value="business_registration">營利事業登記證</option><option value="business_card">名片</option></select></div><p class="membership-help">帳戶建立並完成 Email 驗證後，請登入會員中心上傳證明文件，才會正式送交審核。</p></div></div>
+<div class="membership-extra" id="creatorFields" hidden><h3 class="serif">團購主／部落客審核資料</h3><div class="form-grid"><div class="field full"><label>社團、社群或網站連結 *</label><textarea name="community_links" rows="3" placeholder="每行一個網址"></textarea></div><div class="field full"><label class="check-item"><input type="checkbox" name="join_permission"> <span>同意讓 fréa 成員加入或查看上述社群，以供資格審核</span></label></div></div></div>
 </div>
 <div class="check-group">
 <label class="check-item"><input required type="checkbox" name="terms"> <span>我已閱讀並同意 <a href="terms.html">會員條款</a></span></label>
@@ -72,9 +76,11 @@
 <button class="member-tab is-active" type="button" data-member-tab="profile">基本資料</button>
 <button class="member-tab" type="button" data-member-tab="orders">訂單紀錄</button>
 <button class="member-tab" type="button" data-member-tab="delivery">收件與 EZ WAY</button>
+<button class="member-tab" type="button" data-member-tab="membership">會員資格</button>
 </nav>
 <section class="member-panel" data-member-panel="profile">
 <div class="member-section-head"><div><div class="eyebrow">Profile</div><h2 class="serif">會員基本資料</h2></div></div>
+<div class="member-identity"><div><span>會員編號</span><strong id="memberNumber">—</strong></div><div><span>會員類別</span><strong id="memberTypeLabel">—</strong></div><div><span>採購資格</span><strong id="wholesaleStatus">—</strong></div></div>
 <form id="profileForm" class="auth-form">
 <div class="form-grid">
 <div class="field full"><label>Email</label><input id="profileEmail" disabled></div>
@@ -85,6 +91,15 @@
 <div class="auth-message" id="profileMessage" role="status"></div>
 <button class="btn auth-btn" type="submit">儲存基本資料</button>
 </form>
+</section>
+<section class="member-panel" data-member-panel="membership" hidden>
+<div class="member-section-head"><div><div class="eyebrow">Membership</div><h2 class="serif">會員資格與審核</h2></div><p>B01／C01 審核通過後可使用批發採購資格。</p></div>
+<div id="membershipStatus" class="application-status"></div>
+<form id="membershipForm" class="auth-form" hidden><div class="form-grid">
+<div class="field full"><label>申請類別</label><input id="applicationType" disabled></div>
+<div class="field business-application"><label>公司名稱 *</label><input name="company_name"></div><div class="field business-application"><label>統一編號 *</label><input name="tax_id"></div><div class="field full business-application"><label>公司地址 *</label><input name="company_address"></div><div class="field business-application"><label>公司電話 *</label><input name="company_phone"></div><div class="field business-application"><label>負責人姓名 *</label><input name="representative_name"></div><div class="field business-application"><label>證明類型 *</label><select name="proof_type"><option value="business_registration">營利事業登記證</option><option value="business_card">名片</option></select></div><div class="field full business-application"><label>證明文件（JPG、PNG、WebP 或 PDF，5MB 內）*</label><input type="file" name="proof_file" accept="image/jpeg,image/png,image/webp,application/pdf"></div>
+<div class="field full creator-application"><label>社團、社群或網站連結 *</label><textarea name="community_links" rows="3"></textarea></div><div class="field full creator-application"><label class="check-item"><input type="checkbox" name="join_permission"> <span>同意讓 fréa 成員加入或查看上述社群</span></label></div>
+<div class="field full"><label>補充說明</label><textarea name="applicant_note" rows="3"></textarea></div></div><div class="auth-message" id="membershipMessage" role="status"></div><button class="btn auth-btn" type="submit">送交審核</button></form>
 </section>
 <section class="member-panel" data-member-panel="orders" hidden>
 <div class="member-section-head"><div><div class="eyebrow">Order History</div><h2 class="serif">訂單紀錄</h2></div></div>
@@ -222,5 +237,4 @@
   const session=localStorage.getItem(SESSION_KEY);
   if(session){showMember(session);}
 })();
-</script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.3/dist/umd/supabase.js"></script><script src="supabase-config.js"></script><script src="member-auth.js?v=personal-shopping-history-1"></script></body></html>
-
+</script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.3/dist/umd/supabase.js"></script><script src="supabase-config.js"></script><script src="member-auth.js?v=member-classification-1"></script></body></html>
