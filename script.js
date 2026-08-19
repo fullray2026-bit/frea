@@ -63,7 +63,8 @@ if(itemList){
   const normalise=value=>String(value||'').toLocaleLowerCase('zh-Hant').replace(/\s+/g,' ').trim();
   const productPageByBrand={
     '茅乃舍':'brand-kayanoya.html','KINTO':'brand-kinto.html','家事問屋':'brand-kajidonya.html',
-    'AKOMEYA TOKYO':'brand-akomeya.html','福岡咖啡精選':'brand-fukuoka-coffee.html'
+    'AKOMEYA TOKYO':'brand-akomeya.html','福岡咖啡精選':'brand-fukuoka-coffee.html',
+    '生活雜貨精選':'category-lifestyle.html'
   };
   async function loadCatalogue(){
     if(cataloguePromise)return cataloguePromise;
@@ -103,4 +104,18 @@ if(itemList){
   document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!overlay.hidden)closeSearch()});
   if(location.hash){const target=document.getElementById(decodeURIComponent(location.hash.slice(1)));if(target)setTimeout(()=>target.scrollIntoView({behavior:'smooth',block:'center'}),120)}
 })();
+
+if (location.pathname.endsWith("/category-lifestyle.html")) {
+  const loadScript = src => new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = src;
+    script.onload = resolve;
+    script.onerror = reject;
+    document.body.appendChild(script);
+  });
+  loadScript("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.3/dist/umd/supabase.js")
+    .then(() => loadScript("supabase-config.js"))
+    .then(() => loadScript("product-catalog.js?v=1"))
+    .catch(() => {});
+}
 

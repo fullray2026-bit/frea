@@ -12,14 +12,16 @@
     "brand-kinto.html": "kinto",
     "brand-kajidonya.html": "kajidonya",
     "brand-akomeya.html": "akomeya",
-    "brand-fukuoka-coffee.html": "fukuoka-coffee"
+    "brand-fukuoka-coffee.html": "fukuoka-coffee",
+    "category-lifestyle.html": "lifestyle-picks"
   };
   const brandHref = {
     "brand-kayanoya.html": "kayanoya",
     "brand-kinto.html": "kinto",
     "brand-kajidonya.html": "kajidonya",
     "brand-akomeya.html": "akomeya",
-    "brand-fukuoka-coffee.html": "fukuoka-coffee"
+    "brand-fukuoka-coffee.html": "fukuoka-coffee",
+    "category-lifestyle.html": "lifestyle-picks"
   };
 
   const escapeHtml = value => String(value ?? "")
@@ -104,7 +106,17 @@
 
     const current = location.pathname.split("/").pop() || "index.html";
     if (pageBrand[current]) {
-      replaceList(document.querySelector(".brand-product-list"), data.filter(product => product.brand_code === pageBrand[current]));
+      let list = document.querySelector(".brand-product-list");
+      if (!list && current === "category-lifestyle.html") {
+        const empty = document.querySelector(".collection-empty");
+        if (empty) {
+          list = document.createElement("div");
+          list.className = "brand-product-list";
+          list.innerHTML = '<div class="brand-product-labels" aria-hidden="true"><span>商品照片</span><span>商品名稱</span><span>規格</span><span>用途／風味</span><span>價格</span><span>數量</span><span></span></div>';
+          empty.replaceWith(list);
+        }
+      }
+      replaceList(list, data.filter(product => product.brand_code === pageBrand[current]));
       return;
     }
     if (current === "products.html") {
