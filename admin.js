@@ -155,7 +155,7 @@
     byId("masterDescription").value = item?.description || ""; byId("masterModel").value = item?.model || "";
     byId("masterBarcode").value = item?.barcode || ""; byId("masterReferencePrice").value = item?.reference_price_jpy || 0;
     byId("masterWeight").value = item?.weight_g || 0; byId("masterNotes").value = item?.notes || "";
-    byId("masterStatus").value = item?.status === "published" ? "ready_to_publish" : (item?.status || "pending_review");
+    byId("masterStatus").value = item?.status || "pending_review";
     byId("masterExistingImage").value = item?.image_url || ""; byId("masterStoragePath").value = item?.storage_path || "";
     byId("masterFormTitle").textContent = item ? "編輯商品主檔" : "新增候選商品"; setMasterPreview(item?.image_url || "");
   }
@@ -164,7 +164,11 @@
     const term = byId("masterSearch").value.trim().toLowerCase();
     const rows = masterProducts.filter(item => [item.product_code,item.name,item.brand_name,item.source_url].join(" ").toLowerCase().includes(term));
     byId("masterCount").textContent = "共 " + rows.length + " 項";
-    byId("masterRows").innerHTML = rows.length ? rows.map(item => '<article class="product-item" data-master-id="'+escapeHtml(item.id)+'"><img src="'+escapeHtml(item.image_url||"assets/logo_round.png")+'" alt=""><div><h3>'+escapeHtml(item.name)+'</h3><small>'+escapeHtml(item.product_code)+' · '+escapeHtml(item.brand_name)+'</small><span class="product-status">'+escapeHtml(masterStatusLabels[item.status]||item.status)+'</span></div><div class="product-meta"><p>'+escapeHtml(item.specification||"—")+'</p><small class="master-source">'+escapeHtml(item.source_url||"無來源網址")+'</small></div><strong>'+escapeHtml(formatMoney(item.reference_price_jpy,"JPY"))+'</strong><div class="product-actions"><button type="button" data-edit-master>編輯</button></div></article>').join("") : '<div class="admin-empty">目前尚無商品主檔。</div>';
+    byId("masterRows").innerHTML = rows.length ? rows.map(item => {
+      const related = Boolean(item.published_product_id || products.some(p => p.product_master_id === item.id) || costScenarios.some(s => s.product_master_id === item.id) || purchaseOrders.some(o => (o.purchase_order_items || []).some(i => i.product_master_id === item.id)));
+      const action = related ? "封存" : "刪除";
+      return '<article class="product-item" data-master-id="'+escapeHtml(item.id)+'"><img src="'+escapeHtml(item.image_url||"assets/logo_round.png")+'" alt=""><div><h3>'+escapeHtml(item.name)+'</h3><small>'+escapeHtml(item.product_code)+' · '+escapeHtml(item.brand_name)+'</small><span class="product-status">'+escapeHtml(masterStatusLabels[item.status]||item.status)+'</span></div><div class="product-meta"><p>'+escapeHtml(item.specification||"—")+'</p><small class="master-source">'+escapeHtml(item.source_url||"無來源網址")+'</small></div><strong>'+escapeHtml(formatMoney(item.reference_price_jpy,"JPY"))+'</strong><div class="product-actions"><button type="button" data-edit-master>編輯</button><button class="danger" type="button" data-delete-master>'+action+'</button></div></article>';
+    }).join("") : '<div class="admin-empty">目前尚無商品主檔。</div>';
     const ready=masterProducts.filter(item=>item.status==="ready_to_publish"&&!item.published_product_id&&item.storefront_brand_code);
     byId("productCandidate").innerHTML='<option value="">從待上架主檔選擇（'+ready.length+'）</option>'+ready.map(item=>'<option value="'+item.id+'">'+escapeHtml(item.product_code+'｜'+item.name)+'</option>').join("");
   }
@@ -179,20 +183,99 @@
     } catch(error){showMessage("masterFormMessage",error.message||"商品主檔儲存失敗。","error");}
   }
 
-  function calcCost() {
-    const n=id=>Math.max(0,Number(byId(id).value)||0), qty=Math.max(1,n("costQuantity")), rate=n("costRate"), weight=(n("costWeight")/1000+n("costPackingWeight"))*qty;
-    const base=((n("costPurchase")*qty+n("costJapanShipping"))*rate+weight*n("costFreightRate")+n("costDuty")+n("costCustoms")+n("costLocal"))/qty;
-    const fee=(n("costCommission")+n("costPlatform"))/100, total=base/(1-fee||1), margin=n("costMargin")/100, suggested=total/(1-margin||1);
-    byId("costCalculated").textContent=formatMoney(Math.round(total),"TWD"); byId("costSuggested").textContent=formatMoney(Math.round(suggested),"TWD"); return {total:Math.round(total),suggested:Math.round(suggested)};
+  async function deleteMaster(id) {
+    const item = masterProducts.find(product => product.id === id);
+    if (!item) return;
+    const related = Boolean(item.published_product_id || products.some(p => p.product_master_id === id) || costScenarios.some(s => s.product_master_id === id) || purchaseOrders.some(o => (o.purchase_order_items || []).some(i => i.product_master_id === id)));
+    if (related) {
+      if (item.status === "archived") return showMessage("adminGlobalMessage", "此商品主檔已有關聯資料，並已封存。", "success");
+      if (!confirm("商品「" + item.name + "」已有上架、成本或進貨關聯，無法直接刪除。是否改為安全封存？")) return;
+      const { error } = await client.from("product_master").update({ status: "archived", updated_at: new Date().toISOString() }).eq("id", id);
+      if (error) return showMessage("adminGlobalMessage", error.message || "商品主檔封存失敗。", "error");
+      showMessage("adminGlobalMessage", "商品主檔「" + item.name + "」已封存，既有商品與歷史資料不受影響。", "success");
+    } else {
+      if (!confirm("確定刪除尚未使用的商品主檔「" + item.name + "」嗎？此動作無法復原。")) return;
+      const { error } = await client.from("product_master").delete().eq("id", id);
+      if (error) return showMessage("adminGlobalMessage", error.message || "商品主檔刪除失敗。", "error");
+      if (item.storage_path) await client.storage.from("product-images").remove([item.storage_path]);
+      showMessage("adminGlobalMessage", "商品主檔「" + item.name + "」已刪除。", "success");
+    }
+    await loadData();
   }
+
+  const costNumber = id => Math.max(0, Number(byId(id).value) || 0);
+  const moneyText = value => formatMoney(Math.round(value || 0), "TWD");
+  const yenText = value => "¥" + Math.round(value || 0).toLocaleString("zh-TW");
+  const kgText = value => Number(value || 0).toLocaleString("zh-TW", { maximumFractionDigits: 2 }) + " kg";
+
+  function calculateCostValues(source) {
+    const v = source || {
+      quantity: costNumber("costQuantity"), exchange_rate: costNumber("costRate"), purchase_price_jpy: costNumber("costPurchase"), actual_sale_price_twd: costNumber("costSalePrice"),
+      japan_shipping_jpy: costNumber("costJapanShipping"), product_weight_g: costNumber("costWeight"), packing_weight_kg: costNumber("costPackingWeight"), box_count: costNumber("costBoxCount"),
+      box_length_cm: costNumber("costBoxLength"), box_width_cm: costNumber("costBoxWidth"), box_height_cm: costNumber("costBoxHeight"), freight_rate_jpy_kg: costNumber("costFreightRate"),
+      customs_twd: costNumber("costCustoms"), duty_rate: costNumber("costDutyRate") / 100, local_cost_twd: costNumber("costLocal"), platform_rate: costNumber("costPlatform") / 100,
+      group_commission_amount_twd: costNumber("costGroupAmount"), target_margin_rate: costNumber("costMargin") / 100
+    };
+    const qty = Math.max(1, Number(v.quantity) || 1), fx = Math.max(0, Number(v.exchange_rate) || 0), purchase = Math.max(0, Number(v.purchase_price_jpy) || 0), sale = Math.max(0, Number(v.actual_sale_price_twd) || 0);
+    const boxCount = Math.max(1, Number(v.box_count) || 1), length = Math.max(0, Number(v.box_length_cm) || 0), width = Math.max(0, Number(v.box_width_cm) || 0), height = Math.max(0, Number(v.box_height_cm) || 0);
+    const actualWeight = Math.max(0, Number(v.product_weight_g) || 0) * qty / 1000 + Math.max(0, Number(v.packing_weight_kg) || 0);
+    const hasDimensions = length > 0 && width > 0 && height > 0;
+    const volumetricWeight = hasDimensions ? length * width * height / 6000 * boxCount : 0;
+    const rawChargeable = Math.max(actualWeight, volumetricWeight);
+    const billableWeight = rawChargeable <= 0 ? 0 : rawChargeable <= 1 ? 1 : rawChargeable <= 20 ? Math.ceil(rawChargeable * 2) / 2 : Math.ceil(rawChargeable);
+    const intlJpy = billableWeight * Math.max(0, Number(v.freight_rate_jpy_kg) || 0);
+    const productUnit = purchase * fx;
+    const japanShippingUnit = Math.max(0, Number(v.japan_shipping_jpy) || 0) * fx / qty;
+    const intlUnit = intlJpy * fx / qty;
+    const customsUnit = Math.max(0, Number(v.customs_twd) || 0) / qty;
+    const dutyRate = Math.max(0, Number(v.duty_rate) || 0);
+    const dutyUnit = (productUnit + japanShippingUnit + intlUnit) * dutyRate;
+    const landed = productUnit + japanShippingUnit + intlUnit + customsUnit + dutyUnit;
+    const fixed = landed + Math.max(0, Number(v.local_cost_twd) || 0);
+    const groupFee = Math.max(0, Number(v.group_commission_amount_twd) || 0);
+    const platformRate = Math.max(0, Number(v.platform_rate) || 0);
+    const targetRate = Math.max(0, Number(v.target_margin_rate) || 0);
+    const platformFee = sale * platformRate;
+    const netReceipt = sale - groupFee - platformFee;
+    const full = fixed + groupFee + platformFee;
+    const profit = sale - full;
+    const margin = sale > 0 ? profit / sale * 100 : 0;
+    const denominator = 1 - platformRate - targetRate;
+    const suggested = denominator > 0 ? (fixed + groupFee) / denominator : 0;
+    return { productUnit, landed, intlUnit, intlJpy, actualWeight, volumetricWeight, billableWeight, hasDimensions, full, groupFee, platformFee, netReceipt, profit, margin, suggested };
+  }
+
+  function calcCost() {
+    const values = calculateCostValues();
+    byId("costProductUnit").textContent = moneyText(values.productUnit); byId("costLanded").textContent = moneyText(values.landed); byId("costIntlUnit").textContent = moneyText(values.intlUnit); byId("costIntlJpy").textContent = yenText(values.intlJpy);
+    byId("costTotalWeight").textContent = kgText(values.actualWeight); byId("costVolWeight").textContent = values.hasDimensions ? kgText(values.volumetricWeight) : "未輸入尺寸"; byId("costBillableWeight").textContent = kgText(values.billableWeight);
+    byId("costFull").textContent = moneyText(values.full); byId("costGroupFee").textContent = moneyText(values.groupFee); byId("costPlatformFee").textContent = moneyText(values.platformFee); byId("costNetReceipt").textContent = moneyText(values.netReceipt);
+    byId("costProfit").textContent = moneyText(values.profit); byId("costActualMargin").textContent = values.margin.toFixed(1) + "%"; byId("costSuggested").textContent = moneyText(values.suggested);
+    const oversized = costNumber("costBoxLength") > 170 || costNumber("costBoxWidth") > 60 || costNumber("costBoxHeight") > 60;
+    byId("costFreightHint").textContent = !values.hasDimensions ? "未輸入外箱尺寸，目前僅依實際重量估算；已套用最低 1kg 與重量進位規則。" : (oversized ? "外箱尺寸可能超出一般空運規格，實際運費請另行確認。" : "國際運費依實際重量與材積重量取較高者，並套用最低 1kg 與重量進位規則。");
+    return values;
+  }
+
+  function scenarioValues(s) { return calculateCostValues({ ...s, freight_rate_jpy_kg: s.freight_rate_jpy_kg || 0, duty_rate: s.duty_rate || 0, group_commission_amount_twd: s.group_commission_amount_twd || 0 }); }
 
   function renderCosts() {
+    const selected = byId("costProduct").value;
     const options=masterProducts.filter(x=>x.status!=="archived").map(x=>'<option value="'+x.id+'">'+escapeHtml(x.product_code+'｜'+x.name)+'</option>').join("");
-    byId("costProduct").innerHTML='<option value="">請選擇商品</option>'+options; byId("purchaseProduct").innerHTML='<option value="">請選擇商品</option>'+options;
-    byId("costRows").innerHTML=costScenarios.length?costScenarios.map(s=>{const p=masterProducts.find(x=>x.id===s.product_master_id);return '<article class="admin-order"><div class="admin-order-head"><div><h3>'+escapeHtml(p?.name||"未知商品")+'</h3><p class="admin-order-meta">'+escapeHtml(s.scenario_name)+(s.is_selected?' · 上架採用方案':'')+'</p></div><strong>'+escapeHtml(formatMoney(s.actual_sale_price_twd,"TWD"))+'</strong></div></article>';}).join(""):'<div class="admin-empty">尚無成本方案。</div>';
+    byId("costProduct").innerHTML='<option value="">請選擇商品</option>'+options; if (selected && masterProducts.some(x => x.id === selected)) byId("costProduct").value = selected;
+    byId("purchaseProduct").innerHTML='<option value="">請選擇商品</option>'+options;
+    byId("costRows").innerHTML=costScenarios.length?costScenarios.map(s=>{const p=masterProducts.find(x=>x.id===s.product_master_id),v=scenarioValues(s);return '<tr data-cost-id="'+escapeHtml(s.id)+'"><td><strong>'+escapeHtml(p?.name||"未知商品")+'</strong><small>'+escapeHtml(s.scenario_name||"成本方案")+(s.is_selected?' · 上架採用':'')+'</small></td><td>'+yenText(s.purchase_price_jpy)+'</td><td>'+moneyText(v.productUnit)+'</td><td>'+moneyText(v.intlUnit)+'</td><td>'+moneyText(v.landed)+'</td><td>'+moneyText(v.full)+'</td><td>'+moneyText(v.groupFee)+'</td><td>'+moneyText(s.actual_sale_price_twd)+'</td><td>'+moneyText(v.netReceipt)+'</td><td>'+moneyText(v.profit)+'</td><td><div class="cost-row-actions"><button type="button" data-edit-cost>編輯</button><button type="button" data-select-cost>'+ (s.is_selected?'已採用':'採用') +'</button><button class="danger" type="button" data-delete-cost>刪除</button></div></td></tr>';}).join(""):'<tr><td colspan="11" class="admin-empty">尚無成本方案。</td></tr>';
+    calcCost();
   }
 
-  async function saveCost(event){event.preventDefault();const calculated=calcCost(),productId=byId("costProduct").value,pct=id=>(Number(byId(id).value)||0)/100;if(byId("costSelected").checked)await client.from("cost_scenarios").update({is_selected:false}).eq("product_master_id",productId);const payload={product_master_id:productId,scenario_name:byId("costName").value.trim()||"基本方案",purchase_price_jpy:Number(byId("costPurchase").value)||0,quantity:Math.max(1,Number(byId("costQuantity").value)||1),exchange_rate:Number(byId("costRate").value)||0,japan_shipping_jpy:Number(byId("costJapanShipping").value)||0,product_weight_g:Number(byId("costWeight").value)||0,packing_weight_kg:Number(byId("costPackingWeight").value)||0,freight_rate_twd_kg:Number(byId("costFreightRate").value)||0,duty_twd:Number(byId("costDuty").value)||0,customs_twd:Number(byId("costCustoms").value)||0,local_cost_twd:Number(byId("costLocal").value)||0,commission_rate:pct("costCommission"),platform_rate:pct("costPlatform"),target_margin_rate:pct("costMargin"),actual_sale_price_twd:Number(byId("costSalePrice").value)||0,calculated_cost_twd:calculated.total,suggested_price_twd:calculated.suggested,is_selected:byId("costSelected").checked};const {error}=await client.from("cost_scenarios").insert(payload);if(error)return showMessage("costMessage",error.message,"error");await client.from("product_master").update({status:payload.is_selected?"ready_to_publish":"costed",updated_at:new Date().toISOString()}).eq("id",productId);event.target.reset();await loadData();}
+  function resetCostForm() { byId("costForm").reset(); byId("costId").value=""; byId("costFormTitle").textContent="商品成本試算"; byId("costCancelEdit").hidden=true; calcCost(); }
+
+  function editCost(id) { const s=costScenarios.find(x=>x.id===id); if(!s)return; const set=(id,value)=>{byId(id).value=value??0;}; byId("costId").value=s.id; set("costProduct",s.product_master_id); set("costMsrp",s.msrp_jpy); set("costWholesaleRate",s.wholesale_rate); set("costPurchase",s.purchase_price_jpy); set("costQuantity",s.quantity); set("costRate",s.exchange_rate); set("costJapanShipping",s.japan_shipping_jpy); set("costWeight",s.product_weight_g); set("costPackingWeight",s.packing_weight_kg); set("costBoxCount",s.box_count||1); set("costBoxLength",s.box_length_cm); set("costBoxWidth",s.box_width_cm); set("costBoxHeight",s.box_height_cm); set("costFreightRate",s.freight_rate_jpy_kg); set("costCustoms",s.customs_twd); set("costDutyRate",(s.duty_rate||0)*100); set("costLocal",s.local_cost_twd); set("costPlatform",(s.platform_rate||0)*100); set("costGroupAmount",s.group_commission_amount_twd); set("costSalePrice",s.actual_sale_price_twd); set("costMargin",(s.target_margin_rate||0)*100); byId("costFormTitle").textContent="編輯商品成本方案"; byId("costCancelEdit").hidden=false; calcCost(); byId("costForm").scrollIntoView({behavior:"smooth",block:"start"}); }
+
+  async function saveCost(event){event.preventDefault();const values=calcCost(),id=byId("costId").value,productId=byId("costProduct").value;const payload={product_master_id:productId,scenario_name:"成本方案 "+new Date().toLocaleDateString("zh-TW"),msrp_jpy:costNumber("costMsrp"),wholesale_rate:costNumber("costWholesaleRate"),purchase_price_jpy:costNumber("costPurchase"),quantity:Math.max(1,costNumber("costQuantity")),exchange_rate:costNumber("costRate"),japan_shipping_jpy:costNumber("costJapanShipping"),product_weight_g:costNumber("costWeight"),packing_weight_kg:costNumber("costPackingWeight"),box_count:Math.max(1,costNumber("costBoxCount")),box_length_cm:costNumber("costBoxLength"),box_width_cm:costNumber("costBoxWidth"),box_height_cm:costNumber("costBoxHeight"),freight_rate_jpy_kg:costNumber("costFreightRate"),customs_twd:costNumber("costCustoms"),duty_rate:costNumber("costDutyRate")/100,local_cost_twd:costNumber("costLocal"),platform_rate:costNumber("costPlatform")/100,group_commission_amount_twd:costNumber("costGroupAmount"),target_margin_rate:costNumber("costMargin")/100,actual_sale_price_twd:costNumber("costSalePrice"),calculated_cost_twd:Math.round(values.full),suggested_price_twd:Math.round(values.suggested),actual_weight_kg:values.actualWeight,volumetric_weight_kg:values.volumetricWeight,billable_weight_kg:values.billableWeight,estimated_intl_freight_jpy:values.intlJpy,landed_unit_cost_twd:values.landed,full_unit_cost_twd:values.full,platform_fee_unit_twd:values.platformFee,net_receipt_unit_twd:values.netReceipt,updated_at:new Date().toISOString()};const result=id?await client.from("cost_scenarios").update(payload).eq("id",id):await client.from("cost_scenarios").insert(payload);if(result.error)return showMessage("costMessage",result.error.message,"error");await client.from("product_master").update({status:"costed",updated_at:new Date().toISOString()}).eq("id",productId);resetCostForm();await loadData();}
+
+  async function selectCost(id){const scenario=costScenarios.find(x=>x.id===id);if(!scenario)return;await client.from("cost_scenarios").update({is_selected:false}).eq("product_master_id",scenario.product_master_id);const {error}=await client.from("cost_scenarios").update({is_selected:true}).eq("id",id);if(error)return showMessage("costMessage",error.message,"error");await client.from("product_master").update({status:"ready_to_publish",updated_at:new Date().toISOString()}).eq("id",scenario.product_master_id);await loadData();}
+  async function deleteCost(id){if(!confirm("確定刪除此成本方案嗎？"))return;const {error}=await client.from("cost_scenarios").delete().eq("id",id);if(error)return showMessage("costMessage",error.message,"error");await loadData();}
+  function exportCosts(){const header=["商品","實際進貨單價 JPY","商品進貨成本／件","國際運費／件","單件進貨成本","完整成本／件","團購主抽成／件","實際銷售價 TWD","扣除抽成後實收","單件毛利"];const rows=costScenarios.map(s=>{const p=masterProducts.find(x=>x.id===s.product_master_id),v=scenarioValues(s);return [p?.name||"未知商品",s.purchase_price_jpy,Math.round(v.productUnit),Math.round(v.intlUnit),Math.round(v.landed),Math.round(v.full),Math.round(v.groupFee),s.actual_sale_price_twd,Math.round(v.netReceipt),Math.round(v.profit)];});const csv="\uFEFF"+[header,...rows].map(row=>row.map(value=>'"'+String(value??"").replaceAll('"','""')+'"').join(",")).join("\r\n");const link=document.createElement("a");link.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));link.download="frea-cost-scenarios-"+new Date().toISOString().slice(0,10)+".csv";link.click();URL.revokeObjectURL(link.href);}
 
   function renderPurchases(){byId("purchaseSupplier").innerHTML='<option value="">未指定供應商</option>'+suppliers.map(s=>'<option value="'+s.id+'">'+escapeHtml(s.name)+'</option>').join("");byId("purchaseRows").innerHTML=purchaseOrders.length?purchaseOrders.map(o=>'<article class="admin-order"><div class="admin-order-head"><div><h3>'+escapeHtml(o.order_number)+'</h3><p class="admin-order-meta">'+escapeHtml(o.suppliers?.name||"未指定供應商")+' · '+escapeHtml(o.status)+'</p></div></div><ul class="admin-order-items">'+(o.purchase_order_items||[]).map(i=>'<li>'+escapeHtml(i.product_master?.name||"")+' × '+i.quantity+'｜'+escapeHtml(formatMoney(i.unit_cost,o.currency))+'</li>').join("")+'</ul></article>').join(""):'<div class="admin-empty">尚無進貨單。</div>';}
   async function saveSupplier(event){event.preventDefault();const {error}=await client.from("suppliers").insert({supplier_code:byId("supplierCode").value.trim(),name:byId("supplierName").value.trim(),website:byId("supplierWebsite").value.trim(),notes:byId("supplierNotes").value.trim()});if(error)return showMessage("adminGlobalMessage",error.message,"error");event.target.reset();await loadData();}
@@ -638,9 +721,14 @@
   byId("masterCancel").addEventListener("click",()=>{byId("masterForm").hidden=true;});
   byId("masterForm").addEventListener("submit",saveMaster);
   byId("masterImage").addEventListener("change",event=>{const file=event.target.files[0];setMasterPreview(file?URL.createObjectURL(file):byId("masterExistingImage").value);});
-  byId("masterRows").addEventListener("click",event=>{const row=event.target.closest("[data-master-id]");if(row&&event.target.closest("[data-edit-master]"))openMasterForm(masterProducts.find(x=>x.id===row.dataset.masterId));});
+  byId("masterRows").addEventListener("click",event=>{const row=event.target.closest("[data-master-id]");if(!row)return;if(event.target.closest("[data-edit-master]"))openMasterForm(masterProducts.find(x=>x.id===row.dataset.masterId));if(event.target.closest("[data-delete-master]"))deleteMaster(row.dataset.masterId);});
   byId("costForm").addEventListener("input",calcCost);
   byId("costForm").addEventListener("submit",saveCost);
+  ["costMsrp","costWholesaleRate"].forEach(id=>byId(id).addEventListener("input",()=>{byId("costPurchase").value=Math.round(costNumber("costMsrp")*costNumber("costWholesaleRate")/100);calcCost();}));
+  byId("costProduct").addEventListener("change",()=>{const item=masterProducts.find(x=>x.id===byId("costProduct").value);if(item){byId("costMsrp").value=item.reference_price_jpy||0;byId("costWeight").value=item.weight_g||0;byId("costPurchase").value=Math.round(costNumber("costMsrp")*costNumber("costWholesaleRate")/100);calcCost();}});
+  byId("costCancelEdit").addEventListener("click",resetCostForm);
+  byId("costRows").addEventListener("click",event=>{const row=event.target.closest("[data-cost-id]");if(!row)return;if(event.target.closest("[data-edit-cost]"))editCost(row.dataset.costId);if(event.target.closest("[data-select-cost]"))selectCost(row.dataset.costId);if(event.target.closest("[data-delete-cost]"))deleteCost(row.dataset.costId);});
+  byId("exportScenariosExcel").addEventListener("click",exportCosts);
   byId("supplierForm").addEventListener("submit",saveSupplier);
   byId("purchaseForm").addEventListener("submit",savePurchase);
   byId("orderCards").addEventListener("click", event => {
