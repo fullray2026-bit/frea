@@ -84,7 +84,7 @@
   async function loadData() {
     showMessage("adminGlobalMessage", "正在讀取最新資料…");
     const [profileResult, accountResult, applicationResult, addressResult, ezwayResult, orderResult, personalResult, productResult, masterResult, costResult, supplierResult, purchaseResult] = await Promise.all([
-      client.from("profiles").select("id,email,full_name,phone,newsletter,created_at").order("created_at", { ascending: false }),
+      client.from("profiles").select("id,email,full_name,phone,referrer,newsletter,created_at").order("created_at", { ascending: false }),
       client.from("member_accounts").select("*").order("created_at", { ascending: false }),
       client.from("membership_applications").select("*").order("created_at", { ascending: false }),
       client.from("member_addresses").select("user_id,recipient_name,recipient_phone,postal_code,address,is_default").eq("is_default", true),
@@ -578,7 +578,7 @@
   function renderMembers() {
     const term = byId("memberSearch").value.trim().toLowerCase();
     const filtered = profiles.filter(profile =>
-      [profile.full_name, profile.email, profile.phone, memberAccounts.find(x=>x.user_id===profile.id)?.member_number].some(value => String(value || "").toLowerCase().includes(term))
+      [profile.full_name, profile.email, profile.phone, profile.referrer, memberAccounts.find(x=>x.user_id===profile.id)?.member_number].some(value => String(value || "").toLowerCase().includes(term))
     );
     byId("memberCount").textContent = "共 " + filtered.length + " 位";
     const target = byId("memberRows");
@@ -594,7 +594,7 @@
       const applicationDetail=account.member_type==="B01"?[application.company_name,application.tax_id,application.representative_name].filter(Boolean).join("／"):account.member_type==="C01"?application.community_links:"—";
       return "<tr><td><strong>" + escapeHtml(profile.full_name || "未填姓名") +
         "</strong><small>" + escapeHtml(profile.email || "—") + "</small></td><td><strong>"+escapeHtml(account.member_number||"—")+"</strong><small>"+escapeHtml(typeLabels[account.member_type]||"—")+"</small></td><td>" +
-        escapeHtml(profile.phone || "—") + "</td><td><strong>"+escapeHtml(reviewLabels[application.status||account.review_status]||"—")+"</strong><small>"+escapeHtml(applicationDetail||"—")+"</small>"+(application.proof_path?'<button class="member-proof" type="button" data-proof-path="'+escapeHtml(application.proof_path)+'">查看證明</button>':"")+"</td><td><div class=\"member-admin-controls\"><select data-member-type=\""+escapeHtml(profile.id)+"\"><option value=\"A01\""+(account.member_type==="A01"?" selected":"")+">A01</option><option value=\"B01\""+(account.member_type==="B01"?" selected":"")+">B01</option><option value=\"C01\""+(account.member_type==="C01"?" selected":"")+">C01</option><option value=\"D01\""+(account.member_type==="D01"?" selected":"")+">D01</option></select>"+(["B01","C01"].includes(account.member_type)?'<select data-review-status="'+escapeHtml(profile.id)+'"><option value="submitted">待審核</option><option value="under_review"'+(application.status==="under_review"?" selected":"")+'>審核中</option><option value="approved"'+(application.status==="approved"?" selected":"")+'>通過</option><option value="changes_requested"'+(application.status==="changes_requested"?" selected":"")+'>補件</option><option value="rejected"'+(application.status==="rejected"?" selected":"")+'>拒絕</option></select>':"")+'<button type="button" data-save-member="'+escapeHtml(profile.id)+'">儲存</button></div></td><td>' +
+        escapeHtml(profile.phone || "—") + "<small>推薦人："+escapeHtml(profile.referrer || "—")+"</small></td><td><strong>"+escapeHtml(reviewLabels[application.status||account.review_status]||"—")+"</strong><small>"+escapeHtml(applicationDetail||"—")+"</small>"+(application.proof_path?'<button class="member-proof" type="button" data-proof-path="'+escapeHtml(application.proof_path)+'">查看證明</button>':"")+"</td><td><div class=\"member-admin-controls\"><select data-member-type=\""+escapeHtml(profile.id)+"\"><option value=\"A01\""+(account.member_type==="A01"?" selected":"")+">A01</option><option value=\"B01\""+(account.member_type==="B01"?" selected":"")+">B01</option><option value=\"C01\""+(account.member_type==="C01"?" selected":"")+">C01</option><option value=\"D01\""+(account.member_type==="D01"?" selected":"")+">D01</option></select>"+(["B01","C01"].includes(account.member_type)?'<select data-review-status="'+escapeHtml(profile.id)+'"><option value="submitted">待審核</option><option value="under_review"'+(application.status==="under_review"?" selected":"")+'>審核中</option><option value="approved"'+(application.status==="approved"?" selected":"")+'>通過</option><option value="changes_requested"'+(application.status==="changes_requested"?" selected":"")+'>補件</option><option value="rejected"'+(application.status==="rejected"?" selected":"")+'>拒絕</option></select>':"")+'<button type="button" data-save-member="'+escapeHtml(profile.id)+'">儲存</button></div></td><td>' +
         escapeHtml(formatDate(profile.created_at)) + "</td></tr>";
     }).join("");
   }

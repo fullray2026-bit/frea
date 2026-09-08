@@ -43,13 +43,13 @@
 <div class="field"><label>確認密碼 *</label><input required minlength="8" type="password" name="confirm_password" autocomplete="new-password" placeholder="再次輸入密碼"></div>
 <div class="field"><label>姓名 *</label><input required name="name" autocomplete="name" placeholder="請輸入姓名"></div>
 <div class="field"><label>手機號碼 *</label><input required type="tel" name="phone" autocomplete="tel" placeholder="請輸入手機號碼"></div>
-<div class="field full"><label>會員類別 *</label><select required name="member_type" id="memberType"><option value="D01">D01 一般會員</option><option value="B01">B01 企業會員（需審核）</option><option value="C01">C01 團購主／部落客（需審核）</option></select></div>
+<div class="field"><label>會員類別 *</label><select required name="member_type" id="memberType"><option value="D01">D01 一般會員</option><option value="B01">B01 企業會員（需審核）</option><option value="C01">C01 團購主／部落客（需審核）</option></select></div>
+<div class="field"><label>推薦人會員編號或姓名</label><input name="referrer" maxlength="100" placeholder="請輸入推薦人會員編號或姓名"></div>
 <div class="membership-extra" id="businessFields" hidden><h3 class="serif">企業會員審核資料</h3><div class="form-grid"><div class="field"><label>公司名稱 *</label><input name="company_name"></div><div class="field"><label>統一編號 *</label><input name="tax_id"></div><div class="field full"><label>公司地址 *</label><input name="company_address"></div><div class="field"><label>公司電話 *</label><input name="company_phone"></div><div class="field"><label>負責人姓名 *</label><input name="representative_name"></div><div class="field full"><label>證明類型 *</label><select name="proof_type"><option value="">請選擇</option><option value="business_registration">營利事業登記證</option><option value="business_card">名片</option></select></div><p class="membership-help">帳戶建立並完成 Email 驗證後，請登入會員中心上傳證明文件，才會正式送交審核。</p></div></div>
 <div class="membership-extra" id="creatorFields" hidden><h3 class="serif">團購主／部落客審核資料</h3><div class="form-grid"><div class="field full"><label>社團、社群或網站連結 *</label><textarea name="community_links" rows="3" placeholder="每行一個網址"></textarea></div><div class="field full"><label class="check-item"><input type="checkbox" name="join_permission"> <span>同意讓 fréa 成員加入或查看上述社群，以供資格審核</span></label></div></div></div>
 </div>
 <div class="check-group">
-<label class="check-item"><input required type="checkbox" name="terms"> <span>我已閱讀並同意 <a href="terms.html">會員條款</a></span></label>
-<label class="check-item"><input required type="checkbox" name="privacy"> <span>我已閱讀並同意 <a href="privacy.html">隱私權政策</a></span></label>
+<label class="check-item"><input required type="checkbox" name="policies"> <span>我已閱讀並同意 <a href="terms.html" target="_blank" rel="noopener">會員條款</a>、<a href="privacy.html" target="_blank" rel="noopener">隱私權政策</a>、<a href="shopping-guide.html" target="_blank" rel="noopener">購物須知</a>、<a href="returns.html" target="_blank" rel="noopener">退換貨政策</a></span></label>
 <label class="check-item"><input type="checkbox" name="newsletter"> <span>願意接收 fréa 新品、品牌與優惠資訊</span></label>
 </div>
 <div class="auth-message" id="registerMessage" role="status"></div>

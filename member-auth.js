@@ -219,6 +219,7 @@
         data: {
           full_name: String(data.get("name") || "").trim(),
           phone: String(data.get("phone") || "").trim(),
+          referrer: String(data.get("referrer") || "").trim(),
           newsletter: data.get("newsletter") === "on",
           terms_accepted: true,
           privacy_accepted: true
