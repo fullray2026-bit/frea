@@ -109,7 +109,7 @@
       const {data:{session}}=await supabaseClient.auth.getSession();
       if(session){
         const submit=form.querySelector('[type="submit"]');submit.disabled=true;submit.textContent="訂單送出中…";
-        const {data:result,error}=await supabaseClient.functions.invoke("submit-order",{body:{items:items.map(item=>({id:item.id,quantity:item.quantity})),shipping:shipping,paymentProof:{name:file.name,type:file.type,size:file.size,data:proofData}}});
+        const {data:result,error}=await supabaseClient.functions.invoke("submit-order",{body:{items:items.map(item=>({id:item.productId||item.id,variantId:item.variantId||"",specification:item.spec,quantity:item.quantity})),shipping:shipping,paymentProof:{name:file.name,type:file.type,size:file.size,data:proofData}}});
         submit.disabled=false;submit.textContent="訂單送出";
         if(error||!result||!result.orderNumber){message.textContent=result&&result.error?result.error:"訂單送出失敗，請稍後再試。";message.className="checkout-message error";return;}
         localStorage.removeItem(CART_KEY);form.reset();form.hidden=true;document.getElementById("checkoutSuccess").hidden=false;document.getElementById("successOrderNumber").textContent="訂單編號："+result.orderNumber;window.scrollTo({top:0,behavior:"smooth"});return;

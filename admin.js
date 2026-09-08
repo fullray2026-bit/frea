@@ -96,7 +96,7 @@
       client.from("ezway_profiles").select("user_id,real_name,mobile"),
       client.from("orders").select("id,user_id,order_number,status,currency,total_amount,created_at,updated_at,recipient_name,recipient_phone,postal_code,shipping_address,payment_proof_name,admin_note,tracking_number,order_items(product_name,specification,quantity,unit_price,line_total)").order("created_at", { ascending: false }),
       client.from("personal_shopping_requests").select("id,request_number,user_id,customer_name,email,phone,line_id,note,items,status,quote_amount,quote_details,admin_note,created_at,updated_at").order("created_at", { ascending: false }),
-      client.from("products").select("*").order("brand_code").order("sort_order").order("created_at"),
+      client.from("products").select("*,product_variants(id,option_value,sku,image_url,stock_quantity,sort_order,is_active)").order("brand_code").order("sort_order").order("created_at"),
       client.from("product_master").select("*").order("created_at", { ascending: false }),
       client.from("cost_scenarios").select("*").order("created_at", { ascending: false }),
       client.from("suppliers").select("*").order("name"),
@@ -323,6 +323,24 @@
     else image.removeAttribute("src");
   }
 
+  function renderProductVariants(variants = []) {
+    const target = byId("productVariantRows");
+    target.innerHTML = variants.length ? variants.sort((a,b)=>(a.sort_order||0)-(b.sort_order||0)).map(item =>
+      '<div class="product-variant-row"><input data-variant-label placeholder="顏色名稱" value="'+escapeHtml(item.option_value||"")+'"><input data-variant-sku placeholder="商品編號" value="'+escapeHtml(item.sku||"")+'"><input data-variant-stock type="number" min="0" step="1" placeholder="庫存" value="'+escapeHtml(item.stock_quantity??0)+'"><input data-variant-image type="url" placeholder="該色圖片網址" value="'+escapeHtml(item.image_url||"")+'"><button class="product-variant-remove" type="button">移除</button></div>'
+    ).join("") : '<div class="product-variant-empty">此商品沒有顏色規格。</div>';
+    target.querySelectorAll(".product-variant-remove").forEach(button=>button.addEventListener("click",()=>{button.closest(".product-variant-row").remove();if(!target.querySelector(".product-variant-row"))renderProductVariants([]);}));
+  }
+
+  function addProductVariant() {
+    const target=byId("productVariantRows");
+    if(target.querySelector(".product-variant-empty"))target.innerHTML="";
+    const row=document.createElement("div");
+    row.className="product-variant-row";
+    row.innerHTML='<input data-variant-label placeholder="顏色名稱"><input data-variant-sku placeholder="商品編號"><input data-variant-stock type="number" min="0" step="1" placeholder="庫存" value="0"><input data-variant-image type="url" placeholder="該色圖片網址"><button class="product-variant-remove" type="button">移除</button>';
+    row.querySelector(".product-variant-remove").addEventListener("click",()=>{row.remove();if(!target.querySelector(".product-variant-row"))renderProductVariants([]);});
+    target.appendChild(row);
+  }
+
   function openProductForm(product) {
     const form = byId("productForm");
     form.hidden = false;
@@ -342,6 +360,7 @@
     byId("productStock").value = product?.stock_quantity ?? 0;
     byId("productSort").value = product?.sort_order ?? 0;
     byId("productActive").value = String(product?.is_active ?? true);
+    renderProductVariants(product?.product_variants || []);
     byId("productFormTitle").textContent = product ? "編輯商品" : "新增商品";
     setProductPreview(product?.image_url || "");
     showMessage("productFormMessage", "");
@@ -390,9 +409,14 @@
         updated_at: new Date().toISOString()
       };
       if (!id) payload.slug = slug;
-      const query = id ? client.from("products").update(payload).eq("id", id) : client.from("products").insert(payload);
-      const { error } = await query;
+      const query = id ? client.from("products").update(payload).eq("id", id).select("id").single() : client.from("products").insert(payload).select("id").single();
+      const { data: savedProduct, error } = await query;
       if (error) throw error;
+      const productId=savedProduct.id;
+      const variants=[...byId("productVariantRows").querySelectorAll(".product-variant-row")].map((row,index)=>({product_id:productId,option_name:"顏色",option_value:row.querySelector("[data-variant-label]").value.trim(),sku:row.querySelector("[data-variant-sku]").value.trim(),image_url:row.querySelector("[data-variant-image]").value.trim(),stock_quantity:Math.max(0,Math.round(Number(row.querySelector("[data-variant-stock]").value)||0)),sort_order:index,is_active:true})).filter(item=>item.option_value&&item.sku);
+      const removed=await client.from("product_variants").delete().eq("product_id",productId);
+      if(removed.error)throw removed.error;
+      if(variants.length){const inserted=await client.from("product_variants").insert(variants);if(inserted.error)throw inserted.error;}
       if (!id && payload.product_master_id) {
         const created = await client.from("products").select("id").eq("slug", slug).single();
         await client.from("product_master").update({ status: "published", published_product_id: created.data?.id || null, updated_at: new Date().toISOString() }).eq("id", payload.product_master_id);
@@ -738,6 +762,7 @@
   byId("productStatusFilter").addEventListener("change", renderProducts);
   byId("productCreate").addEventListener("click", () => openProductFromMaster(byId("productCandidate").value));
   byId("productCancel").addEventListener("click", () => { byId("productForm").hidden = true; });
+  byId("productVariantAdd").addEventListener("click", addProductVariant);
   byId("productForm").addEventListener("submit", saveProduct);
   byId("productImage").addEventListener("change", event => {
     const file = event.target.files[0];

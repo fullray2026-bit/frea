@@ -206,6 +206,7 @@
               <label class="product-wide">商品照片（JPG、PNG、WebP，3MB 以內）<input id="productImage" type="file" accept="image/jpeg,image/png,image/webp"></label>
               <label>上架狀態<select id="productActive"><option value="true">上架</option><option value="false">下架</option></select></label>
               <div class="product-preview"><img id="productImagePreview" alt="商品圖片預覽" hidden><span id="productPreviewEmpty">尚未選擇圖片</span></div>
+              <div class="product-wide product-variants-editor"><div class="product-variants-head"><span>顏色規格（選填）</span><button id="productVariantAdd" type="button">＋ 新增顏色</button></div><div id="productVariantRows"></div></div>
             </div>
             <div class="product-form-actions"><button class="admin-primary" id="productSave" type="submit">儲存商品</button><p class="admin-message" id="productFormMessage" role="status"></p></div>
           </form>
@@ -217,6 +218,6 @@
   </main>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.3/dist/umd/supabase.js"></script>
   <script src="supabase-config.js"></script>
-  <script src="admin.js?v=member-classification-1"></script>
+  <script src="admin.js?v=product-variants-1"></script>
 </body>
 </html>

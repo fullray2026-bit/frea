@@ -372,3 +372,4 @@ body.search-open{overflow:hidden}.site-search[hidden]{display:none}.site-search{
   .brand-grid--imageonly .card:last-child{grid-column:auto;width:auto;justify-self:stretch}
 }
 .brand-product-empty{padding:32px 0;color:var(--muted);border-bottom:1px solid #ddd3c7}
+.product-variant-label{display:grid;gap:5px;margin-top:10px;font-size:12px;color:#8a796b}.product-variant-label select{width:100%;border:1px solid #d9cbbb;border-radius:7px;background:#fffdf9;color:#4b3b31;padding:8px 9px;font:inherit}.brand-cart-btn:disabled{cursor:not-allowed;opacity:.58}
