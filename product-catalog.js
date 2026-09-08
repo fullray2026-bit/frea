@@ -38,17 +38,17 @@
 
   function productRow(product) {
     const variants = (product.product_variants || []).sort((a, b) => a.sort_order - b.sort_order);
-    const stock = variants.length ? (variants.some(item => item.available) ? 99 : 0) : Math.max(0, Number(product.stock_quantity) || 0);
+    const stock = Math.max(0, Number(product.stock_quantity) || 0);
     const disabled = stock === 0;
     return '<article class="brand-product-row" data-cart-product data-product-id="' + escapeHtml(product.slug) +
       '" data-name="' + escapeHtml(product.name) + '" data-spec="' + escapeHtml(product.specification) +
       '" data-price="' + escapeHtml(product.price) + '" data-currency="' + escapeHtml(product.currency) +
-      '" data-image="' + escapeHtml(product.image_url) + '" data-stock="' + stock + '">' +
+      '" data-image="' + escapeHtml(product.image_url) + '" data-product-stock="' + stock + '" data-stock="' + stock + '">' +
       '<div class="brand-product-thumb"><img src="' + escapeHtml(product.image_url) + '" alt="' + escapeHtml(product.name) + '"></div>' +
       '<div class="brand-product-name"><h3>' + escapeHtml(product.name) + '</h3><p>' + escapeHtml(product.description || "") + '</p></div>' +
       '<div class="brand-product-spec">' + escapeHtml(product.specification) + (variants.length ? '<label class="product-variant-label">顏色<select data-product-variant required><option value="">請選擇</option>' + variants.map(item => '<option value="' + escapeHtml(item.id) + '" data-label="' + escapeHtml(item.option_value) + '" data-image="' + escapeHtml(item.image_url || product.image_url) + '" data-available="' + item.available + '">' + escapeHtml(item.option_value) + (item.available ? '' : '（售罄）') + '</option>').join("") + '</select></label>' : '') + '</div>' +
       '<p class="brand-product-use">' + escapeHtml(product.usage_flavor) + '</p>' +
-      '<div class="brand-product-price"><strong>' + escapeHtml(formatPrice(product.price, product.currency)) + '</strong><span>' +
+      '<div class="brand-product-price"><strong>' + escapeHtml(formatPrice(product.price, product.currency)) + '</strong><span data-stock-label>' +
       (disabled ? "暫時售罄" : "庫存 " + stock) + '</span></div>' +
       '<div class="brand-product-quantity"><div class="brand-quantity" aria-label="' + escapeHtml(product.name) + '商品數量">' +
       '<button type="button" data-qty-action="decrease" aria-label="減少數量"' + (disabled ? " disabled" : "") + '>−</button>' +
@@ -84,18 +84,22 @@
         addButton.textContent = "請先選擇顏色";
         variantSelect.addEventListener("change", () => {
           const option = variantSelect.selectedOptions[0];
-          const selectedStock = option?.dataset.available === "true" ? 99 : 0;
+          const productStock = Math.max(0, Number(row.dataset.productStock) || 0);
+          const hasSelection = Boolean(variantSelect.value);
+          const selectedStock = !hasSelection ? productStock : (option?.dataset.available === "true" ? productStock : 0);
           row.dataset.stock = selectedStock;
           input.max = Math.max(1, selectedStock);
           input.value = 1;
+          const stockLabel = row.querySelector("[data-stock-label]");
+          if (stockLabel) stockLabel.textContent = selectedStock > 0 ? "庫存 " + selectedStock : "暫時售罄";
           const image = row.querySelector(".brand-product-thumb img");
           if (image && option?.dataset.image) image.src = option.dataset.image;
-          addButton.disabled = !variantSelect.value || selectedStock === 0;
-          addButton.textContent = selectedStock === 0 && variantSelect.value ? "此色售罄" : (variantSelect.value ? "加入購物車" : "請先選擇顏色");
+          addButton.disabled = !hasSelection || selectedStock === 0;
+          addButton.textContent = selectedStock === 0 && hasSelection ? "此色售罄" : (hasSelection ? "加入購物車" : "請先選擇顏色");
         });
       }
       row.querySelector('[data-qty-action="decrease"]')?.addEventListener("click", () => { input.value = Math.max(1, quantity() - 1); });
-      row.querySelector('[data-qty-action="increase"]')?.addEventListener("click", () => { input.value = Math.min(max, quantity() + 1); });
+      row.querySelector('[data-qty-action="increase"]')?.addEventListener("click", () => { input.value = Math.min(currentMax(), quantity() + 1); });
       row.querySelector("[data-add-cart]")?.addEventListener("click", () => {
         const cart = readCart();
         const amount = quantity();
