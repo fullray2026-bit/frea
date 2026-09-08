@@ -31,6 +31,7 @@
   let currentApplication = null;
   const memberTypeLabels = { A01: "A01 fréa 內部專用", B01: "B01 企業會員", C01: "C01 團購主／部落客", D01: "D01 一般會員" };
   const reviewLabels = { not_required: "一般會員", draft: "資料尚未送出", submitted: "待審核", under_review: "審核中", approved: "審核通過", changes_requested: "請補充資料", rejected: "審核未通過" };
+  const formatMoney = (amount, currency) => (currency === "JPY" ? "¥" : "NT$") + Number(amount || 0).toLocaleString(currency === "JPY" ? "ja-JP" : "zh-TW");
 
   function message(id, text, type) {
     const element = byId(id);
@@ -149,12 +150,12 @@
       if (order.kind === "personal") {
         const total = order.quote_amount == null
           ? "尚未報價"
-          : new Intl.NumberFormat("zh-TW", { style: "currency", currency: "TWD", maximumFractionDigits: 0 }).format(order.quote_amount);
+          : formatMoney(order.quote_amount, "TWD");
         const itemNames = (Array.isArray(order.items) ? order.items : []).map(item => item.name).filter(Boolean).join("、");
         const detail = itemNames ? '<small>代購品項：' + escapeHtml(itemNames) + '</small>' : "";
         return '<article class="member-order"><div><strong>' + escapeHtml(order.request_number) + '</strong><small>自選代購 · ' + escapeHtml(date) + ' · ' + escapeHtml(personalStatuses[order.status] || order.status) + '</small>' + detail + '</div><div>' + escapeHtml(total) + '</div></article>';
       }
-      const total = new Intl.NumberFormat("zh-TW", { style: "currency", currency: order.currency || "TWD", maximumFractionDigits: 0 }).format(order.total_amount);
+      const total = formatMoney(order.total_amount, order.currency || "TWD");
       const tracking = order.status === "shipped" && order.tracking_number
         ? '<small>出貨單號：' + escapeHtml(order.tracking_number) + '</small>'
         : "";

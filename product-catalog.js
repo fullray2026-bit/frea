@@ -29,11 +29,8 @@
     .replaceAll('"', "&quot;").replaceAll("'", "&#039;");
 
   function formatPrice(value, currency) {
-    try {
-      return new Intl.NumberFormat("zh-TW", { style: "currency", currency: currency || "JPY", maximumFractionDigits: 0 }).format(Number(value || 0));
-    } catch (_) {
-      return (currency === "TWD" ? "NT$" : "¥") + Number(value || 0).toLocaleString("zh-TW");
-    }
+    const code = currency === "TWD" ? "TWD" : "JPY";
+    return (code === "TWD" ? "NT$" : "¥") + Number(value || 0).toLocaleString(code === "TWD" ? "zh-TW" : "ja-JP");
   }
 
   function productRow(product) {
@@ -104,6 +101,11 @@
         const cart = readCart();
         const amount = quantity();
         if (variantSelect && !variantSelect.value) return notify("請先選擇顏色。");
+        const productCurrency = row.dataset.currency || "JPY";
+        const cartCurrency = cart.find(entry => entry.currency)?.currency;
+        if (cartCurrency && cartCurrency !== productCurrency) {
+          return notify("購物車內已有其他幣別商品，請分開結帳。");
+        }
         const option = variantSelect?.selectedOptions[0];
         const variantId = variantSelect?.value || "";
         const id = variantId ? row.dataset.productId + "::" + variantId : row.dataset.productId;
@@ -111,7 +113,7 @@
         if (item) item.quantity = Math.min(currentMax(), Number(item.quantity || 0) + amount);
         else cart.push({ id, productId: row.dataset.productId, variantId, name: row.dataset.name,
           spec: row.dataset.spec + (option?.dataset.label ? "｜顏色：" + option.dataset.label : ""),
-          price: Number(row.dataset.price), currency: row.dataset.currency || "JPY", quantity: amount,
+          price: Number(row.dataset.price), currency: productCurrency, quantity: amount,
           image: option?.dataset.image || row.dataset.image });
         localStorage.setItem(cartKey, JSON.stringify(cart));
         notify("已加入 " + amount + " 件商品（瀏覽器測試版）");

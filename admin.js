@@ -56,13 +56,8 @@
     year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit"
   }).format(new Date(value)) : "—";
   const formatMoney = (amount, currency) => {
-    try {
-      return new Intl.NumberFormat("zh-TW", {
-        style: "currency", currency: currency || "TWD", maximumFractionDigits: 0
-      }).format(Number(amount || 0));
-    } catch (_) {
-      return "¥" + Number(amount || 0).toLocaleString("zh-TW");
-    }
+    const code = currency === "JPY" ? "JPY" : "TWD";
+    return (code === "TWD" ? "NT$" : "¥") + Number(amount || 0).toLocaleString(code === "TWD" ? "zh-TW" : "ja-JP");
   };
   const showMessage = (id, text, type) => {
     const el = byId(id);
