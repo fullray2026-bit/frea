@@ -12,7 +12,7 @@
 .checkout-layout{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(320px,.75fr);gap:68px;align-items:start}
 .checkout-section{padding:0 0 52px;margin-bottom:52px;border-bottom:1px solid #ddd3c7}.checkout-section h2{font-size:28px;font-weight:400;margin:0 0 26px}.checkout-section:last-child{border-bottom:0}
 .checkout-item{display:grid;grid-template-columns:minmax(0,1fr) 90px 120px;gap:20px;padding:18px 0;border-top:1px solid #e5dbd0}.checkout-item:last-child{border-bottom:1px solid #e5dbd0}.checkout-item-name{font-size:16px}.checkout-item-name small{display:block;color:var(--muted);margin-top:7px}.checkout-qty{color:var(--muted)}.checkout-subtotal{text-align:right}
-.checkout-total{display:flex;justify-content:space-between;align-items:center;margin-top:24px;font-size:22px}.checkout-total strong{font-size:26px;font-weight:400}
+.checkout-totals{margin-top:24px}.checkout-total{display:flex;justify-content:space-between;align-items:center;padding:11px 0;font-size:16px}.checkout-total.grand{margin-top:8px;padding-top:18px;border-top:1px solid #ddd3c7;font-size:22px}.checkout-total strong{font-weight:400}.checkout-total.grand strong{font-size:26px}.checkout-policy{margin:20px 0 0;color:var(--muted);font-size:12px;line-height:1.8}
 .bank-card{padding:34px;border-radius:18px;background:#4b3d32;color:#fff}.bank-card h2{margin:0 0 24px;font-size:25px;font-weight:400}.bank-line{display:grid;grid-template-columns:100px 1fr;gap:18px;padding:14px 0;border-top:1px solid rgba(255,255,255,.2)}.bank-line span{color:#d5c9bd;font-size:13px}.bank-line strong{font-weight:400;line-height:1.7}.bank-note{margin:18px 0 0;color:#eee7df;line-height:1.8;font-size:14px}.bank-note:first-of-type{padding-top:20px;border-top:1px solid rgba(255,255,255,.2)}.bank-note a{color:#fff;text-decoration:underline;text-underline-offset:3px}
 .upload-box{margin-top:28px;padding:24px;border:1px dashed #cbbcad;border-radius:14px;background:#faf8f4}.upload-box label{display:block;margin-bottom:12px;font-weight:500}.upload-box input{width:100%}.upload-help{color:var(--muted);font-size:12px;line-height:1.7;margin:10px 0 0}
 .checkout-form .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}.checkout-form .field{display:flex;flex-direction:column;gap:9px}.checkout-form .field.full{grid-column:1/-1}.checkout-form input{min-height:50px;border:1px solid #d8cabc;border-radius:10px;background:#fff;padding:0 15px;font:inherit}.checkout-form label{font-size:14px}
@@ -29,7 +29,7 @@
 <div id="checkoutSuccess" class="checkout-success" hidden><div class="checkout-kicker">Order Submitted</div><h2 class="serif">訂單已送出</h2><p>我們會依據匯款證明進行對帳，確認後再更新訂單狀態。</p><div class="checkout-order-number" id="successOrderNumber"></div><a class="btn" href="register.html">查看會員訂單</a></div>
 <form id="checkoutForm" class="checkout-layout" hidden>
 <div>
-<section class="checkout-section"><h2 class="serif">採購商品</h2><div id="checkoutItems"></div><div class="checkout-total"><span>總價</span><strong id="checkoutTotal">¥0</strong></div></section>
+<section class="checkout-section"><h2 class="serif">採購商品</h2><div id="checkoutItems"></div><div class="checkout-totals"><div class="checkout-total"><span>商品小計</span><strong id="checkoutSubtotal">¥0</strong></div><div class="checkout-total" id="checkoutServiceFeeRow" hidden><span>台灣國內運費及作業費</span><strong id="checkoutServiceFee">NT$0</strong></div><div class="checkout-total grand"><span>總價</span><strong id="checkoutTotal">¥0</strong></div></div><p class="checkout-policy" id="checkoutPolicy"></p></section>
 <section class="checkout-section"><h2 class="serif">收件資料</h2><div class="checkout-form"><div class="form-grid">
 <div class="field"><label>郵遞區號 *</label><input required name="postalCode" inputmode="numeric" autocomplete="shipping postal-code"></div>
 <div class="field"><label>手機號碼（需與 EZ WAY 一致）*</label><input required type="tel" name="recipientPhone" autocomplete="shipping tel"></div>
@@ -56,6 +56,7 @@
   function safe(text){const div=document.createElement("div");div.textContent=text||"";return div.innerHTML;}
   function cart(){return read(CART_KEY,[]).filter(item=>item.quantity>0);}
   function total(items){return items.reduce((sum,item)=>sum+item.price*item.quantity,0);}
+  function serviceFee(items,currency){const subtotal=total(items);return currency==="TWD"&&subtotal<2500?80:0;}
   function setField(name,value){const field=form.elements.namedItem(name);if(field)field.value=value||"";}
   async function prefillMember(){
     ["postalCode","address","recipientPhone","recipientName"].forEach(name=>setField(name,""));
@@ -82,8 +83,13 @@
     if(!items.length)return;
     if(mixedCurrency){document.getElementById("checkoutEmptyTitle").textContent="購物車包含不同幣別";document.getElementById("checkoutEmptyText").textContent="新台幣與日圓商品無法合併結帳，請返回購物車分開處理。";return;}
     const currency=currencies[0];
+    const subtotal=total(items),fee=serviceFee(items,currency);
     document.getElementById("checkoutItems").innerHTML=items.map(item=>'<div class="checkout-item"><div class="checkout-item-name">'+safe(item.name)+'<small>'+safe(item.spec)+'</small></div><div class="checkout-qty">數量 '+item.quantity+'</div><div class="checkout-subtotal">'+money(item.price*item.quantity,currency)+'</div></div>').join("");
-    document.getElementById("checkoutTotal").textContent=money(total(items),currency);
+    document.getElementById("checkoutSubtotal").textContent=money(subtotal,currency);
+    document.getElementById("checkoutServiceFeeRow").hidden=fee===0;
+    document.getElementById("checkoutServiceFee").textContent=money(fee,"TWD");
+    document.getElementById("checkoutTotal").textContent=money(subtotal+fee,currency);
+    document.getElementById("checkoutPolicy").textContent=currency==="TWD"?"商品將以新台幣結帳，商品小計未達新台幣 2,500 元，將加收台灣國內運費及作業費 80 元。本網站每月於 15 日 23:59 統一結單，15 日結單後成立的訂單將併入次月採購。商品預計於結單當月底到貨後依序寄出；完成下單即表示您已了解並同意此預購方式。":"商品將以日圓結帳。本網站每月於 15 日 23:59 統一結單，15 日結單後成立的訂單將併入次月採購。商品預計於結單當月底到貨後依序寄出；完成下單即表示您已了解並同意此預購方式。";
     await prefillMember();
   }
   function fileData(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file);});}
@@ -120,7 +126,8 @@
       }
     }
     const orderCurrency=items[0]?.currency||"JPY";
-    const order={number:"FR"+now.getFullYear()+String(now.getMonth()+1).padStart(2,"0")+String(now.getDate()).padStart(2,"0")+"-"+String(Date.now()).slice(-6),date:now.toLocaleDateString("zh-TW"),status:"待確認匯款",total:money(total(items),orderCurrency),currency:orderCurrency,items:items,shipping:shipping,paymentProof:{name:file.name,type:file.type,size:file.size,data:proofData},createdAt:now.toISOString()};
+    const orderTotal=total(items)+serviceFee(items,orderCurrency);
+    const order={number:"FR"+now.getFullYear()+String(now.getMonth()+1).padStart(2,"0")+String(now.getDate()).padStart(2,"0")+"-"+String(Date.now()).slice(-6),date:now.toLocaleDateString("zh-TW"),status:"待確認匯款",total:money(orderTotal,orderCurrency),currency:orderCurrency,items:items,shipping:shipping,paymentProof:{name:file.name,type:file.type,size:file.size,data:proofData},createdAt:now.toISOString()};
     const orders=read(ORDERS_KEY,[]);orders.unshift(order);
     try{localStorage.setItem(ORDERS_KEY,JSON.stringify(orders));}catch(error){message.textContent="瀏覽器儲存空間不足，請改用較小的匯款證明檔案。";message.className="checkout-message error";return;}
     saveMemberOrder(order);localStorage.removeItem(CART_KEY);form.reset();form.hidden=true;document.getElementById("checkoutSuccess").hidden=false;document.getElementById("successOrderNumber").textContent="訂單編號："+order.number;window.scrollTo({top:0,behavior:"smooth"});

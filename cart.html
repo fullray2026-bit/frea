@@ -47,7 +47,7 @@
 <div id="cartEmpty" class="cart-empty" hidden><h2 class="serif">購物車目前是空的</h2><p>前往品牌頁選擇商品，再回到這裡確認內容。</p><a class="btn" href="brand-kayanoya.html">前往選購</a></div>
 <div id="cartContent" class="cart-layout" hidden>
 <section><div class="cart-labels"><span>商品</span><span>單價</span><span>數量</span><span>小計</span></div><div id="cartItems"></div></section>
-<aside class="cart-summary"><h2 class="serif">訂單摘要</h2><div class="cart-summary-row"><span>商品數量</span><strong id="cartItemCount">0</strong></div><div class="cart-summary-row total"><span>總價</span><strong id="cartGrandTotal">¥0</strong></div><p class="cart-summary-note" id="cartSummaryNote">商品將依後台設定的幣別結帳，尚未包含運費及稅費。</p><button class="cart-checkout" id="checkoutButton" type="button">確認結帳</button></aside>
+<aside class="cart-summary"><h2 class="serif">訂單摘要</h2><div class="cart-summary-row"><span>商品數量</span><strong id="cartItemCount">0</strong></div><div class="cart-summary-row"><span>商品小計</span><strong id="cartSubtotal">¥0</strong></div><div class="cart-summary-row" id="cartServiceFeeRow" hidden><span>國內運費及作業費</span><strong id="cartServiceFee">NT$0</strong></div><div class="cart-summary-row total"><span>總價</span><strong id="cartGrandTotal">¥0</strong></div><p class="cart-summary-note" id="cartSummaryNote">商品將依後台設定的幣別結帳。</p><button class="cart-checkout" id="checkoutButton" type="button">確認結帳</button></aside>
 </div>
 </div></main>
 <footer class="footer"><div class="container"><div class="footer-grid"><div class="footer-brand"><img src="assets/logo_round.png" alt="fréa"><p>讓生活，回到它該有的溫度。</p><p>FUKUOKA, JAPAN</p></div><div><h4>關於 fréa</h4><a href="about.html">品牌故事</a><a href="contact.html">聯絡我們</a></div><div><h4>購物指南</h4><a href="shopping-guide.html">購物須知</a><a href="shopping-guide.html#faq">常見問題</a><a href="returns.html">退換貨政策</a><a href="terms.html">會員條款</a><a href="privacy.html">隱私權政策</a></div></div><div class="copyright">© 2026 fréa. All rights reserved.</div></div></footer>
@@ -70,12 +70,17 @@
     if(!cart.length)return;
     itemsElement.innerHTML=cart.map(item=>'<article class="cart-item" data-cart-id="'+safe(item.id)+'"><div class="cart-product"><div class="cart-image"><img src="'+safe(item.image)+'" alt="'+safe(item.name)+'"></div><div><div class="cart-name">'+safe(item.name)+'</div><div class="cart-spec">'+safe(item.spec)+'</div><button class="cart-remove" type="button" data-remove>移除商品</button></div></div><div class="cart-unit">'+money(item.price,item.currency)+'</div><div class="cart-quantity"><button type="button" data-change="-1" aria-label="減少數量">−</button><input data-quantity type="number" min="1" max="99" value="'+item.quantity+'" aria-label="數量"><button type="button" data-change="1" aria-label="增加數量">＋</button></div><div class="cart-line-total">'+money(item.price*item.quantity,item.currency)+'</div></article>').join("");
     const quantity=cart.reduce((sum,item)=>sum+item.quantity,0);
-    const total=cart.reduce((sum,item)=>sum+item.price*item.quantity,0);
+    const subtotal=cart.reduce((sum,item)=>sum+item.price*item.quantity,0);
     const currencies=[...new Set(cart.map(item=>item.currency||"JPY"))];
     const mixedCurrency=currencies.length!==1;
+    const currency=currencies[0];
+    const serviceFee=!mixedCurrency&&currency==="TWD"&&subtotal<2500?80:0;
     document.getElementById("cartItemCount").textContent=quantity+" 件";
-    document.getElementById("cartGrandTotal").textContent=mixedCurrency?"請分開結帳":money(total,currencies[0]);
-    document.getElementById("cartSummaryNote").textContent=mixedCurrency?"購物車內含不同幣別商品，請移除其中一種幣別後再結帳。":"商品將以 "+(currencies[0]==="TWD"?"新台幣":"日圓")+"結帳，尚未包含運費及稅費。";
+    document.getElementById("cartSubtotal").textContent=mixedCurrency?"—":money(subtotal,currency);
+    document.getElementById("cartServiceFeeRow").hidden=serviceFee===0;
+    document.getElementById("cartServiceFee").textContent=money(serviceFee,"TWD");
+    document.getElementById("cartGrandTotal").textContent=mixedCurrency?"請分開結帳":money(subtotal+serviceFee,currency);
+    document.getElementById("cartSummaryNote").textContent=mixedCurrency?"購物車內含不同幣別商品，請移除其中一種幣別後再結帳。":currency==="TWD"?"商品將以新台幣結帳，商品小計未達新台幣 2,500 元，將加收台灣國內運費及作業費 80 元。本網站每月於 15 日 23:59 統一結單，15 日結單後成立的訂單將併入次月採購。商品預計於結單當月底到貨後依序寄出；完成下單即表示您已了解並同意此預購方式。":"商品將以日圓結帳。本網站每月於 15 日 23:59 統一結單，15 日結單後成立的訂單將併入次月採購。商品預計於結單當月底到貨後依序寄出；完成下單即表示您已了解並同意此預購方式。";
     document.getElementById("checkoutButton").disabled=mixedCurrency;
     bindRows();
   }
