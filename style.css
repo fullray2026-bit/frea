@@ -372,4 +372,20 @@ body.search-open{overflow:hidden}.site-search[hidden]{display:none}.site-search{
   .brand-grid--imageonly .card:last-child{grid-column:auto;width:auto;justify-self:stretch}
 }
 .brand-product-empty{padding:32px 0;color:var(--muted);border-bottom:1px solid #ddd3c7}
+.collection-products .brand-product-list{border-top:1px solid #ddd3c7}
+.collection-products .brand-product-labels,.collection-products .brand-product-row{display:grid;grid-template-columns:140px minmax(190px,1.35fr) minmax(90px,.6fr) minmax(190px,1.15fr) minmax(135px,.7fr) 122px 150px;gap:24px;align-items:center}
+.collection-products .brand-product-labels{padding:12px 0;color:var(--muted);font-size:11px;letter-spacing:.12em;text-transform:uppercase;border-bottom:1px solid #ddd3c7}
+.collection-products .brand-product-row{padding:28px 0;border-bottom:1px solid #ddd3c7}
+.collection-products .brand-product-thumb{width:140px;aspect-ratio:1;border-radius:14px;overflow:hidden;background:#eee8df;display:flex;align-items:center;justify-content:center}
+.collection-products .brand-product-thumb img{width:100%;height:100%;object-fit:contain}
+.collection-products .brand-product-name h3{font-family:"Noto Serif TC","Yu Mincho",serif;font-size:20px;font-weight:400;line-height:1.5;margin:0 0 8px}
+.collection-products .brand-product-name p,.collection-products .brand-product-use{font-size:13px;line-height:1.75;color:var(--muted)}
+.collection-products .brand-product-spec{font-size:14px;line-height:1.8}
+.collection-products .brand-product-price strong{font-size:19px;font-weight:400}
+.collection-products .brand-product-price span{display:block;color:var(--muted);font-size:10px;line-height:1.5}
+.collection-products .brand-quantity{display:grid;grid-template-columns:34px 50px 34px;border:1px solid #cfc2b5;border-radius:999px;overflow:hidden}
+.collection-products .brand-quantity button,.collection-products .brand-quantity input{height:42px;border:0;background:transparent;text-align:center}
+.collection-products .brand-quantity input{width:50px;border-left:1px solid #e1d5c8;border-right:1px solid #e1d5c8}
+.collection-products .brand-cart-btn{width:100%;min-height:48px;border:0;border-radius:999px;background:#4b3d32;color:#fff;cursor:pointer}
+@media(max-width:760px){.collection-products .brand-product-labels{display:none}.collection-products .brand-product-row{grid-template-columns:104px 1fr;gap:18px;padding:22px 0}.collection-products .brand-product-thumb{width:104px;grid-row:1/7}.collection-products .brand-product-row>*:not(.brand-product-thumb){grid-column:2}.collection-products .brand-product-name h3{font-size:19px}}
 .product-variant-label{display:grid;gap:5px;margin-top:10px;font-size:12px;color:#8a796b}.product-variant-label select{width:100%;border:1px solid #d9cbbb;border-radius:7px;background:#fffdf9;color:#4b3b31;padding:8px 9px;font:inherit}.brand-cart-btn:disabled{cursor:not-allowed;opacity:.58}
