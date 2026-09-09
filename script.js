@@ -42,8 +42,7 @@ if(itemList){
   });
 }
 
-// Site-wide product search. The catalogue is read from products.html so search
-// results always follow the products currently published on the site.
+// Search uses the live public catalogue, never the legacy HTML product fixtures.
 (function initSiteSearch(){
   const triggers=qsa('button.icon[aria-label="搜尋"]');
   if(!triggers.length)return;
@@ -59,48 +58,74 @@ if(itemList){
   document.body.appendChild(overlay);
 
   const input=qs('input',overlay),status=qs('.site-search-status',overlay),results=qs('.site-search-results',overlay);
-  let cataloguePromise;
+  let configPromise, searchVersion=0, searchTimer;
   const normalise=value=>String(value||'').toLocaleLowerCase('zh-Hant').replace(/\s+/g,' ').trim();
-  const productPageByBrand={
-    '茅乃舍':'brand-kayanoya.html','KINTO':'brand-kinto.html','家事問屋':'brand-kajidonya.html',
-    'AKOMEYA TOKYO':'brand-akomeya.html','福岡咖啡精選':'brand-fukuoka-coffee.html',
-    '生活雜貨精選':'category-lifestyle.html'
+  const brands={
+    kayanoya:['茅乃舍','brand-kayanoya.html'],kinto:['KINTO','brand-kinto.html'],
+    kajidonya:['家事問屋','brand-kajidonya.html'],akomeya:['AKOMEYA TOKYO','brand-akomeya.html'],
+    'fukuoka-coffee':['福岡咖啡精選','brand-fukuoka-coffee.html'],
+    'lifestyle-picks':['生活雜貨精選','category-lifestyle.html']
   };
+  async function loadSearchConfig(){
+    if(window.freaSupabaseConfig)return window.freaSupabaseConfig;
+    if(!configPromise){
+      configPromise=new Promise((resolve,reject)=>{
+        const script=document.createElement('script');
+        script.src='supabase-config.js';
+        script.onload=()=>window.freaSupabaseConfig?resolve(window.freaSupabaseConfig):reject(new Error('config'));
+        script.onerror=()=>reject(new Error('config'));
+        document.head.appendChild(script);
+      }).catch(error=>{configPromise=null;throw error});
+    }
+    return configPromise;
+  }
   async function loadCatalogue(){
-    if(cataloguePromise)return cataloguePromise;
-    cataloguePromise=(async()=>{
-      const source=location.pathname.endsWith('/products.html')?document:await fetch('products.html',{cache:'no-cache'}).then(response=>{if(!response.ok)throw new Error('catalogue');return response.text()}).then(html=>new DOMParser().parseFromString(html,'text/html'));
-      return qsa('.all-products-group',source).flatMap(group=>{
-        const brand=qs('.all-products-brand h2',group)?.textContent.trim()||'';
-        const page=productPageByBrand[brand]||qs('.all-products-brand a',group)?.getAttribute('href')||'products.html';
-        return qsa('[data-cart-product]',group).map(row=>({
-          id:row.dataset.productId||'',brand,page,name:row.dataset.name||qs('.brand-product-name h3',row)?.textContent.trim()||'',
-          spec:row.dataset.spec||qs('.brand-product-spec',row)?.textContent.trim()||'',
-          description:qs('.brand-product-name p',row)?.textContent.trim()||'',use:qs('.brand-product-use',row)?.textContent.trim()||'',
-          image:row.dataset.image||qs('.brand-product-thumb img',row)?.getAttribute('src')||'',
-          search:normalise([brand,row.dataset.name,row.dataset.spec,row.textContent].join(' '))
-        }));
-      });
-    })();
-    return cataloguePromise;
+    const config=await loadSearchConfig();
+    const url=new URL('/rest/v1/products',config.url);
+    url.searchParams.set('select','slug,brand_code,name,description,specification,usage_flavor,image_url,is_active');
+    url.searchParams.set('is_active','eq.true');
+    url.searchParams.set('order','brand_code.asc,sort_order.asc,slug.asc');
+    const products=[];
+    const pageSize=500;
+    for(let offset=0;;offset+=pageSize){
+      url.searchParams.set('limit',String(pageSize));
+      url.searchParams.set('offset',String(offset));
+      const response=await fetch(url.href,{cache:'no-store',headers:{apikey:config.publishableKey}});
+      if(!response.ok)throw new Error('catalogue');
+      const data=await response.json();
+      if(!Array.isArray(data))throw new Error('catalogue');
+      products.push(...data);
+      if(data.length<pageSize)break;
+    }
+    return products.filter(product=>product.is_active===true).map(product=>{
+      const [brand,page]=brands[product.brand_code]||[product.brand_code,'products.html'];
+      return {
+        id:product.slug,brand,page,name:product.name||'',spec:product.specification||'',
+        description:product.description||'',use:product.usage_flavor||'',image:product.image_url||'',
+        search:normalise([brand,product.name,product.specification,product.description,product.usage_flavor].join(' '))
+      };
+    });
   }
   function escapeHtml(value){return String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]))}
   async function runSearch(){
+    const version=++searchVersion;
     const term=normalise(input.value);
     if(!term){results.innerHTML='';status.textContent='請輸入關鍵字開始搜尋。';return}
+    results.innerHTML='';
     status.textContent='搜尋中…';
     try{
       const catalogue=await loadCatalogue();
+      if(version!==searchVersion||overlay.hidden)return;
       const matches=catalogue.filter(item=>item.search.includes(term)).slice(0,24);
       status.textContent=matches.length?`找到 ${matches.length} 項商品`:'找不到符合的商品，請嘗試其他關鍵字。';
       results.innerHTML=matches.map(item=>`<a class="site-search-result" href="${escapeHtml(item.page)}#${encodeURIComponent(item.id)}"><span class="site-search-thumb">${item.image?`<img src="${escapeHtml(item.image)}" alt="">`:''}</span><span class="site-search-copy"><small>${escapeHtml(item.brand)}</small><strong>${escapeHtml(item.name)}</strong><span>${escapeHtml(item.spec)}${item.use?'｜'+escapeHtml(item.use):''}</span></span><span class="site-search-arrow" aria-hidden="true">→</span></a>`).join('');
-    }catch(error){status.textContent='搜尋資料暫時無法載入，請稍後再試。';results.innerHTML=''}
+    }catch(error){if(version!==searchVersion||overlay.hidden)return;status.textContent='搜尋資料暫時無法載入，請稍後再試。';results.innerHTML=''}
   }
-  function openSearch(){overlay.hidden=false;document.body.classList.add('search-open');requestAnimationFrame(()=>input.focus())}
-  function closeSearch(){overlay.hidden=true;document.body.classList.remove('search-open')}
+  function openSearch(){overlay.hidden=false;document.body.classList.add('search-open');requestAnimationFrame(()=>input.focus());runSearch()}
+  function closeSearch(){++searchVersion;clearTimeout(searchTimer);overlay.hidden=true;document.body.classList.remove('search-open')}
   triggers.forEach(trigger=>trigger.addEventListener('click',openSearch));
   qsa('[data-search-close]',overlay).forEach(button=>button.addEventListener('click',closeSearch));
-  input.addEventListener('input',runSearch);
+  input.addEventListener('input',()=>{++searchVersion;clearTimeout(searchTimer);results.innerHTML='';status.textContent=input.value.trim()?'搜尋中…':'請輸入關鍵字開始搜尋。';searchTimer=setTimeout(runSearch,200)});
   document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!overlay.hidden)closeSearch()});
   if(location.hash){const target=document.getElementById(decodeURIComponent(location.hash.slice(1)));if(target)setTimeout(()=>target.scrollIntoView({behavior:'smooth',block:'center'}),120)}
 })();
