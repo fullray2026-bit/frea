@@ -89,7 +89,7 @@
       client.from("membership_applications").select("*").order("created_at", { ascending: false }),
       client.from("member_addresses").select("user_id,recipient_name,recipient_phone,postal_code,address,is_default").eq("is_default", true),
       client.from("ezway_profiles").select("user_id,real_name,mobile"),
-      client.from("orders").select("id,user_id,order_number,status,currency,total_amount,created_at,updated_at,recipient_name,recipient_phone,postal_code,shipping_address,payment_proof_name,admin_note,tracking_number,order_items(product_name,specification,quantity,unit_price,line_total)").order("created_at", { ascending: false }),
+      client.from("orders").select("id,user_id,order_number,status,currency,total_amount,created_at,updated_at,recipient_name,recipient_phone,postal_code,shipping_address,payment_proof_name,payment_proof_path,admin_note,tracking_number,order_items(product_name,specification,quantity,unit_price,line_total)").order("created_at", { ascending: false }),
       client.from("personal_shopping_requests").select("id,request_number,user_id,customer_name,email,phone,line_id,note,items,status,quote_amount,quote_details,admin_note,created_at,updated_at").order("created_at", { ascending: false }),
       client.from("products").select("*,product_variants(id,option_value,sku,image_url,stock_quantity,sort_order,is_active)").order("brand_code").order("sort_order").order("created_at"),
       client.from("product_master").select("*").order("created_at", { ascending: false }),
@@ -659,13 +659,31 @@
         '</div><div><h4>收件與付款資料</h4><p>' + escapeHtml(order.recipient_name || "—") + "／" +
         escapeHtml(order.recipient_phone || "—") + '</p><p>' +
         escapeHtml([order.postal_code, order.shipping_address].filter(Boolean).join(" ") || "未填地址") +
-        '</p><p>匯款證明：' + escapeHtml(order.payment_proof_name || "未上傳") + "</p></div></div>" +
+        '</p><p>匯款證明：' + escapeHtml(order.payment_proof_name || "未上傳") + "</p>" +
+        (order.payment_proof_path ? '<button class="admin-save" type="button" data-view-payment-proof>查看匯款證明</button>' : "") + "</div></div>" +
         '<div class="admin-order-controls"><label>訂單狀態<select data-order-status>' +
         statusOptions(order.status) + '</select></label><label data-tracking-wrap' + (order.status === "shipped" ? "" : " hidden") +
         '>出貨單號<input data-tracking-number value="' + escapeHtml(order.tracking_number || "") +
         '" placeholder="請輸入物流出貨單號"></label><label>後台備註<textarea data-order-note rows="2" placeholder="僅供管理使用">' +
         escapeHtml(order.admin_note || "") + '</textarea></label><button class="admin-save" type="button" data-save-order>儲存變更</button></div></article>';
     }).join("");
+  }
+
+  async function viewPaymentProof(card, button) {
+    const order = orders.find(item => String(item.id) === String(card.dataset.orderId));
+    if (!order?.payment_proof_path) return;
+    const viewer = window.open("", "_blank");
+    if (!viewer) return showMessage("adminGlobalMessage", "請允許開啟新分頁後，再查看匯款證明。", "error");
+    viewer.opener = null;
+    button.disabled = true;
+    try {
+      const { data, error } = await client.storage.from("payment-proofs").createSignedUrl(order.payment_proof_path, 120);
+      if (error || !data?.signedUrl) throw error || new Error("無法取得檔案連結。");
+      viewer.location.replace(data.signedUrl);
+    } catch (error) {
+      viewer.close();
+      showMessage("adminGlobalMessage", "無法開啟匯款證明，請重新登入或稍後再試。", "error");
+    } finally { button.disabled = false; }
   }
 
   async function saveOrder(card) {
@@ -788,6 +806,8 @@
   byId("supplierForm").addEventListener("submit",saveSupplier);
   byId("purchaseForm").addEventListener("submit",savePurchase);
   byId("orderCards").addEventListener("click", event => {
+    const proof = event.target.closest("[data-view-payment-proof]");
+    if (proof) return viewPaymentProof(proof.closest(".admin-order"), proof);
     const button = event.target.closest("[data-save-order]");
     if (button) saveOrder(button.closest(".admin-order"));
   });
