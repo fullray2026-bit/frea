@@ -181,13 +181,13 @@
       if(item)item.quantity+=selectedQuantity;
       else cart.push({id:id,name:row.dataset.name,spec:row.dataset.spec,price:Number(row.dataset.price),currency:row.dataset.currency,quantity:selectedQuantity,image:row.dataset.image});
       localStorage.setItem(key,JSON.stringify(cart));
-      if(typeof toast==="function")toast("已加入 "+selectedQuantity+" 件商品（瀏覽器測試版）");
+      if(typeof toast==="function")toast("已加入 "+selectedQuantity+" 件商品");
       const button=this;
       button.textContent="已加入購物車";
       setTimeout(()=>button.textContent="加入購物車",1600);
     });
   });
 })();
-</script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.3/dist/umd/supabase.js"></script><script src="supabase-config.js"></script><script src="product-catalog.js?v=1"></script></body>
+</script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.3/dist/umd/supabase.js"></script><script src="supabase-config.js"></script><script src="product-catalog.js?v=member-checkout-20260909"></script></body>
 </html>
 

@@ -45,12 +45,14 @@
 </form>
 </div></main>
 <footer class="footer"><div class="container"><div class="footer-grid"><div class="footer-brand"><img src="assets/logo_round.png" alt="fréa"><p>讓生活，回到它該有的溫度。</p><p>FUKUOKA, JAPAN</p></div><div><h4>關於 fréa</h4><a href="about.html">品牌故事</a><a href="contact.html">聯絡我們</a><a href="intellectual-property.html">品牌與智慧財產權聲明</a></div><div><h4>購物指南</h4><a href="shopping-guide.html">購物須知</a><a href="returns.html">退換貨政策</a><a href="terms.html">會員條款</a><a href="privacy.html">隱私權政策</a></div></div><div class="copyright">© 2026 fréa. All rights reserved.</div></div></footer>
-<div class="toast"></div><script src="script.js?v=live-search-20260909"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.3/dist/umd/supabase.js"></script><script src="supabase-config.js"></script>
+<div class="toast"></div><script src="script.js?v=live-search-20260909"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.3/dist/umd/supabase.js"></script><script src="supabase-config.js"></script><script src="checkout-auth.js?v=1"></script>
 <script>
 (function(){
-  const CART_KEY="frea_demo_cart_v1",ORDERS_KEY="frea_demo_orders_v1",MEMBERS_KEY="frea_demo_members_v1",SESSION_KEY="frea_demo_session_v1";
+  const CART_KEY="frea_demo_cart_v1";
   const form=document.getElementById("checkoutForm");
-  const supabaseClient=window.supabase&&window.freaSupabaseConfig?window.supabase.createClient(window.freaSupabaseConfig.url,window.freaSupabaseConfig.publishableKey):null;
+  const supabaseClient=window.freaCheckoutAuth?.client;
+  let submitting=false;
+  const requireMember=()=>window.freaCheckoutAuth?window.freaCheckoutAuth.requireMember():Promise.reject(new Error("auth unavailable"));
   function read(key,fallback){try{return JSON.parse(localStorage.getItem(key)||JSON.stringify(fallback));}catch(error){return fallback;}}
   function money(value,currency){return (currency==="TWD"?"NT$":"¥")+Number(value||0).toLocaleString(currency==="TWD"?"zh-TW":"ja-JP");}
   function safe(text){const div=document.createElement("div");div.textContent=text||"";return div.innerHTML;}
@@ -58,14 +60,12 @@
   function total(items){return items.reduce((sum,item)=>sum+item.price*item.quantity,0);}
   function serviceFee(items,currency){const subtotal=total(items);return currency==="TWD"&&subtotal<2500?80:0;}
   function setField(name,value){const field=form.elements.namedItem(name);if(field)field.value=value||"";}
-  async function prefillMember(){
+  async function prefillMember(user){
     ["postalCode","address","recipientPhone","recipientName"].forEach(name=>setField(name,""));
     if(!supabaseClient)return;
-    const {data:{session}}=await supabaseClient.auth.getSession();
-    if(!session)return;
     const [addressResult,ezwayResult]=await Promise.all([
-      supabaseClient.from("member_addresses").select("postal_code,address").eq("user_id",session.user.id).eq("is_default",true).maybeSingle(),
-      supabaseClient.from("ezway_profiles").select("real_name,mobile").eq("user_id",session.user.id).maybeSingle()
+      supabaseClient.from("member_addresses").select("postal_code,address").eq("user_id",user.id).eq("is_default",true).maybeSingle(),
+      supabaseClient.from("ezway_profiles").select("real_name,mobile").eq("user_id",user.id).maybeSingle()
     ]);
     if(addressResult.error||ezwayResult.error)return;
     const delivery=addressResult.data||{},ezway=ezwayResult.data||{};
@@ -75,6 +75,9 @@
     setField("recipientName",ezway.real_name);
   }
   async function render(){
+    form.hidden=true;
+    const user=await requireMember();
+    if(!user)return;
     const items=cart();
     const currencies=[...new Set(items.map(item=>item.currency||"JPY"))];
     const mixedCurrency=currencies.length>1;
@@ -90,20 +93,16 @@
     document.getElementById("checkoutServiceFee").textContent=money(fee,"TWD");
     document.getElementById("checkoutTotal").textContent=money(subtotal+fee,currency);
     document.getElementById("checkoutPolicy").innerHTML=currency==="TWD"?"<li>商品將以新台幣結帳，商品小計未達新台幣 2,500 元，將加收台灣國內運費及作業費 80 元。</li><li>本網站每月於 15 日 23:59 統一結單，15 日結單後成立的訂單將併入次月採購。</li><li>商品預計於結單當月底到貨後依序寄出；完成下單即表示您已了解並同意此預購方式。</li>":"<li>商品將以日圓結帳。</li><li>本網站每月於 15 日 23:59 統一結單，15 日結單後成立的訂單將併入次月採購。</li><li>商品預計於結單當月底到貨後依序寄出；完成下單即表示您已了解並同意此預購方式。</li>";
-    await prefillMember();
+    await prefillMember(user);
   }
   function fileData(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file);});}
-  function saveMemberOrder(order){
-    const email=localStorage.getItem(SESSION_KEY);if(!email)return;
-    const members=read(MEMBERS_KEY,[]);const index=members.findIndex(item=>item.email===email);if(index<0)return;
-    const orders=Array.isArray(members[index].orders)?members[index].orders:[];
-    orders.unshift({number:order.number,date:order.date,status:order.status,total:order.total});
-    members[index].orders=orders;
-    members[index].delivery=order.shipping;
-    localStorage.setItem(MEMBERS_KEY,JSON.stringify(members));
-  }
   form.addEventListener("submit",async event=>{
     event.preventDefault();
+    if(submitting)return;
+    submitting=true;
+    const submit=form.querySelector('[type="submit"]');submit.disabled=true;
+    try{
+    const user=await requireMember();if(!user)return;
     const items=cart();if(!items.length){render();return;}
     const file=document.getElementById("paymentProof").files[0];
     const message=document.getElementById("checkoutMessage");
@@ -112,27 +111,18 @@
     const allowed=["image/jpeg","image/png","image/webp","application/pdf"];
     if(!allowed.includes(file.type)){message.textContent="請上傳 JPG、PNG、WebP 或 PDF 檔案。";message.className="checkout-message error";return;}
     const data=new FormData(form);
-    const now=new Date();
     const proofData=await fileData(file);
     const shipping={postalCode:String(data.get("postalCode")||"").trim(),address:String(data.get("address")||"").trim(),recipientPhone:String(data.get("recipientPhone")||"").trim(),recipientName:String(data.get("recipientName")||"").trim(),ezwayPhone:String(data.get("recipientPhone")||"").trim(),ezwayName:String(data.get("recipientName")||"").trim()};
-    if(supabaseClient){
-      const {data:{session}}=await supabaseClient.auth.getSession();
-      if(session){
-        const submit=form.querySelector('[type="submit"]');submit.disabled=true;submit.textContent="訂單送出中…";
-        const {data:result,error}=await supabaseClient.functions.invoke("submit-order",{body:{items:items.map(item=>({id:item.productId||item.id,variantId:item.variantId||"",specification:item.spec,quantity:item.quantity})),shipping:shipping,paymentProof:{name:file.name,type:file.type,size:file.size,data:proofData}}});
-        submit.disabled=false;submit.textContent="訂單送出";
-        if(error||!result||!result.orderNumber){message.textContent=result&&result.error?result.error:"訂單送出失敗，請稍後再試。";message.className="checkout-message error";return;}
-        localStorage.removeItem(CART_KEY);form.reset();form.hidden=true;document.getElementById("checkoutSuccess").hidden=false;document.getElementById("successOrderNumber").textContent="訂單編號："+result.orderNumber;window.scrollTo({top:0,behavior:"smooth"});return;
-      }
-    }
-    const orderCurrency=items[0]?.currency||"JPY";
-    const orderTotal=total(items)+serviceFee(items,orderCurrency);
-    const order={number:"FR"+now.getFullYear()+String(now.getMonth()+1).padStart(2,"0")+String(now.getDate()).padStart(2,"0")+"-"+String(Date.now()).slice(-6),date:now.toLocaleDateString("zh-TW"),status:"待確認匯款",total:money(orderTotal,orderCurrency),currency:orderCurrency,items:items,shipping:shipping,paymentProof:{name:file.name,type:file.type,size:file.size,data:proofData},createdAt:now.toISOString()};
-    const orders=read(ORDERS_KEY,[]);orders.unshift(order);
-    try{localStorage.setItem(ORDERS_KEY,JSON.stringify(orders));}catch(error){message.textContent="瀏覽器儲存空間不足，請改用較小的匯款證明檔案。";message.className="checkout-message error";return;}
-    saveMemberOrder(order);localStorage.removeItem(CART_KEY);form.reset();form.hidden=true;document.getElementById("checkoutSuccess").hidden=false;document.getElementById("successOrderNumber").textContent="訂單編號："+order.number;window.scrollTo({top:0,behavior:"smooth"});
+    submit.textContent="訂單送出中…";
+    const {data:result,error}=await supabaseClient.functions.invoke("submit-order",{body:{items:items.map(item=>({id:item.productId||item.id,variantId:item.variantId||"",specification:item.spec,quantity:item.quantity})),shipping:shipping,paymentProof:{name:file.name,type:file.type,size:file.size,data:proofData}}});
+    if(error||!result||!result.orderNumber){message.textContent=result&&result.error?result.error:"訂單送出失敗，請稍後再試。";message.className="checkout-message error";return;}
+    localStorage.removeItem(CART_KEY);form.reset();form.hidden=true;document.getElementById("checkoutSuccess").hidden=false;document.getElementById("successOrderNumber").textContent="訂單編號："+result.orderNumber;window.scrollTo({top:0,behavior:"smooth"});
+    }catch(error){
+      const message=document.getElementById("checkoutMessage");message.textContent="暫時無法完成結帳，請確認登入狀態並稍後再試。";message.className="checkout-message error";
+    }finally{submitting=false;submit.disabled=false;submit.textContent="訂單送出";}
+
   });
-  render();
+  render().catch(()=>{form.hidden=true;document.getElementById("checkoutEmpty").hidden=false;document.getElementById("checkoutEmptyTitle").textContent="暫時無法確認會員狀態";document.getElementById("checkoutEmptyText").textContent="請返回購物車後再試，購物車商品會保留。";});
 })();
 </script>
 </body>

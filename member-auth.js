@@ -21,9 +21,9 @@
   const deliveryForm = byId("deliveryForm");
   const membershipForm = byId("membershipForm");
   const query = new URLSearchParams(window.location.search);
-  const returnTo = query.get("return") === "personal-shopping.html" ? "personal-shopping.html" : "";
+  const returnTo = ["personal-shopping.html","checkout.html"].includes(query.get("return")) ? query.get("return") : "";
   const emailRedirectUrl = returnTo
-    ? new URL("register.html?view=login&return=personal-shopping.html", window.location.href).href
+    ? new URL("register.html?view=login&return=" + encodeURIComponent(returnTo), window.location.href).href
     : "https://fullray2026-bit.github.io/frea/register.html";
   let currentUser = null;
   let currentAddressId = null;
@@ -346,9 +346,12 @@
     if (data.session) {
       if (redirectAfterAuth()) return;
       loadMember(data.session.user).catch(async () => { await client.auth.signOut(); show("login", false); });
+    } else if (returnTo === "checkout.html" && query.get("view") !== "login") {
+      show("register", false);
+      message("registerMessage", "請先加入會員，或使用下方「登入」連結登入既有帳戶，即可繼續結帳。購物車商品會保留。", "success");
     } else if (returnTo || query.get("view") === "login") {
       show("login", false);
-      if (returnTo) message("loginReturnMessage", "請先登入會員，再填寫自選代購需求。", "success");
+      if (returnTo) message("loginReturnMessage", returnTo === "checkout.html" ? "請先登入會員，即可繼續結帳。購物車商品會保留。" : "請先登入會員，再填寫自選代購需求。", "success");
     } else show("register", false);
   });
 })();

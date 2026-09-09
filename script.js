@@ -140,7 +140,7 @@ if (location.pathname.endsWith("/category-lifestyle.html")) {
   });
   loadScript("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.3/dist/umd/supabase.js")
     .then(() => loadScript("supabase-config.js"))
-    .then(() => loadScript("product-catalog.js?v=1"))
+    .then(() => loadScript("product-catalog.js?v=member-checkout-20260909"))
     .catch(() => {});
 }
 

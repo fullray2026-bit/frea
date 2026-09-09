@@ -116,7 +116,7 @@
           price: Number(row.dataset.price), currency: productCurrency, quantity: amount,
           image: option?.dataset.image || row.dataset.image });
         localStorage.setItem(cartKey, JSON.stringify(cart));
-        notify("已加入 " + amount + " 件商品（瀏覽器測試版）");
+        notify("已加入 " + amount + " 件商品");
       });
     });
   }
