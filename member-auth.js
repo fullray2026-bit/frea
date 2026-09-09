@@ -8,6 +8,9 @@
     return;
   }
 
+  const recoveryHash = new URLSearchParams(window.location.hash.slice(1));
+  let recoveryMode = recoveryHash.get("type") === "recovery" || new URLSearchParams(window.location.search).get("view") === "reset";
+  let recoveryReady = false;
   const client = sdk.createClient(config.url, config.publishableKey, {
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
   });
@@ -48,7 +51,7 @@
   }
 
   function redirectAfterAuth() {
-    if (!returnTo) return false;
+    if (recoveryMode || !returnTo) return false;
     window.location.replace(returnTo);
     return true;
   }
@@ -58,6 +61,8 @@
     registerView.hidden = view !== "register";
     loginView.hidden = view !== "login";
     memberView.hidden = view !== "member";
+    byId("forgotView").hidden = view !== "forgot";
+    byId("resetView").hidden = view !== "reset";
     if (scroll !== false) window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -200,6 +205,70 @@
   byId("memberType").addEventListener("change", toggleRegistrationFields);
   toggleRegistrationFields();
 
+
+  const forgotForm = byId("forgotForm");
+  const resetForm = byId("resetForm");
+  let sendingReset = false;
+  let savingPassword = false;
+  byId("showForgotPassword").addEventListener("click", (event) => {
+    event.preventDefault();
+    forgotForm.elements.email.value = loginForm.elements.email.value;
+    show("forgot");
+  });
+  byId("forgotBackLogin").addEventListener("click", (event) => {
+    event.preventDefault(); recoveryMode = false; show("login");
+  });
+  forgotForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (sendingReset) return;
+    sendingReset = true;
+    const button = forgotForm.querySelector('[type="submit"]');
+    button.disabled = true;
+    button.textContent = "寄送中…";
+    try {
+      const redirect = new URL("register.html", window.location.href);
+      redirect.searchParams.set("view", "reset");
+      if (returnTo) redirect.searchParams.set("return", returnTo);
+      const { error } = await client.auth.resetPasswordForEmail(
+        forgotForm.elements.email.value.trim().toLowerCase(),
+        { redirectTo: redirect.href }
+      );
+      if (error) throw error;
+      message("forgotMessage", "若此 Email 已註冊，您將收到密碼重設信。請檢查收件匣及垃圾郵件；連結失效時請重新申請。", "success");
+    } catch (error) {
+      message("forgotMessage", readableError(error), "error");
+    } finally {
+      sendingReset = false; button.disabled = false; button.textContent = "寄送重設連結";
+    }
+  });
+  resetForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (savingPassword) return;
+    if (!recoveryReady) return message("resetMessage", "重設連結已失效，請重新申請。", "error");
+    const password = resetForm.elements.password.value;
+    if (password.length < 8) return message("resetMessage", "密碼至少需要 8 碼。", "error");
+    if (password !== resetForm.elements.confirm_password.value) return message("resetMessage", "兩次輸入的密碼不一致。", "error");
+    savingPassword = true;
+    const button = resetForm.querySelector('[type="submit"]');
+    button.disabled = true;
+    try {
+      const { error } = await client.auth.updateUser({ password });
+      if (error) throw error;
+      resetForm.reset();
+      recoveryReady = false;
+      await client.auth.signOut({ scope: "local" });
+      recoveryMode = false;
+      currentUser = null;
+      const cleanUrl = new URL(window.location.href);
+      cleanUrl.hash = ""; cleanUrl.searchParams.set("view", "login");
+      window.history.replaceState(null, "", cleanUrl.href);
+      show("login");
+      message("loginMessage", "密碼已更新，請使用新密碼登入。", "success");
+    } catch (error) {
+      message("resetMessage", readableError(error), "error");
+    } finally { savingPassword = false; button.disabled = false; }
+  });
+
   registerForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     const submit = registerForm.querySelector('[type="submit"]');
@@ -335,6 +404,10 @@
   });
 
   client.auth.onAuthStateChange((event, session) => {
+    if (event === "PASSWORD_RECOVERY" && session) {
+      recoveryMode = true; recoveryReady = true; show("reset", false); return;
+    }
+    if (recoveryMode) return;
     if (event === "SIGNED_OUT") show("login", false);
     if (event === "SIGNED_IN" && session && (!currentUser || currentUser.id !== session.user.id)) {
       if (redirectAfterAuth()) return;
@@ -343,6 +416,15 @@
   });
 
   client.auth.getSession().then(({ data }) => {
+    if (recoveryMode) {
+      if (data.session && !recoveryHash.get("error")) {
+        recoveryReady = true; show("reset", false);
+      } else {
+        show("forgot", false);
+        message("forgotMessage", "重設連結已失效或不完整，請重新申請密碼重設信。", "error");
+      }
+      return;
+    }
     if (data.session) {
       if (redirectAfterAuth()) return;
       loadMember(data.session.user).catch(async () => { await client.auth.signOut(); show("login", false); });

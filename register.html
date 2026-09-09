@@ -68,9 +68,28 @@
 </div>
 <div class="auth-message" id="loginMessage" role="status"></div>
 <button class="btn auth-btn" type="submit">登入</button>
+<div class="auth-note"><a href="#" id="showForgotPassword">忘記密碼？</a></div>
 <div class="auth-note">還沒有會員帳戶？ <a href="#" id="showRegister">建立帳戶</a><br><span>完成註冊後，請依畫面提示驗證 Email。</span></div>
 </form>
 </div>
+<div id="forgotView" hidden>
+<div class="auth-head"><div class="eyebrow">Forgot Password</div><h1 class="serif">忘記密碼</h1><p>輸入註冊時使用的 Email，我們將寄送密碼重設連結。</p></div>
+<form id="forgotForm" class="auth-form">
+<div class="form-grid"><div class="field full"><label for="recoveryEmail">Email *</label><input id="recoveryEmail" required type="email" name="email" autocomplete="email" placeholder="you@example.com"></div></div>
+<div class="auth-message" id="forgotMessage" role="status"></div>
+<button class="btn auth-btn" type="submit">寄送重設連結</button>
+<div class="auth-note"><a href="#" id="forgotBackLogin">返回登入</a></div>
+</form></div>
+<div id="resetView" hidden>
+<div class="auth-head"><div class="eyebrow">Reset Password</div><h1 class="serif">重設密碼</h1><p>請設定至少 8 碼的新密碼。</p></div>
+<form id="resetForm" class="auth-form">
+<div class="form-grid">
+<div class="field full"><label for="newPassword">新密碼 *</label><input id="newPassword" required minlength="8" type="password" name="password" autocomplete="new-password"></div>
+<div class="field full"><label for="confirmNewPassword">再次輸入新密碼 *</label><input id="confirmNewPassword" required minlength="8" type="password" name="confirm_password" autocomplete="new-password"></div>
+</div>
+<div class="auth-message" id="resetMessage" role="status"></div>
+<button class="btn auth-btn" type="submit">儲存新密碼</button>
+</form></div>
 <div id="memberView" hidden>
 <div class="auth-head member-head"><div class="eyebrow">Member Account</div><h1 class="serif">會員中心</h1><p id="memberGreeting"></p></div>
 <nav class="member-tabs" aria-label="會員中心功能">
@@ -238,4 +257,4 @@
   const session=localStorage.getItem(SESSION_KEY);
   if(session){showMember(session);}
 })();
-</script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.3/dist/umd/supabase.js"></script><script src="supabase-config.js"></script><script src="member-auth.js?v=member-checkout-20260909"></script></body></html>
+</script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.3/dist/umd/supabase.js"></script><script src="supabase-config.js"></script><script src="member-auth.js?v=password-recovery-20260909"></script></body></html>
