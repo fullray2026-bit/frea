@@ -9,3 +9,10 @@ if (document.body && document.body.classList.contains("admin-page")) {
   script.defer = true;
   document.head.appendChild(script);
 }
+
+if (/\/brand-kinto\.html$/.test(location.pathname)) {
+  const script = document.createElement("script");
+  script.src = "tableware-coffee-page.js?v=20260911";
+  script.defer = true;
+  document.head.appendChild(script);
+}
