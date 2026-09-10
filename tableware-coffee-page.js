@@ -1,15 +1,4 @@
 (() => {
-  const loadEmbeddedImage = async (img, url) => {
-    if (!img) return;
-    try {
-      const res = await fetch(url, { cache: 'no-store' });
-      if (!res.ok) return;
-      const svg = await res.text();
-      const match = svg.match(/href=["'](data:image\/jpeg;base64,[^"']+)["']/i);
-      if (match && match[1]) img.src = match[1];
-    } catch (_) {}
-  };
-
   const apply = () => {
     if (!/\/brand-kinto\.html$/.test(location.pathname)) return;
 
@@ -26,8 +15,8 @@
 
     const hero = document.querySelector(".brand-feature .brand-hero img");
     if (hero) {
+      hero.src = "assets/tableware_coffee_page.jpg?v=20260911";
       hero.alt = "餐桌與咖啡器物生活選品";
-      loadEmbeddedImage(hero, "assets/tableware_coffee_page.svg?v=20260911-2");
     }
 
     const story = document.querySelector(".brand-feature .brand-story");
