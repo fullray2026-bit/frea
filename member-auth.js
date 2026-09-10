@@ -63,6 +63,9 @@
     memberView.hidden = view !== "member";
     byId("forgotView").hidden = view !== "forgot";
     byId("resetView").hidden = view !== "reset";
+    if (returnTo === "personal-shopping.html" && ["register", "login"].includes(view)) {
+      message(view === "register" ? "registerReturnMessage" : "loginReturnMessage", "請先加入或登入會員，再填寫自選代購需求。", "success");
+    }
     if (scroll !== false) window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -199,6 +202,7 @@
     show("member", false);
   }
 
+  byId("showLoginTop").addEventListener("click", (event) => { event.preventDefault(); show("login"); });
   byId("showLogin").addEventListener("click", (event) => { event.preventDefault(); show("login"); });
   byId("showRegister").addEventListener("click", (event) => { event.preventDefault(); show("register"); });
   document.querySelectorAll("[data-member-tab]").forEach((button) => button.addEventListener("click", () => activateTab(button.dataset.memberTab)));
@@ -428,6 +432,8 @@
     if (data.session) {
       if (redirectAfterAuth()) return;
       loadMember(data.session.user).catch(async () => { await client.auth.signOut(); show("login", false); });
+    } else if (returnTo === "personal-shopping.html") {
+      show(query.get("view") === "login" ? "login" : "register", false);
     } else if (returnTo === "checkout.html" && query.get("view") !== "login") {
       show("register", false);
       message("registerMessage", "請先加入會員，或使用下方「登入」連結登入既有帳戶，即可繼續結帳。購物車商品會保留。", "success");

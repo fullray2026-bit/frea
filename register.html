@@ -34,8 +34,10 @@
 #loginForm .form-grid,#forgotForm .form-grid,#resetForm .form-grid{margin-bottom:20px}
 @media(min-width:981px){.auth-layout{align-items:start}.auth-image{height:auto;aspect-ratio:2/3}.auth-image img{height:100%;object-fit:cover}}
 @media(max-width:760px){.member-section-head{display:block}.member-section-head>p{margin-top:10px}.member-tabs{gap:0}.member-tab{padding:12px 11px;font-size:14px}.member-identity{grid-template-columns:1fr}}
+@media(max-width:640px){.auth-visual{display:none}.auth-wrap{padding:20px 0 40px}.auth-page-intro{margin-bottom:18px}.auth-page-intro h2{font-size:26px;margin-bottom:6px}.auth-page-intro p{font-size:13px;line-height:1.6}.auth-layout{gap:0}.auth-head h1{font-size:28px}.auth-head p{margin-bottom:18px}}
+.auth-switch-top{margin:0 0 18px;font-size:14px}.auth-switch-top a{color:var(--accent-dark);text-decoration:underline}
 </style></head><body><header class="header"><div class="container header-inner"><a class="wordmark serif" href="index.html">fréa</a><div></div><div class="actions"><button class="icon" title="搜尋" aria-label="搜尋"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="14" r="9.5"></circle><path d="M21.2 21.2 28 28"></path></svg></button><a class="icon" title="會員登入" aria-label="會員登入" href="register.html"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M18 5h9v22h-9"></path><path d="M4 16h16"></path><path d="m14 10 6 6-6 6"></path></svg></a><a class="icon" title="購物車" aria-label="購物車" href="cart.html"><svg viewBox="0 0 36 32" aria-hidden="true"><path d="M3 4h4l3.2 17h18.2l3.6-12H9"></path><circle cx="14" cy="27" r="1.8"></circle><circle cx="27" cy="27" r="1.8"></circle></svg></a></div></div></header><main><section class="auth-wrap"><div class="container"><div class="auth-page-intro"><h2 class="serif">加入 fréa</h2><p>成為會員後，您可以更快速地完成結帳，並查看訂單紀錄、管理常用收件資訊，以及追蹤自選代購需求進度。</p></div><div class="auth-layout"><div class="auth-visual"><div class="auth-image"><img src="assets/brand_vertical.png" alt="fréa 會員加入"></div></div><div class="auth-panel"><div class="auth-card">
-<div id="registerView">
+<div id="registerView"><div class="auth-message" id="registerReturnMessage" role="status"></div><p class="auth-switch-top">已有帳號？ <a href="#" id="showLoginTop">登入</a></p>
 <div class="auth-head"><div class="eyebrow">Create Account</div><h1 class="serif">會員註冊</h1><p>請填寫以下資料，建立您的 fréa 會員帳戶。</p></div>
 <form id="registerForm" class="auth-form">
 <div class="form-grid">
@@ -257,4 +259,4 @@
   const session=localStorage.getItem(SESSION_KEY);
   if(session){showMember(session);}
 })();
-</script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.3/dist/umd/supabase.js"></script><script src="supabase-config.js"></script><script src="member-auth.js?v=password-recovery-20260909"></script></body></html>
+</script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.3/dist/umd/supabase.js"></script><script src="supabase-config.js"></script><script src="member-auth.js?v=mobile-auth-20260911"></script></body></html>

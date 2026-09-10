@@ -28,7 +28,7 @@ if(itemList){
     if(!window.supabase||!window.freaSupabaseConfig){message.hidden=false;message.textContent="系統目前無法連線，請稍後再試。";return}
     const client=window.supabase.createClient(window.freaSupabaseConfig.url,window.freaSupabaseConfig.publishableKey);
     const {data:{user},error:userError}=await client.auth.getUser();
-    if(userError||!user){location.href="register.html?view=login&return=personal-shopping.html";return}
+    if(userError||!user){location.href="register.html?view=register&return=personal-shopping.html";return}
     const {data:profile,error:profileError}=await client.from("profiles").select("full_name,phone").eq("id",user.id).single();
     if(profileError||!profile){message.hidden=false;message.textContent="無法讀取會員資料，請稍後再試。";return}
     if(!String(profile.full_name||"").trim()||!String(profile.phone||"").trim()){message.hidden=false;message.textContent="請先至會員中心補齊姓名與手機，再送出代購需求。";return}
