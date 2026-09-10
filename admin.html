@@ -103,37 +103,17 @@
         </section>
 
         <section class="admin-view" data-admin-panel="purchases" hidden>
-          <div class="admin-grid-two"><form class="admin-card" id="supplierForm"><p class="admin-eyebrow">SUPPLIERS</p><h2>供應商</h2><div class="stack-form"><label>供應商編號<input id="supplierCode" required></label><label>供應商名稱<input id="supplierName" required></label><label>網站<input id="supplierWebsite" type="url"></label><label>備註<textarea id="supplierNotes" rows="3"></textarea></label><button class="admin-primary" type="submit">新增供應商</button></div></form><form class="admin-card" id="purchaseForm"><p class="admin-eyebrow">PURCHASE ORDER</p><h2>建立進貨單</h2><div class="stack-form"><label>供應商<select id="purchaseSupplier"></select></label><label>商品<select id="purchaseProduct" required></select></label><label>數量<input id="purchaseQuantity" type="number" min="1" value="1"></label><label>單價（JPY）<input id="purchaseUnitCost" type="number" min="0"></label><label>備註<textarea id="purchaseNotes" rows="3"></textarea></label><button class="admin-primary" type="submit">建立進貨單</button></div></form></div><div id="purchaseRows" class="admin-orders"></div>
+          <div class="admin-grid-two"><form class="admin-card" id="supplierForm"><p class="admin-eyebrow">SUPPLIERS</p><h2>供應商</h2><div class="stack-form"><label>供應商編號<input id="supplierCode" required></label><label>供應商名稱<input id="supplierName" required></label><label>網站<input id="supplierWebsite" type="url"></label><label>備註<textarea id="supplierNotes" rows="3"></textarea></label><button class="admin-primary" type="submit">新增供應商</button></div></form><form class="admin-card" id="purchaseForm"><p class="admin-eyebrow">PURCHASE ORDER</p><h2>建立進貨單</h2><div class="stack-form"><label>供應商<select id="purchaseSupplier" required></select></label><label>進貨日<input id="purchaseDate" type="date" required></label><label>備註<textarea id="purchaseNotes" rows="3"></textarea></label><button class="admin-primary" type="submit">建立進貨單</button></div></form></div>
+          <div id="purchaseRows"></div>
         </section>
 
         <section class="admin-view" data-admin-panel="members" hidden>
-          <div class="admin-toolbar">
-            <input id="memberSearch" type="search" placeholder="搜尋姓名、Email 或手機">
-            <span id="memberCount"></span>
-          </div>
-          <div class="admin-table-wrap">
-            <table class="admin-table">
-              <thead><tr><th>會員</th><th>類別／編號</th><th>聯絡方式</th><th>審核資料</th><th>資格與操作</th><th>加入日期</th></tr></thead>
-              <tbody id="memberRows"></tbody>
-            </table>
-          </div>
+          <div class="admin-toolbar"><input id="memberSearch" type="search" placeholder="搜尋姓名、Email 或手機"><select id="memberStatusFilter"><option value="">全部狀態</option><option value="pending">待審核</option><option value="approved">已通過</option><option value="rejected">未通過</option></select><span id="memberCount"></span></div>
+          <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>會員</th><th>聯絡方式</th><th>預設收件資料</th><th>EZ WAY</th><th>會員狀態</th><th>操作</th></tr></thead><tbody id="memberRows"></tbody></table></div>
         </section>
 
         <section class="admin-view" data-admin-panel="orders" hidden>
-          <div class="admin-toolbar">
-            <input id="orderSearch" type="search" placeholder="搜尋訂單編號、姓名或手機">
-            <select id="orderStatusFilter">
-              <option value="">全部狀態</option>
-              <option value="pending_payment">待匯款</option>
-              <option value="payment_review">待核款</option>
-              <option value="paid">已收款</option>
-              <option value="processing">備貨中</option>
-              <option value="shipped">已出貨</option>
-              <option value="completed">已完成</option>
-              <option value="cancelled">已取消</option>
-            </select>
-            <span id="orderCount"></span>
-          </div>
+          <div class="admin-toolbar"><input id="orderSearch" type="search" placeholder="搜尋訂單編號、姓名或手機"><select id="orderStatusFilter"><option value="">全部狀態</option><option value="pending_payment">待匯款</option><option value="payment_review">待核款</option><option value="paid">已收款</option><option value="processing">備貨中</option><option value="shipped">已出貨</option><option value="completed">已完成</option><option value="cancelled">已取消</option></select><span id="orderCount"></span></div>
           <div id="orderCards" class="admin-orders"></div>
         </section>
 
@@ -218,5 +198,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.3/dist/umd/supabase.js"></script>
   <script src="supabase-config.js"></script>
   <script src="admin.js?v=member-delivery-20260910"></script>
+  <script src="admin-payment-proof.js?v=20260910-1"></script>
 </body>
 </html>
