@@ -15,7 +15,7 @@
 
     const hero = document.querySelector(".brand-feature .brand-hero img");
     if (hero) {
-      hero.src = "assets/tableware_coffee_page.jpg?v=20260911";
+      hero.src = "assets/tableware_coffee_page.jpg?v=20260911-0137";
       hero.alt = "餐桌與咖啡器物生活選品";
     }
 
