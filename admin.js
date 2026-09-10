@@ -588,12 +588,22 @@
     }
     target.innerHTML = filtered.map(profile => {
       const account = memberAccounts.find(item => item.user_id === profile.id) || {};
+      const address = addresses.find(item => item.user_id === profile.id) || {};
+      const ezway = ezwayProfiles.find(item => item.user_id === profile.id) || {};
+      const deliveryDetail = '<details class="member-delivery-detail"><summary>收件與 EZ WAY 資訊</summary><small>收件人：' +
+        escapeHtml(address.recipient_name || "尚未填寫") + '</small><small>收件人手機：' +
+        escapeHtml(address.recipient_phone || "尚未填寫") + '</small><small>郵遞區號：' +
+        escapeHtml(address.postal_code || "尚未填寫") + '</small><small>收件地址：' +
+        escapeHtml(address.address || "尚未填寫") + '</small><small>EZ WAY 實名認證姓名：' +
+        escapeHtml(ezway.real_name || "尚未填寫") + '</small><small>EZ WAY 認證手機：' +
+        escapeHtml(ezway.mobile || "尚未填寫") + '</small></details>';
+
       const application = membershipApplications.find(item => item.user_id === profile.id) || {};
       const typeLabels={A01:"fréa 內部專用",B01:"企業會員",C01:"團購主／部落客",D01:"一般會員"};
       const reviewLabels={not_required:"不需審核",draft:"資料未完成",submitted:"待審核",under_review:"審核中",approved:"已通過",changes_requested:"待補件",rejected:"未通過"};
       const applicationDetail=account.member_type==="B01"?[application.company_name,application.tax_id,application.representative_name].filter(Boolean).join("／"):account.member_type==="C01"?application.community_links:"—";
       return "<tr><td><strong>" + escapeHtml(profile.full_name || "未填姓名") +
-        "</strong><small>" + escapeHtml(profile.email || "—") + "</small></td><td><strong>"+escapeHtml(account.member_number||"—")+"</strong><small>"+escapeHtml(typeLabels[account.member_type]||"—")+"</small></td><td>" +
+        "</strong><small>" + escapeHtml(profile.email || "—") + "</small>" + deliveryDetail + "</td><td><strong>"+escapeHtml(account.member_number||"—")+"</strong><small>"+escapeHtml(typeLabels[account.member_type]||"—")+"</small></td><td>" +
         escapeHtml(profile.phone || "—") + "<small>推薦人："+escapeHtml(profile.referrer || "—")+"</small></td><td><strong>"+escapeHtml(reviewLabels[application.status||account.review_status]||"—")+"</strong><small>"+escapeHtml(applicationDetail||"—")+"</small>"+(application.proof_path?'<button class="member-proof" type="button" data-proof-path="'+escapeHtml(application.proof_path)+'">查看證明</button>':"")+"</td><td><div class=\"member-admin-controls\"><select data-member-type=\""+escapeHtml(profile.id)+"\"><option value=\"A01\""+(account.member_type==="A01"?" selected":"")+">A01</option><option value=\"B01\""+(account.member_type==="B01"?" selected":"")+">B01</option><option value=\"C01\""+(account.member_type==="C01"?" selected":"")+">C01</option><option value=\"D01\""+(account.member_type==="D01"?" selected":"")+">D01</option></select>"+(["B01","C01"].includes(account.member_type)?'<select data-review-status="'+escapeHtml(profile.id)+'"><option value="submitted">待審核</option><option value="under_review"'+(application.status==="under_review"?" selected":"")+'>審核中</option><option value="approved"'+(application.status==="approved"?" selected":"")+'>通過</option><option value="changes_requested"'+(application.status==="changes_requested"?" selected":"")+'>補件</option><option value="rejected"'+(application.status==="rejected"?" selected":"")+'>拒絕</option></select>':"")+'<button type="button" data-save-member="'+escapeHtml(profile.id)+'">儲存</button></div></td><td>' +
         escapeHtml(formatDate(profile.created_at)) + "</td></tr>";
     }).join("");
