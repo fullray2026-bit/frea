@@ -56,6 +56,20 @@
 .brand-feature .brand-story{display:block;margin:0}
 .brand-feature .brand-story>.brand-kicker{margin-bottom:24px}
 @media(max-width:760px){.brand-feature{grid-template-columns:1fr;gap:42px;margin-bottom:60px}.brand-feature .brand-hero{margin:0}.brand-feature .brand-story{margin:0}}
+
+/* Give the collection title room and use wider desktop screens. */
+.brand-wordmark{white-space:nowrap}
+@media(min-width:761px){
+  .brand-page>.container{width:min(1440px,calc(100% - 64px))}
+  .brand-intro{grid-template-columns:max-content minmax(0,1fr);gap:clamp(32px,5vw,80px)}
+}
+@media(min-width:761px) and (max-width:1100px){
+  .brand-wordmark{font-size:40px;letter-spacing:.06em}
+  .brand-intro{gap:32px}
+}
+@media(max-width:760px){
+  .brand-wordmark{font-size:clamp(28px,7.8vw,43px);letter-spacing:.06em}
+}
 </style>
 </head>
 <body>
