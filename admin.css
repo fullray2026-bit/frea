@@ -80,3 +80,20 @@
 @media(max-width:1180px){.cost-grid-5{grid-template-columns:repeat(3,minmax(0,1fr))}.cost-metric-six{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:760px){.cost-grid-3,.cost-grid-4,.cost-grid-5{grid-template-columns:1fr}.cost-metric-primary,.cost-metric-six,.cost-metric-three,.cost-metric-four{grid-template-columns:repeat(2,minmax(0,1fr))}.cost-title-row,.cost-saved-head{align-items:flex-start;flex-direction:column}}
 .product-variants-editor{border-top:1px solid var(--admin-line);padding-top:14px}.product-variants-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}.product-variants-head button,.product-variant-remove{border:1px solid var(--admin-line);background:#fff;border-radius:7px;padding:7px 10px;cursor:pointer}.product-variant-row{display:grid;grid-template-columns:1fr 1fr 100px 2fr auto;gap:8px;margin-top:8px}.product-variant-row input{font-size:12px}.product-variant-empty{color:var(--admin-muted);font-size:12px;padding:10px 0}@media(max-width:850px){.product-variant-row{grid-template-columns:1fr 1fr}.product-variant-remove{justify-self:start}}
+
+/* Only personal-shopping quote controls and its preview dialog. */
+#personalCards .personal-quote-costs{grid-template-columns:repeat(7,minmax(0,1fr))}
+#personalCards .personal-quote-costs label{min-width:0}
+#personalCards .personal-quote-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+#personalCards .personal-quote-actions button,.personal-quote-preview button{border:1px solid #d8cabc;border-radius:8px;background:#fffdf9;color:#4b3d32;padding:10px 15px;font:inherit;font-size:13px;cursor:pointer}
+#personalCards .personal-quote-actions .danger{color:#9b4038;margin-left:auto}
+#personalCards .personal-quote-actions button:disabled{opacity:.5;cursor:wait}
+.personal-quote-preview{width:min(960px,calc(100vw - 32px));max-height:92vh;padding:0;border:1px solid #d8cabc;border-radius:14px;background:#eee8df;color:#4b3d32}
+.personal-quote-preview::backdrop{background:rgba(35,27,21,.55)}
+.personal-preview-toolbar{position:sticky;top:0;display:flex;align-items:center;gap:10px;padding:16px;background:#4b3d32;color:#fff;font-size:13px}
+.personal-preview-toolbar span{flex:1}
+.personal-quote-preview canvas{display:block;width:calc(100% - 40px);height:auto;margin:20px;box-shadow:0 4px 16px #0002}
+@media(max-width:1500px){#personalCards .personal-quote-costs{grid-template-columns:repeat(4,minmax(0,1fr))}#personalCards .personal-quote-total{grid-column:auto}}
+@media(max-width:1180px){#personalCards .personal-quote-costs{grid-template-columns:repeat(2,minmax(0,1fr))}#personalCards .personal-quote-total{grid-column:1/-1}}
+@media(max-width:620px){#personalCards .personal-quote-costs{grid-template-columns:1fr}.personal-preview-toolbar{flex-wrap:wrap}.personal-preview-toolbar span{flex-basis:100%}}
+

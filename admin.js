@@ -495,11 +495,13 @@
         '<label>日本國內運費（JPY）<input data-quote-domestic type="number" min="0" step="1" value="' + escapeHtml(quote.domestic_shipping_jpy ?? "") + '" placeholder="0"></label>' +
         '<label>關稅及手續費（TWD）<input data-quote-fees type="number" min="0" step="1" value="' + escapeHtml(quote.duties_and_fees_twd ?? "") + '" placeholder="0"></label>' +
         '<label>國際運費（TWD）<input data-quote-international type="number" min="0" step="1" value="' + escapeHtml(quote.international_shipping_twd ?? "") + '" placeholder="0"></label>' +
+        '<label>台灣國內運費（TWD）<input data-quote-taiwan type="number" min="0" step="1" value="' + escapeHtml(quote.taiwan_shipping_twd ?? '') + '" placeholder="0"></label>' +
+        '<label>其他（TWD）<input data-quote-other type="number" min="0" step="1" value="' + escapeHtml(quote.other_fees_twd ?? '') + '" placeholder="0"></label>' +
         '<label class="personal-quote-total">總金額（TWD）<output data-quote-total>NT$0</output></label></div>' +
-        '<p class="admin-order-meta">計算方式：（商品小計＋日本國內運費）× 匯率＋關稅及手續費＋國際運費</p></div>' +
+        '<p class="admin-order-meta">計算方式：（商品小計＋日本國內運費）× 匯率＋關稅及手續費＋國際運費＋台灣國內運費＋其他</p></div>' +
         '<div class="admin-order-controls"><label>處理狀態<select data-personal-status>' +
         personalStatusOptions(request.status) + '</select></label><label>後台備註<textarea data-personal-note rows="2" placeholder="僅供管理使用">' +
-        escapeHtml(request.admin_note || "") + '</textarea></label><button class="admin-save" type="button" data-save-personal>儲存變更</button></div></article>';
+        escapeHtml(request.admin_note || "") + '</textarea></label><button class="admin-save" type="button" data-save-personal>儲存變更</button></div><div class="personal-quote-actions"><button type="button" data-preview-personal>報價單預覽</button><button type="button" data-download-personal>下載報價單 PDF</button><button type="button" class="danger" data-delete-personal>刪除訂單</button></div></article>';
     }).join("");
     target.querySelectorAll("[data-personal-id]").forEach(recalculatePersonalQuote);
   }
@@ -509,37 +511,53 @@
   }
 
   function recalculatePersonalQuote(card) {
-    let productSubtotal = 0;
-    card.querySelectorAll("[data-quote-unit]").forEach(input => {
-      const line = Math.round(Math.max(0, Number(input.value) || 0) * Math.max(1, Number(input.dataset.quantity) || 1));
-      productSubtotal += line;
-      input.closest(".personal-quote-row").querySelector("[data-quote-line]").textContent = "¥" + line.toLocaleString("zh-TW");
+    const quote = window.FreaPersonalQuote.read(card);
+    card.querySelectorAll('[data-quote-unit]').forEach((input,index)=>{
+      input.closest('.personal-quote-row').querySelector('[data-quote-line]').textContent = '¥' + quote.lines[index].toLocaleString('zh-TW');
     });
-    const rate = quoteNumber(card, "[data-quote-rate]");
-    const domestic = quoteNumber(card, "[data-quote-domestic]");
-    const fees = quoteNumber(card, "[data-quote-fees]");
-    const international = quoteNumber(card, "[data-quote-international]");
-    const total = Math.round((productSubtotal + domestic) * rate + fees + international);
-    card.dataset.quoteTotal = String(total);
-    card.querySelector("[data-quote-total]").textContent = new Intl.NumberFormat("zh-TW", { style: "currency", currency: "TWD", maximumFractionDigits: 0 }).format(total);
-    card.querySelector("[data-quote-display]").textContent = total > 0 ? formatMoney(total, "TWD") : "尚未報價";
+    card.dataset.quoteTotal=String(quote.total);
+    card.querySelector('[data-quote-total]').textContent=formatMoney(quote.total,'TWD');
+    card.querySelector('[data-quote-display]').textContent=quote.total>0?formatMoney(quote.total,'TWD'):'尚未報價';
+  }
+
+  async function deletePersonalRequest(card) {
+    const request=personalRequests.find(item=>String(item.id)===card.dataset.personalId);
+    if(!request || !window.confirm('確定刪除代購訂單 '+request.request_number+'？訂單與報價資料將永久刪除，無法復原。')) return;
+    const button=card.querySelector('[data-delete-personal]');button.disabled=true;
+    try {
+      const {data,error}=await client.from('personal_shopping_requests').delete().eq('id',request.id).select('id').single();
+      if(error || !data) throw error || new Error('訂單未刪除，請重新整理後再試。');
+      personalRequests=personalRequests.filter(item=>String(item.id)!==String(request.id));
+      renderPersonalRequests();showMessage('adminGlobalMessage','代購訂單 '+request.request_number+' 已刪除。','success');
+    } catch(error){button.disabled=false;showMessage('adminGlobalMessage',error.message || '刪除失敗，請稍後重試。','error');}
+  }
+
+  async function previewPersonalQuote(card,download) {
+    const request=personalRequests.find(item=>String(item.id)===card.dataset.personalId);
+    if(!request || !window.FreaPersonalQuote.validate(card)) return;
+    try{await window.FreaPersonalQuote.open(request,window.FreaPersonalQuote.read(card),download);}
+    catch(error){showMessage('adminGlobalMessage','報價單產生失敗，請稍後再試。','error');}
   }
 
   async function savePersonalRequest(card) {
     const id = card.dataset.personalId;
     const button = card.querySelector("[data-save-personal]");
+    if(!window.FreaPersonalQuote.validate(card,true)) return;
     recalculatePersonalQuote(card);
     const unitPrices = [...card.querySelectorAll("[data-quote-unit]")].map(input => Math.max(0, Math.round(Number(input.value) || 0)));
     const quoteDetails = {
+      ...(personalRequests.find(item=>String(item.id)===String(id))?.quote_details || {}),
       unit_prices: unitPrices,
       exchange_rate: quoteNumber(card, "[data-quote-rate]"),
       domestic_shipping_jpy: Math.round(quoteNumber(card, "[data-quote-domestic]")),
       duties_and_fees_twd: Math.round(quoteNumber(card, "[data-quote-fees]")),
-      international_shipping_twd: Math.round(quoteNumber(card, "[data-quote-international]"))
+      international_shipping_twd: Math.round(quoteNumber(card, "[data-quote-international]")),
+      taiwan_shipping_twd: Math.round(quoteNumber(card, "[data-quote-taiwan]")),
+      other_fees_twd: Math.round(quoteNumber(card, "[data-quote-other]"))
     };
     const updates = {
       status: card.querySelector("[data-personal-status]").value,
-      quote_amount: Number(card.dataset.quoteTotal) || null,
+      quote_amount: Number(card.dataset.quoteTotal),
       quote_details: quoteDetails,
       admin_note: card.querySelector("[data-personal-note]").value.trim(),
       updated_at: new Date().toISOString()
@@ -547,7 +565,7 @@
     button.disabled = true;
     button.textContent = "儲存中…";
     const { data, error } = await client.from("personal_shopping_requests").update(updates)
-      .eq("id", id).select("id,status,quote_amount,quote_details,admin_note,updated_at").single();
+      .eq("id", id).select("id,status,quote_amount,quote_details,admin_note,updated_at").single().catch(error=>({error}));
     button.disabled = false;
     button.textContent = error ? "儲存失敗" : "已儲存";
     if (error) {
@@ -829,11 +847,16 @@
     card.querySelector("[data-tracking-number]").required = event.target.value === "shipped";
   });
   byId("personalCards").addEventListener("click", event => {
+    const card=event.target.closest('[data-personal-id]');
+    if(!card)return;
+    if(event.target.closest('[data-delete-personal]'))return deletePersonalRequest(card);
+    if(event.target.closest('[data-preview-personal]'))return previewPersonalQuote(card,false);
+    if(event.target.closest('[data-download-personal]'))return previewPersonalQuote(card,true);
     const button = event.target.closest("[data-save-personal]");
     if (button) savePersonalRequest(button.closest(".admin-order"));
   });
   byId("personalCards").addEventListener("input", event => {
-    if (!event.target.matches("[data-quote-unit],[data-quote-rate],[data-quote-domestic],[data-quote-fees],[data-quote-international]")) return;
+    if (!event.target.matches("[data-quote-unit],[data-quote-rate],[data-quote-domestic],[data-quote-fees],[data-quote-international],[data-quote-taiwan],[data-quote-other]")) return;
     recalculatePersonalQuote(event.target.closest(".admin-order"));
   });
   byId("adminLogout").addEventListener("click", async () => {
@@ -845,3 +868,6 @@
     if (ok) loadData();
   });
 })();
+
+
+
