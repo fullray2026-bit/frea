@@ -19,16 +19,16 @@
       hero.alt = "餐桌與咖啡器物生活選品";
     }
 
-    const story = document.querySelector(".brand-feature .brand-story");
+    const story = document.querySelector(".brand-details .brand-story");
     if (story) {
       const kicker = story.querySelector(":scope > .brand-kicker");
       if (kicker) kicker.textContent = "DAILY OBJECTS";
-      const h1 = story.querySelector("h1");
+      const h1 = document.querySelector(".compact-summary h1");
       if (h1) h1.innerHTML = "從餐桌到一杯咖啡，<br>選擇真正會被每天使用的器物。";
       const paragraphs = story.querySelectorAll(":scope > div > p");
       if (paragraphs[0]) paragraphs[0].textContent = "fréa 選擇的不只是外型好看的器物，更重視握感、重量、收納、清潔與長期使用的舒適度。";
       if (paragraphs[1]) paragraphs[1].textContent = "從餐桌、飲水到咖啡時光，我們挑選能自然進入生活、不需要刻意裝飾，也能越用越順手的日常用品。";
-      const selection = story.querySelector('div[style*="border-top"]');
+      const selection = document.querySelector('.brand-intro > .brand-note');
       if (selection) {
         const title = selection.querySelector("h2");
         const text = selection.querySelector("p");
