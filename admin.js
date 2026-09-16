@@ -564,18 +564,35 @@
     };
     button.disabled = true;
     button.textContent = "儲存中…";
-    const { data, error } = await client.from("personal_shopping_requests").update(updates)
-      .eq("id", id).select("id,status,quote_amount,quote_details,admin_note,updated_at").single().catch(error=>({error}));
-    button.disabled = false;
-    button.textContent = error ? "儲存失敗" : "已儲存";
-    if (error) {
-      showMessage("adminGlobalMessage", error.message || "代購需求更新失敗。", "error");
-      return;
+    const controller = new AbortController();
+    let timer;
+    try {
+      const timeout = new Promise((_, reject) => {
+        timer = setTimeout(() => {
+          controller.abort();
+          reject(new Error("儲存逾時，請確認網路後重試；若仍失敗，請重新登入。"));
+        }, 20000);
+      });
+      const { data, error } = await Promise.race([
+        Promise.resolve(client.from("personal_shopping_requests").update(updates)
+          .eq("id", id).select("id,status,quote_amount,quote_details,admin_note,updated_at")
+          .abortSignal(controller.signal).single()),
+        timeout
+      ]);
+      if (error) throw error;
+      if (!data) throw new Error("未收到儲存結果，請重新整理確認。");
+      const request = personalRequests.find(item => String(item.id) === String(id));
+      if (request) Object.assign(request, data);
+      showMessage("adminGlobalMessage", "代購需求 " + (request?.request_number || id) + " 已更新。", "success");
+      renderPersonalRequests();
+    } catch (error) {
+      button.textContent = "儲存失敗，重試";
+      showMessage("adminGlobalMessage", error.message || "代購需求更新失敗，請稍後重試。", "error");
+    } finally {
+      clearTimeout(timer);
+      button.disabled = false;
+      if (button.textContent === "儲存中…") button.textContent = "儲存變更";
     }
-    const request = personalRequests.find(item => String(item.id) === String(id));
-    if (request) Object.assign(request, data);
-    showMessage("adminGlobalMessage", "代購需求 " + (request?.request_number || id) + " 已更新。", "success");
-    renderPersonalRequests();
   }
 
   function renderRecentOrders() {
