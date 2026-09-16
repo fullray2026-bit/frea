@@ -82,11 +82,19 @@
   }
 
   let bankRateLoading = false;
+  let bankRateText = "台銀日幣現金賣出：讀取中…";
+  let bankRateTitle = "台銀最新牌告，僅供參考。點擊查看來源。";
+  function renderBankRate() {
+    document.querySelectorAll("#botJpyRate, [data-bot-jpy-rate]").forEach(label => {
+      label.textContent = bankRateText;
+      label.title = bankRateTitle;
+    });
+  }
   async function refreshBankRate() {
-    const label = byId("botJpyRate");
-    if (!label || bankRateLoading) return;
+    if (bankRateLoading) return;
     bankRateLoading = true;
-    label.textContent = "台銀日幣現金賣出：讀取中…";
+    bankRateText = "台銀日幣現金賣出：讀取中…";
+    renderBankRate();
     let timer;
     try {
       const {data, error} = await Promise.race([
@@ -94,11 +102,11 @@
         new Promise((_, reject) => { timer = setTimeout(() => reject(new Error("timeout")), 15000); })
       ]);
       if (error || !data || !Number.isFinite(data.rate) || data.rate <= 0) throw error || new Error("Invalid rate");
-      label.textContent = "台銀日幣現金賣出 " + data.rate.toFixed(4) + "（" + data.quoted_at + " 台灣時間）";
-      label.title = "1 JPY = " + data.rate + " TWD；台銀最新牌告，僅供參考。點擊查看來源。";
+      bankRateText = "台銀日幣現金賣出 " + data.rate.toFixed(4) + "（" + data.quoted_at + " 台灣時間）";
+      bankRateTitle = "1 JPY = " + data.rate + " TWD；台銀最新牌告，僅供參考。點擊查看來源。";
     } catch (_) {
-      label.textContent = "台銀匯率暫時無法取得｜查看來源";
-    } finally { clearTimeout(timer); bankRateLoading = false; }
+      bankRateText = "台銀匯率暫時無法取得｜查看來源";
+    } finally { clearTimeout(timer); bankRateLoading = false; renderBankRate(); }
   }
 
   async function loadData() {
@@ -529,12 +537,14 @@
         '<label>台灣國內運費（TWD）<input data-quote-taiwan type="number" min="0" step="1" value="' + escapeHtml(quote.taiwan_shipping_twd ?? '') + '" placeholder="0"></label>' +
         '<label>其他（TWD）<input data-quote-other type="number" min="0" step="1" value="' + escapeHtml(quote.other_fees_twd ?? '') + '" placeholder="0"></label>' +
         '<label class="personal-quote-total">總金額（TWD）<output data-quote-total>NT$0</output></label></div>' +
+        '<p class="admin-order-meta"><a data-bot-jpy-rate href="https://rate.bot.com.tw/xrt?Lang=zh-TW" target="_blank" rel="noopener noreferrer" aria-live="polite" style="color:#8b7561">台銀日幣現金賣出：讀取中…</a></p>' +
         '<p class="admin-order-meta">計算方式：（商品小計＋日本國內運費）× 匯率＋關稅及手續費＋國際運費＋台灣國內運費＋其他</p></div>' +
         '<div class="admin-order-controls"><label>處理狀態<select data-personal-status>' +
         personalStatusOptions(request.status) + '</select></label><label>後台備註<textarea data-personal-note rows="2" placeholder="僅供管理使用">' +
         escapeHtml(request.admin_note || "") + '</textarea></label><button class="admin-save" type="button" data-save-personal>儲存變更</button></div><div class="personal-quote-actions"><button type="button" data-preview-personal>報價單預覽</button><button type="button" data-download-personal>下載報價單 PDF</button><button type="button" class="danger" data-delete-personal>刪除訂單</button></div></article>';
     }).join("");
     target.querySelectorAll("[data-personal-id]").forEach(recalculatePersonalQuote);
+    renderBankRate();
   }
 
   function quoteNumber(card, selector) {
@@ -793,7 +803,7 @@
   }
 
   function switchView(view) {
-    if (view === "costs") refreshBankRate();
+    if (view === "costs" || view === "personal") refreshBankRate();
     document.querySelectorAll("[data-admin-panel]").forEach(panel => {
       panel.hidden = panel.dataset.adminPanel !== view;
     });
