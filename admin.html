@@ -103,7 +103,7 @@
         </section>
 
         <section class="admin-view" data-admin-panel="purchases" hidden>
-          <div class="admin-grid-two"><form class="admin-card" id="supplierForm"><p class="admin-eyebrow">SUPPLIERS</p><h2>供應商</h2><div class="stack-form"><label>供應商編號<input id="supplierCode" required></label><label>供應商名稱<input id="supplierName" required></label><label>網站<input id="supplierWebsite" type="url"></label><label>備註<textarea id="supplierNotes" rows="3"></textarea></label><button class="admin-primary" type="submit">新增供應商</button></div></form><form class="admin-card" id="purchaseForm"><p class="admin-eyebrow">PURCHASE ORDER</p><h2>建立進貨單</h2><div class="stack-form"><label>供應商<select id="purchaseSupplier" required></select></label><label>進貨日<input id="purchaseDate" type="date" required></label><label>備註<textarea id="purchaseNotes" rows="3"></textarea></label><button class="admin-primary" type="submit">建立進貨單</button></div></form></div>
+          <div class="admin-grid-two"><form class="admin-card" id="supplierForm"><p class="admin-eyebrow">SUPPLIERS</p><h2>供應商</h2><div class="stack-form"><label>供應商編號<input id="supplierCode" readonly aria-label="供應商編號，自動編號"><small>自動流水號，實際編號以儲存結果為準。</small></label><label>供應商名稱<input id="supplierName" required></label><label>網站<input id="supplierWebsite" type="url"></label><label>備註<textarea id="supplierNotes" rows="3"></textarea></label><button class="admin-primary" type="submit">新增供應商</button></div></form><form class="admin-card" id="purchaseForm" style="min-width:0"><p class="admin-eyebrow">PURCHASE ORDER</p><h2>建立進貨單</h2><div class="stack-form"><label>供應商<select id="purchaseSupplier" required></select></label><label>進貨日<input id="purchaseDate" type="date" required></label><label>備註<textarea id="purchaseNotes" rows="3"></textarea></label><div><h3>商品明細</h3><div id="purchaseItemRows"></div><button id="purchaseAddItem" class="product-cancel" type="button">＋ 新增商品</button></div><button class="admin-primary" type="submit">建立進貨單</button></div></form></div>
           <div id="purchaseRows"></div>
         </section>
 
@@ -198,7 +198,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.3/dist/umd/supabase.js"></script>
   <script src="supabase-config.js"></script>
   <script src="admin-personal-quote.js?v=20260916-1"></script>
-  <script src="admin.js?v=order-delete-20260916-1"></script>
+  <script src="admin.js?v=procurement-20260916-1"></script>
   <script src="admin-payment-proof.js?v=20260910-1"></script>
 </body>
 </html>
