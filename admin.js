@@ -209,7 +209,7 @@
       const action = related ? "封存" : "刪除";
       return '<article class="product-item" data-master-id="'+escapeHtml(item.id)+'"><img src="'+escapeHtml(item.image_url||"assets/logo_round.png")+'" alt=""><div><h3>'+escapeHtml(item.name)+'</h3><small>'+escapeHtml(item.product_code)+' · '+escapeHtml(item.brand_name)+'</small><span class="product-status">'+escapeHtml(masterStatusLabels[item.status]||item.status)+'</span></div><div class="product-meta"><p>'+escapeHtml(item.specification||"—")+'</p><small class="master-source">'+escapeHtml(item.source_url||"無來源網址")+'</small></div><strong>'+escapeHtml(formatMoney(item.reference_price_jpy,"JPY"))+'</strong><div class="product-actions"><button type="button" data-edit-master>編輯</button><button class="danger" type="button" data-delete-master>'+action+'</button></div></article>';
     }).join("") : '<div class="admin-empty">目前尚無商品主檔。</div>';
-    const ready=masterProducts.filter(item=>item.status==="ready_to_publish"&&!item.published_product_id&&item.storefront_brand_code);
+    const ready=masterProducts.filter(item=>item.status==="ready_to_publish"&&!item.published_product_id&&!linkedProduct(item.id)&&item.storefront_brand_code&&adoptedCost(item.id));
     byId("productCandidate").innerHTML='<option value="">從待上架主檔選擇（'+ready.length+'）</option>'+ready.map(item=>'<option value="'+item.id+'">'+escapeHtml(item.product_code+'｜'+item.name)+'</option>').join("");
   }
 
@@ -311,9 +311,16 @@
 
   function editCost(id) { const s=costScenarios.find(x=>x.id===id); if(!s)return; const set=(id,value)=>{byId(id).value=value??0;}; byId("costId").value=s.id; set("costProduct",s.product_master_id); set("costMsrp",s.msrp_jpy); set("costWholesaleRate",s.wholesale_rate); set("costPurchase",s.purchase_price_jpy); set("costQuantity",s.quantity); set("costRate",s.exchange_rate); set("costJapanShipping",s.japan_shipping_jpy); set("costWeight",s.product_weight_g); set("costPackingWeight",s.packing_weight_kg); set("costBoxCount",s.box_count||1); set("costBoxLength",s.box_length_cm); set("costBoxWidth",s.box_width_cm); set("costBoxHeight",s.box_height_cm); set("costFreightRate",s.freight_rate_jpy_kg); set("costCustoms",s.customs_twd); set("costDutyRate",(s.duty_rate||0)*100); set("costLocal",s.local_cost_twd); set("costPlatform",(s.platform_rate||0)*100); set("costGroupAmount",s.group_commission_amount_twd); set("costSalePrice",s.actual_sale_price_twd); set("costMargin",(s.target_margin_rate||0)*100); byId("costFormTitle").textContent="編輯商品成本方案"; byId("costCancelEdit").hidden=false; calcCost(); byId("costForm").scrollIntoView({behavior:"smooth",block:"start"}); }
 
-  async function saveCost(event){event.preventDefault();const values=calcCost(),id=byId("costId").value,productId=byId("costProduct").value;const payload={product_master_id:productId,scenario_name:"成本方案 "+new Date().toLocaleDateString("zh-TW"),msrp_jpy:costNumber("costMsrp"),wholesale_rate:costNumber("costWholesaleRate"),purchase_price_jpy:costNumber("costPurchase"),quantity:Math.max(1,costNumber("costQuantity")),exchange_rate:costNumber("costRate"),japan_shipping_jpy:costNumber("costJapanShipping"),product_weight_g:costNumber("costWeight"),packing_weight_kg:costNumber("costPackingWeight"),box_count:Math.max(1,costNumber("costBoxCount")),box_length_cm:costNumber("costBoxLength"),box_width_cm:costNumber("costBoxWidth"),box_height_cm:costNumber("costBoxHeight"),freight_rate_jpy_kg:costNumber("costFreightRate"),customs_twd:costNumber("costCustoms"),duty_rate:costNumber("costDutyRate")/100,local_cost_twd:costNumber("costLocal"),platform_rate:costNumber("costPlatform")/100,group_commission_amount_twd:costNumber("costGroupAmount"),target_margin_rate:costNumber("costMargin")/100,actual_sale_price_twd:costNumber("costSalePrice"),calculated_cost_twd:Math.round(values.full),suggested_price_twd:Math.round(values.suggested),actual_weight_kg:values.actualWeight,volumetric_weight_kg:values.volumetricWeight,billable_weight_kg:values.billableWeight,estimated_intl_freight_jpy:values.intlJpy,landed_unit_cost_twd:values.landed,full_unit_cost_twd:values.full,platform_fee_unit_twd:values.platformFee,net_receipt_unit_twd:values.netReceipt,updated_at:new Date().toISOString()};const result=id?await client.from("cost_scenarios").update(payload).eq("id",id):await client.from("cost_scenarios").insert(payload);if(result.error)return showMessage("costMessage",result.error.message,"error");await client.from("product_master").update({status:"costed",updated_at:new Date().toISOString()}).eq("id",productId);resetCostForm();await loadData();}
+  async function saveCost(event){event.preventDefault();const values=calcCost(),id=byId("costId").value,productId=byId("costProduct").value;const payload={product_master_id:productId,scenario_name:"成本方案 "+new Date().toLocaleDateString("zh-TW"),msrp_jpy:costNumber("costMsrp"),wholesale_rate:costNumber("costWholesaleRate"),purchase_price_jpy:costNumber("costPurchase"),quantity:Math.max(1,costNumber("costQuantity")),exchange_rate:costNumber("costRate"),japan_shipping_jpy:costNumber("costJapanShipping"),product_weight_g:costNumber("costWeight"),packing_weight_kg:costNumber("costPackingWeight"),box_count:Math.max(1,costNumber("costBoxCount")),box_length_cm:costNumber("costBoxLength"),box_width_cm:costNumber("costBoxWidth"),box_height_cm:costNumber("costBoxHeight"),freight_rate_jpy_kg:costNumber("costFreightRate"),customs_twd:costNumber("costCustoms"),duty_rate:costNumber("costDutyRate")/100,local_cost_twd:costNumber("costLocal"),platform_rate:costNumber("costPlatform")/100,group_commission_amount_twd:costNumber("costGroupAmount"),target_margin_rate:costNumber("costMargin")/100,actual_sale_price_twd:costNumber("costSalePrice"),calculated_cost_twd:Math.round(values.full),suggested_price_twd:Math.round(values.suggested),actual_weight_kg:values.actualWeight,volumetric_weight_kg:values.volumetricWeight,billable_weight_kg:values.billableWeight,estimated_intl_freight_jpy:values.intlJpy,landed_unit_cost_twd:values.landed,full_unit_cost_twd:values.full,platform_fee_unit_twd:values.platformFee,net_receipt_unit_twd:values.netReceipt,updated_at:new Date().toISOString()};const result=id?await client.from("cost_scenarios").update(payload).eq("id",id):await client.from("cost_scenarios").insert(payload);if(result.error)return showMessage("costMessage",result.error.message,"error");resetCostForm();await loadData();if(linkedProduct(productId))showMessage("adminGlobalMessage","成本方案已儲存；既有商品售價與上架狀態維持不變，請至商品管理確認售價。","success");}
 
-  async function selectCost(id){const scenario=costScenarios.find(x=>x.id===id);if(!scenario)return;await client.from("cost_scenarios").update({is_selected:false}).eq("product_master_id",scenario.product_master_id);const {error}=await client.from("cost_scenarios").update({is_selected:true}).eq("id",id);if(error)return showMessage("costMessage",error.message,"error");await client.from("product_master").update({status:"ready_to_publish",updated_at:new Date().toISOString()}).eq("id",scenario.product_master_id);await loadData();}
+  async function selectCost(id){
+    const scenario=costScenarios.find(x=>x.id===id);if(!scenario)return;
+    if(Number(scenario.actual_sale_price_twd)<=0)return showMessage("costMessage","請先填寫大於 0 的實際銷售價，再採用成本方案。","error");
+    const {error}=await client.rpc("adopt_product_cost",{p_id:id});
+    if(error)return showMessage("costMessage",error.message,"error");
+    await loadData();
+    showMessage("adminGlobalMessage",linkedProduct(scenario.product_master_id)?"成本方案已採用；既有商品售價與上架狀態維持不變，請至商品管理確認售價。":"成本方案已採用；指定網站品牌後即可從待上架主檔選擇商品。","success");
+  }
   async function deleteCost(id){if(!confirm("確定刪除此成本方案嗎？"))return;const {error}=await client.from("cost_scenarios").delete().eq("id",id);if(error)return showMessage("costMessage",error.message,"error");await loadData();}
   function exportCosts(){const header=["商品","實際進貨單價 JPY","商品進貨成本／件","國際運費／件","單件進貨成本","完整成本／件","團購主抽成／件","實際銷售價 TWD","扣除抽成後實收","單件毛利"];const rows=costScenarios.map(s=>{const p=masterProducts.find(x=>x.id===s.product_master_id),v=scenarioValues(s);return [p?.name||"未知商品",s.purchase_price_jpy,Math.round(v.productUnit),Math.round(v.intlUnit),Math.round(v.landed),Math.round(v.full),Math.round(v.groupFee),s.actual_sale_price_twd,Math.round(v.netReceipt),Math.round(v.profit)];});const csv="\uFEFF"+[header,...rows].map(row=>row.map(value=>'"'+String(value??"").replaceAll('"','""')+'"').join(",")).join("\r\n");const link=document.createElement("a");link.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));link.download="frea-cost-scenarios-"+new Date().toISOString().slice(0,10)+".csv";link.click();URL.revokeObjectURL(link.href);}
 
@@ -524,7 +531,7 @@
     byId("productCurrency").value = product?.currency || "JPY";
     byId("productStock").value = product?.stock_quantity ?? 0;
     byId("productSort").value = product?.sort_order ?? 0;
-    byId("productActive").value = String(product?.is_active ?? true);
+    byId("productActive").value = String(product?.is_active ?? false);
     renderProductVariants(product?.product_variants || []);
     byId("productFormTitle").textContent = product ? "編輯商品" : "新增商品";
     setProductPreview(product?.image_url || "");
@@ -532,7 +539,19 @@
     form.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
-  function openProductFromMaster(masterId){const item=masterProducts.find(x=>x.id===masterId);if(!item)return openProductForm();const scenario=costScenarios.find(x=>x.product_master_id===item.id&&x.is_selected);openProductForm({product_master_id:item.id,cost_scenario_id:scenario?.id||"",brand_code:item.storefront_brand_code,name:item.name,specification:item.specification,usage_flavor:item.usage_flavor,description:item.description,price:scenario?.actual_sale_price_twd||0,currency:"TWD",stock_quantity:0,sort_order:0,is_active:true,image_url:item.image_url,storage_path:item.storage_path});}
+  function adoptedCost(masterId) { return costScenarios.find(s=>s.product_master_id===masterId&&s.is_selected&&Number(s.actual_sale_price_twd)>0); }
+  function linkedProduct(masterId) { return products.find(p=>p.product_master_id===masterId); }
+  function openProductFromMaster(masterId) {
+    const item=masterProducts.find(x=>x.id===masterId);
+    if(!item)return openProductForm();
+    const existing=linkedProduct(masterId);
+    if(existing)return openProductForm(existing);
+    const scenario=adoptedCost(item.id);
+    if(!scenario||!item.storefront_brand_code)return showMessage("adminGlobalMessage","請先指定網站品牌，並採用實際銷售價大於 0 的成本方案。","error");
+    openProductForm({product_master_id:item.id,cost_scenario_id:scenario.id,brand_code:item.storefront_brand_code,name:item.name,specification:item.specification,usage_flavor:item.usage_flavor,description:item.description,price:scenario.actual_sale_price_twd,currency:"TWD",stock_quantity:0,sort_order:0,is_active:false,image_url:item.image_url,storage_path:item.storage_path});
+    byId("productFormTitle").textContent="新增商品";
+    showMessage("productFormMessage","已帶入採用的成本方案售價；目前預設未上架，請確認資料後再選擇上架。");
+  }
 
   async function uploadProductImage(file, brand, slug) {
     if (!file) return null;
@@ -555,6 +574,12 @@
       showMessage("productFormMessage", "新增商品時請上傳商品照片。", "error");
       return;
     }
+    const existing = products.find(p=>p.id===id);
+    const masterId=byId("productMasterId").value, active=byId("productActive").value==="true";
+    if(!id && masterId && linkedProduct(masterId))return showMessage("productFormMessage","此主檔已建立商品，請從商品清單編輯。","error");
+    if(masterId && (!id || (active&&!existing?.is_active)) && !adoptedCost(masterId))return showMessage("productFormMessage","請先採用實際銷售價大於 0 的成本方案。","error");
+    if(active && Number(byId("productPrice").value)<=0)return showMessage("productFormMessage","上架售價必須大於 0。","error");
+    if(active&&!existing?.is_active&&!confirm("確認商品「"+name+"」的售價、圖片、規格及庫存，並上架至網站？"))return;
     const button = byId("productSave");
     button.disabled = true;
     button.textContent = "儲存中…";
@@ -582,10 +607,7 @@
       const removed=await client.from("product_variants").delete().eq("product_id",productId);
       if(removed.error)throw removed.error;
       if(variants.length){const inserted=await client.from("product_variants").insert(variants);if(inserted.error)throw inserted.error;}
-      if (!id && payload.product_master_id) {
-        const created = await client.from("products").select("id").eq("slug", slug).single();
-        await client.from("product_master").update({ status: "published", published_product_id: created.data?.id || null, updated_at: new Date().toISOString() }).eq("id", payload.product_master_id);
-      }
+
       showMessage("adminGlobalMessage", "商品「" + name + "」已儲存。", "success");
       byId("productForm").hidden = true;
       await loadData();
@@ -600,6 +622,11 @@
   async function toggleProduct(id) {
     const product = products.find(item => item.id === id);
     if (!product) return;
+    if(!product.is_active){
+      if(Number(product.price)<=0)return showMessage("adminGlobalMessage","請先編輯商品，設定大於 0 的售價。","error");
+      if(product.product_master_id&&!adoptedCost(product.product_master_id))return showMessage("adminGlobalMessage","請先採用實際銷售價大於 0 的成本方案。","error");
+      if(!confirm("確認商品「"+product.name+"」的售價、圖片、規格及庫存，並上架至網站？"))return;
+    }
     const { error } = await client.from("products").update({ is_active: !product.is_active, updated_at: new Date().toISOString() }).eq("id", id);
     if (error) return showMessage("adminGlobalMessage", error.message || "商品狀態更新失敗。", "error");
     await loadData();
