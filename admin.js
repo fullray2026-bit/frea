@@ -329,7 +329,61 @@
       byId("purchaseDate").value=[today.getFullYear(),String(today.getMonth()+1).padStart(2,"0"),String(today.getDate()).padStart(2,"0")].join("-");
     }
     if (!byId("purchaseItemRows").children.length) addPurchaseItem();
-    byId("purchaseRows").innerHTML=purchaseOrders.length?purchaseOrders.map(o=>'<article class="admin-order"><div class="admin-order-head"><div><h3>'+escapeHtml(o.order_number)+'</h3><p class="admin-order-meta">'+escapeHtml(o.suppliers?.name||"未指定供應商")+' · '+escapeHtml(o.status==='draft'?'草稿':o.status)+' · 進貨日：'+escapeHtml(o.ordered_at||"未填")+'</p></div></div><ul class="admin-order-items">'+(o.purchase_order_items||[]).map(i=>'<li>'+escapeHtml(i.product_master?.product_code||"")+'｜'+escapeHtml(i.product_master?.name||"")+' × '+escapeHtml(i.quantity)+'｜單價 '+escapeHtml(formatMoney(i.unit_cost,o.currency))+(i.cost_scenario_id?'｜來源：'+escapeHtml(costScenarios.find(c=>c.id===i.cost_scenario_id)?.scenario_name||"已連結成本方案"):'')+'</li>').join("")+'</ul><p class="admin-order-meta">'+escapeHtml(o.notes||"")+'</p></article>').join(""):'<div class="admin-empty">尚無進貨單。</div>';
+    renderSupplierList();
+    renderPurchaseList();
+  }
+  function filteredPurchaseOrders() {
+    const from=byId("purchaseFilterFrom").value,to=byId("purchaseFilterTo").value;
+    if(from && to && from>to) return null;
+    return purchaseOrders.filter(o=>(!from&&!to)||Boolean(o.ordered_at && (!from||o.ordered_at>=from)&&(!to||o.ordered_at<=to)));
+  }
+  function renderSupplierList() {
+    byId("supplierListRows").innerHTML=suppliers.map(s=>"<tr>"+[s.supplier_code,s.name,s.contact_name,s.email,s.phone,s.website,s.notes].map(v=>"<td>"+escapeHtml(v||"—")+"</td>").join("")+"</tr>").join("");
+    byId("supplierListCount").textContent="共 "+suppliers.length+" 家供應商";
+    byId("supplierListDownload").disabled=!suppliers.length;
+  }
+  function downloadProcurementCsv(filename,rows) {
+    const cell=v=>{
+      let value=String(v??"");
+      if(typeof v!=="number" && /^[\s\uFEFF]*[=+@-]/.test(value)) value="'"+value;
+      return '"'+value.replace(/"/g,'""')+'"';
+    };
+    const blob=new Blob(["\uFEFF"+rows.map(row=>row.map(cell).join(",")).join("\r\n")],{type:"text/csv;charset=utf-8"});
+    const url=URL.createObjectURL(blob),a=document.createElement("a");
+    a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+  byId("supplierListToggle").addEventListener("click",()=>{
+    const panel=byId("supplierListPreview");panel.hidden=!panel.hidden;
+    byId("supplierListToggle").setAttribute("aria-expanded",String(!panel.hidden));
+    byId("supplierListToggle").textContent=panel.hidden?"供應商清單":"收起供應商清單";
+  });
+  byId("supplierListDownload").addEventListener("click",()=>downloadProcurementCsv("fréa-供應商清單.csv",[
+    ["供應商編號","供應商名稱","聯絡人","Email","電話","網站","備註"],
+    ...suppliers.map(s=>[s.supplier_code,s.name,s.contact_name,s.email,s.phone,s.website,s.notes])
+  ]));
+  ["purchaseFilterFrom","purchaseFilterTo"].forEach(id=>byId(id).addEventListener("change",renderPurchaseList));
+  byId("purchaseFilterReset").addEventListener("click",()=>{
+    byId("purchaseFilterFrom").value="";byId("purchaseFilterTo").value="";renderPurchaseList();
+  });
+  byId("purchaseListDownload").addEventListener("click",()=>{
+    const rows=filteredPurchaseOrders();if(!rows?.length)return;
+    downloadProcurementCsv("fréa-進貨單清單-"+(byId("purchaseFilterFrom").value||"全部")+"-"+(byId("purchaseFilterTo").value||"全部")+".csv",[
+      ["進貨單編號","進貨日","供應商編號","供應商名稱","狀態","幣別","商品編號","商品名稱","數量","進貨單價","商品小計","成本方案","備註"],
+      ...rows.flatMap(o=>(o.purchase_order_items?.length?o.purchase_order_items:[{}]).map(i=>[
+        o.order_number,o.ordered_at,suppliers.find(s=>s.id===o.supplier_id)?.supplier_code,o.suppliers?.name,
+        o.status==="draft"?"草稿":o.status,o.currency,i.product_master?.product_code,i.product_master?.name,
+        i.quantity,i.unit_cost,i.quantity==null?"":Number(i.quantity)*Number(i.unit_cost),
+        costScenarios.find(c=>c.id===i.cost_scenario_id)?.scenario_name||"",o.notes
+      ]))
+    ]);
+  });
+  function renderPurchaseList() {
+    const rows=filteredPurchaseOrders();
+    byId("purchaseListDownload").disabled=!rows?.length;
+    byId("purchaseFilterMessage").textContent=rows?"共 "+rows.length+" 筆進貨單":"起日不可晚於迄日，請調整日期。";
+    if(!rows){byId("purchaseRows").innerHTML="";return;}
+    byId("purchaseRows").innerHTML=rows.length?rows.map(o=>'<article class="admin-order"><div class="admin-order-head"><div><h3>'+escapeHtml(o.order_number)+'</h3><p class="admin-order-meta">'+escapeHtml(o.suppliers?.name||"未指定供應商")+' · '+escapeHtml(o.status==='draft'?'草稿':o.status)+' · 進貨日：'+escapeHtml(o.ordered_at||"未填")+'</p></div></div><ul class="admin-order-items">'+(o.purchase_order_items||[]).map(i=>'<li>'+escapeHtml(i.product_master?.product_code||"")+'｜'+escapeHtml(i.product_master?.name||"")+' × '+escapeHtml(i.quantity)+'｜單價 '+escapeHtml(formatMoney(i.unit_cost,o.currency))+(i.cost_scenario_id?'｜來源：'+escapeHtml(costScenarios.find(c=>c.id===i.cost_scenario_id)?.scenario_name||"已連結成本方案"):'')+'</li>').join("")+'</ul><p class="admin-order-meta">'+escapeHtml(o.notes||"")+'</p></article>').join(""):'<div class="admin-empty">此區間沒有進貨單。</div>';
   }
   function addPurchaseItem() {
     const row=document.createElement("div");
