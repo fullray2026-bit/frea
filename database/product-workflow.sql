@@ -11,6 +11,11 @@ begin
    new.status:=case when linked.is_active then 'published' else 'ready_to_publish' end;
  else
    new.published_product_id:=null;
+   if tg_op='UPDATE' and old.published_product_id is not null then
+     if exists(select 1 from public.cost_scenarios where product_master_id=new.id and is_selected and actual_sale_price_twd>0) and nullif(new.storefront_brand_code,'') is not null then new.status:='ready_to_publish';
+     elsif exists(select 1 from public.cost_scenarios where product_master_id=new.id) then new.status:='costed';
+     else new.status:='confirmed'; end if;
+   end if;
    if new.status='published' then
      if tg_op='UPDATE' and old.published_product_id is not null then new.status:='costed';
      else raise exception '請從商品管理確認上架，不能直接將主檔設為已上架。'; end if;
