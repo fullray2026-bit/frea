@@ -81,7 +81,28 @@
     return true;
   }
 
+  let bankRateLoading = false;
+  async function refreshBankRate() {
+    const label = byId("botJpyRate");
+    if (!label || bankRateLoading) return;
+    bankRateLoading = true;
+    label.textContent = "台銀日幣現金賣出：讀取中…";
+    let timer;
+    try {
+      const {data, error} = await Promise.race([
+        client.functions.invoke("bot-jpy-cash-rate"),
+        new Promise((_, reject) => { timer = setTimeout(() => reject(new Error("timeout")), 15000); })
+      ]);
+      if (error || !data || !Number.isFinite(data.rate) || data.rate <= 0) throw error || new Error("Invalid rate");
+      label.textContent = "台銀日幣現金賣出 " + data.rate.toFixed(4) + "（" + data.quoted_at + " 台灣時間）";
+      label.title = "1 JPY = " + data.rate + " TWD；台銀最新牌告，僅供參考。點擊查看來源。";
+    } catch (_) {
+      label.textContent = "台銀匯率暫時無法取得｜查看來源";
+    } finally { clearTimeout(timer); bankRateLoading = false; }
+  }
+
   async function loadData() {
+    refreshBankRate();
     showMessage("adminGlobalMessage", "正在讀取最新資料…");
     let loadingTimeout;
     try {
@@ -772,6 +793,7 @@
   }
 
   function switchView(view) {
+    if (view === "costs") refreshBankRate();
     document.querySelectorAll("[data-admin-panel]").forEach(panel => {
       panel.hidden = panel.dataset.adminPanel !== view;
     });
