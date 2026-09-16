@@ -751,8 +751,30 @@
         statusOptions(order.status) + '</select></label><label data-tracking-wrap' + (order.status === "shipped" ? "" : " hidden") +
         '>出貨單號<input data-tracking-number value="' + escapeHtml(order.tracking_number || "") +
         '" placeholder="請輸入物流出貨單號"></label><label>後台備註<textarea data-order-note rows="2" placeholder="僅供管理使用">' +
-        escapeHtml(order.admin_note || "") + '</textarea></label><button class="admin-save" type="button" data-save-order>儲存變更</button></div></article>';
+        escapeHtml(order.admin_note || "") + '</textarea></label><button class="admin-save" type="button" data-save-order>儲存變更</button></div><div style="display:flex;justify-content:flex-end;margin-top:16px"><button class="danger product-cancel" type="button" data-delete-order>刪除訂單</button></div></article>';
     }).join("");
+  }
+
+  async function deleteOrder(card) {
+    const order = orders.find(item => String(item.id) === card.dataset.orderId);
+    if (!order || !window.confirm("確定刪除訂單 " + order.order_number + "？訂單與商品明細將永久刪除，無法復原。")) return;
+    const button = card.querySelector("[data-delete-order]");
+    button.disabled = true;
+    button.textContent = "刪除中…";
+    const controller = new AbortController();
+    let timer;
+    try {
+      const {data, error} = await Promise.race([
+        Promise.resolve(client.from("orders").delete().eq("id", order.id).select("id").abortSignal(controller.signal).single()),
+        new Promise((_, reject) => {timer = setTimeout(() => {controller.abort();reject(new Error("刪除確認逾時，請重新整理確認訂單是否仍存在。"));},20000);})
+      ]);
+      if (error || !data) throw error || new Error("未能確認訂單已刪除，請重新整理後再試。");
+      orders = orders.filter(item => String(item.id) !== String(order.id));
+      renderAll();
+      showMessage("adminGlobalMessage", "訂單 " + order.order_number + " 已刪除。", "success");
+    } catch (error) {
+      showMessage("adminGlobalMessage", error.message || "刪除失敗，請稍後再試。", "error");
+    } finally {clearTimeout(timer);button.disabled = false;button.textContent = "刪除訂單";}
   }
 
   async function viewPaymentProof(card, button) {
@@ -893,6 +915,8 @@
   byId("supplierForm").addEventListener("submit",saveSupplier);
   byId("purchaseForm").addEventListener("submit",savePurchase);
   byId("orderCards").addEventListener("click", event => {
+    const deletion = event.target.closest("[data-delete-order]");
+    if (deletion) return deleteOrder(deletion.closest(".admin-order"));
     const proof = event.target.closest("[data-view-payment-proof]");
     if (proof) return viewPaymentProof(proof.closest(".admin-order"), proof);
     const button = event.target.closest("[data-save-order]");
