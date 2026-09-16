@@ -83,7 +83,9 @@
 
   async function loadData() {
     showMessage("adminGlobalMessage", "正在讀取最新資料…");
-    const [profileResult, accountResult, applicationResult, addressResult, ezwayResult, orderResult, personalResult, productResult, masterResult, costResult, supplierResult, purchaseResult] = await Promise.all([
+    let loadingTimeout;
+    try {
+    const [profileResult, accountResult, applicationResult, addressResult, ezwayResult, orderResult, personalResult, productResult, masterResult, costResult, supplierResult, purchaseResult] = await Promise.race([Promise.all([
       client.from("profiles").select("id,email,full_name,phone,referrer,newsletter,created_at").order("created_at", { ascending: false }),
       client.from("member_accounts").select("*").order("created_at", { ascending: false }),
       client.from("membership_applications").select("*").order("created_at", { ascending: false }),
@@ -96,7 +98,9 @@
       client.from("cost_scenarios").select("*").order("created_at", { ascending: false }),
       client.from("suppliers").select("*").order("name"),
       client.from("purchase_orders").select("*,suppliers(name),purchase_order_items(*,product_master(name,product_code))").order("created_at", { ascending: false })
-    ]);
+    ]), new Promise((_, reject) => {
+      loadingTimeout = setTimeout(() => reject(new Error("資料讀取逾時，請按重新整理再試一次。")), 20000);
+    })]);
     const failed = [profileResult, accountResult, applicationResult, addressResult, ezwayResult, orderResult, personalResult, productResult, masterResult, costResult, supplierResult, purchaseResult].find(result => result.error);
     if (failed) {
       showMessage("adminGlobalMessage", failed.error.message || "資料讀取失敗。", "error");
@@ -116,6 +120,12 @@
     purchaseOrders = purchaseResult.data || [];
     renderAll();
     showMessage("adminGlobalMessage", "資料更新時間：" + new Date().toLocaleTimeString("zh-TW"), "success");
+    } catch (error) {
+      console.error("Admin data loading failed", error);
+      showMessage("adminGlobalMessage", error.message || "資料顯示失敗，請重新整理後再試。", "error");
+    } finally {
+      clearTimeout(loadingTimeout);
+    }
   }
 
   function renderAll() {
@@ -263,7 +273,7 @@
     const selected = byId("costProduct").value;
     const options=masterProducts.filter(x=>x.status!=="archived").map(x=>'<option value="'+x.id+'">'+escapeHtml(x.product_code+'｜'+x.name)+'</option>').join("");
     byId("costProduct").innerHTML='<option value="">請選擇商品</option>'+options; if (selected && masterProducts.some(x => x.id === selected)) byId("costProduct").value = selected;
-    byId("purchaseProduct").innerHTML='<option value="">請選擇商品</option>'+options;
+    if (byId("purchaseProduct")) byId("purchaseProduct").innerHTML='<option value="">請選擇商品</option>'+options;
     byId("costRows").innerHTML=costScenarios.length?costScenarios.map(s=>{const p=masterProducts.find(x=>x.id===s.product_master_id),v=scenarioValues(s);return '<tr data-cost-id="'+escapeHtml(s.id)+'"><td><strong>'+escapeHtml(p?.name||"未知商品")+'</strong><small>'+escapeHtml(s.scenario_name||"成本方案")+(s.is_selected?' · 上架採用':'')+'</small></td><td>'+yenText(s.purchase_price_jpy)+'</td><td>'+moneyText(v.productUnit)+'</td><td>'+moneyText(v.intlUnit)+'</td><td>'+moneyText(v.landed)+'</td><td>'+moneyText(v.full)+'</td><td>'+moneyText(v.groupFee)+'</td><td>'+moneyText(s.actual_sale_price_twd)+'</td><td>'+moneyText(v.netReceipt)+'</td><td>'+moneyText(v.profit)+'</td><td><div class="cost-row-actions"><button type="button" data-edit-cost>編輯</button><button type="button" data-select-cost>'+ (s.is_selected?'已採用':'採用') +'</button><button class="danger" type="button" data-delete-cost>刪除</button></div></td></tr>';}).join(""):'<tr><td colspan="11" class="admin-empty">尚無成本方案。</td></tr>';
     calcCost();
   }
