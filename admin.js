@@ -851,11 +851,28 @@
   byId("overviewDownload").addEventListener("click",downloadOverview);
   byId("overviewClear").addEventListener("click",()=>{byId("overviewStart").value="";byId("overviewEnd").value="";renderOverviewPreview();});
 
+  function filteredMembers() {
+    const term=byId("memberSearch").value.trim().toLowerCase(),status=byId("memberStatusFilter").value;
+    return profiles.filter(p=>{
+      const a=memberAccounts.find(x=>x.user_id===p.id)||{},app=membershipApplications.find(x=>x.user_id===p.id)||{};
+      const review=app.status||a.review_status;
+      return [p.full_name,p.email,p.phone,p.referrer,a.member_number].some(v=>String(v||"").toLowerCase().includes(term))&&(!status||(status==="pending"?["draft","submitted","under_review","changes_requested"].includes(review):review===status));
+    }).sort((p,q)=>{const a=memberAccounts.find(x=>x.user_id===p.id)||{},b=memberAccounts.find(x=>x.user_id===q.id)||{};return (a.member_type||"Z").localeCompare(b.member_type||"Z")||(a.member_number||"").localeCompare(b.member_number||"",undefined,{numeric:true});});
+  }
+  function downloadMembers(){
+    const labels={not_required:"不需審核",draft:"資料未完成",submitted:"待審核",under_review:"審核中",approved:"已通過",changes_requested:"待補件",rejected:"未通過"};
+    const rows=[["會員編號","會員類別","姓名","Email","手機","推薦人","審核狀態","收件人","收件人手機","郵遞區號","地址","EZ WAY 姓名","EZ WAY 手機","註冊時間"],...filteredMembers().map(p=>{
+      const a=memberAccounts.find(x=>x.user_id===p.id)||{},app=membershipApplications.find(x=>x.user_id===p.id)||{},d=addresses.find(x=>x.user_id===p.id)||{},z=ezwayProfiles.find(x=>x.user_id===p.id)||{};
+      return [a.member_number,a.member_type,p.full_name,p.email,p.phone,p.referrer,labels[app.status||a.review_status]||"",d.recipient_name,d.recipient_phone,d.postal_code,d.address,z.real_name,z.mobile,formatDate(p.created_at)];
+    })];
+    const cell=v=>{let t=String(v??"");if(/^[=+@\-\t\r\n]/.test(t))t="'"+t;return '"'+t.replaceAll('"','""')+'"';};
+    const url=URL.createObjectURL(new Blob(["\uFEFF"+rows.map(r=>r.map(cell).join(",")).join("\r\n")],{type:"text/csv;charset=utf-8"}));
+    const a=document.createElement("a");a.href=url;a.download="會員資料.csv";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+  byId("memberDownload").addEventListener("click",downloadMembers);
+  byId("memberStatusFilter").addEventListener("change",renderMembers);
   function renderMembers() {
-    const term = byId("memberSearch").value.trim().toLowerCase();
-    const filtered = profiles.filter(profile =>
-      [profile.full_name, profile.email, profile.phone, profile.referrer, memberAccounts.find(x=>x.user_id===profile.id)?.member_number].some(value => String(value || "").toLowerCase().includes(term))
-    );
+    const filtered=filteredMembers();
     byId("memberCount").textContent = "共 " + filtered.length + " 位";
     const target = byId("memberRows");
     if (!filtered.length) {
