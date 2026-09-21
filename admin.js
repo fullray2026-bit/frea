@@ -703,14 +703,14 @@
           escapeHtml(item.quantity || 1) + '" type="number" min="0" step="1" value="' +
           escapeHtml(unitPrices[index] ?? "") + '" placeholder="0"><strong data-quote-line>¥0</strong></div>').join("") +
         '</div><div class="personal-quote-costs">' +
-        '<label>匯率（' + source + ' → ' + currency + '）' + (japan ? ' <a data-bot-twd-jpy-rate href="https://rate.bot.com.tw/xrt?Lang=zh-TW" target="_blank" rel="noopener noreferrer" aria-live="polite" style="color:#8b7561;font-size:12px;font-weight:400">台灣銀行即時匯率：讀取中…</a>' : '') + '<input data-quote-rate type="number" min="0" step="0.0001" value="' + escapeHtml(quote.exchange_rate ?? "") + '" placeholder="' + (japan ? '例如 4.5' : '例如 0.22') + '"></label>' +
+        '<label>匯率（' + source + ' → ' + currency + '）<input data-quote-rate type="number" min="0" step="0.0001" value="' + escapeHtml(quote.exchange_rate ?? "") + '" placeholder="' + (japan ? '例如 4.5' : '例如 0.22') + '"></label>' +
         '<label>' + origin + '國內運費（' + source + '）<input data-quote-domestic type="number" min="0" step="1" value="' + escapeHtml(quote[japan ? 'domestic_shipping_twd' : 'domestic_shipping_jpy'] ?? "") + '" placeholder="0"></label>' +
         '<label>關稅及手續費（' + currency + '）<input data-quote-fees type="number" min="0" step="1" value="' + escapeHtml(quote[japan ? 'duties_and_fees_jpy' : 'duties_and_fees_twd'] ?? "") + '" placeholder="0"></label>' +
         '<label>國際運費（' + currency + '）<input data-quote-international type="number" min="0" step="1" value="' + escapeHtml(quote[japan ? 'international_shipping_jpy' : 'international_shipping_twd'] ?? "") + '" placeholder="0"></label>' +
         '<label>' + destination + '國內運費（' + currency + '）<input data-quote-taiwan type="number" min="0" step="1" value="' + escapeHtml(quote[japan ? 'japan_shipping_jpy' : 'taiwan_shipping_twd'] ?? '') + '" placeholder="0"></label>' +
         '<label>其他（' + currency + '）<input data-quote-other type="number" min="0" step="1" value="' + escapeHtml(quote[japan ? 'other_fees_jpy' : 'other_fees_twd'] ?? '') + '" placeholder="0"></label>' +
         '<label class="personal-quote-total">總金額（' + currency + '）<output data-quote-total>NT$0</output></label></div>' +
-        (japan ? '' : '<p class="admin-order-meta"><a data-bot-jpy-rate href="https://rate.bot.com.tw/xrt?Lang=zh-TW" target="_blank" rel="noopener noreferrer" aria-live="polite" style="color:#8b7561">台銀日幣現金賣出：讀取中…</a></p>') +
+        (japan ? '<p class="admin-order-meta"><a data-bot-twd-jpy-rate href="https://rate.bot.com.tw/xrt?Lang=zh-TW" target="_blank" rel="noopener noreferrer" aria-live="polite" style="color:#8b7561">台灣銀行即時匯率：讀取中…</a></p>' : '<p class="admin-order-meta"><a data-bot-jpy-rate href="https://rate.bot.com.tw/xrt?Lang=zh-TW" target="_blank" rel="noopener noreferrer" aria-live="polite" style="color:#8b7561">台銀日幣現金賣出：讀取中…</a></p>') +
         '<p class="admin-order-meta">計算方式：（商品小計＋' + origin + '國內運費）× 匯率＋關稅及手續費＋國際運費＋' + destination + '國內運費＋其他</p></div>' +
         '<div class="admin-order-controls"><label>處理狀態<select data-personal-status>' +
         personalStatusOptions(request.status).replace('日本已下單', japan ? '台灣已下單' : '日本已下單') + '</select></label><label>後台備註<textarea data-personal-note rows="2" placeholder="僅供管理使用">' +
