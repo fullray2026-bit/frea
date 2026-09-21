@@ -24,6 +24,20 @@
  #supplierForm { padding:16px; }
 }
 </style>
+<style id="purchase-compact-layout">
+#purchaseForm > .stack-form{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.7fr) minmax(0,1.3fr);gap:14px 16px;align-items:start}
+#purchaseForm > .stack-form > div,#purchaseForm > .stack-form > button{grid-column:1/-1;min-width:0}
+#purchaseForm label{min-width:0;margin:0}
+#purchaseForm input,#purchaseForm select,#purchaseForm textarea{min-width:0;max-width:100%;box-sizing:border-box}
+#purchaseForm #purchaseNotes{height:46px;min-height:46px;padding:10px 12px}
+#purchaseItemRows [data-purchase-item] > .stack-form{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(90px,.5fr);gap:12px 16px;align-items:start}
+#purchaseItemRows [data-purchase-item] > .stack-form > label:nth-of-type(4){grid-column:1/3}
+#purchaseItemRows [data-remove-purchase-item]{grid-column:3;align-self:end;height:46px;margin:0}
+@media(max-width:700px){
+#purchaseForm > .stack-form,#purchaseItemRows [data-purchase-item] > .stack-form{grid-template-columns:minmax(0,1fr)}
+#purchaseItemRows [data-purchase-item] > .stack-form > label:nth-of-type(4),#purchaseItemRows [data-remove-purchase-item]{grid-column:auto}
+}
+</style>
 </head>
 <body class="admin-page">
   <main>
