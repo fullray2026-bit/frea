@@ -84,16 +84,23 @@
   let bankRateLoading = false;
   let bankRateText = "台銀日幣現金賣出：讀取中…";
   let bankRateTitle = "台銀最新牌告，僅供參考。點擊查看來源。";
+  let reverseBankRateText = "台灣銀行即時匯率：讀取中…";
+  let reverseBankRateTitle = "依日幣現金賣出牌告倒數換算，僅供參考。";
   function renderBankRate() {
     document.querySelectorAll("#botJpyRate, [data-bot-jpy-rate]").forEach(label => {
       label.textContent = bankRateText;
       label.title = bankRateTitle;
+    });
+    document.querySelectorAll("[data-bot-twd-jpy-rate]").forEach(label => {
+      label.textContent = reverseBankRateText;
+      label.title = reverseBankRateTitle;
     });
   }
   async function refreshBankRate() {
     if (bankRateLoading) return;
     bankRateLoading = true;
     bankRateText = "台銀日幣現金賣出：讀取中…";
+    reverseBankRateText = "台灣銀行即時匯率：讀取中…";
     renderBankRate();
     let timer;
     try {
@@ -103,9 +110,13 @@
       ]);
       if (error || !data || !Number.isFinite(data.rate) || data.rate <= 0) throw error || new Error("Invalid rate");
       bankRateText = "台銀日幣現金賣出 " + data.rate.toFixed(4) + "（" + data.quoted_at + " 台灣時間）";
+      reverseBankRateText = "台灣銀行：1 TWD ≈ " + (1 / data.rate).toFixed(4) + " JPY（現金賣出換算；" + data.quoted_at + " 台灣時間）";
+      reverseBankRateTitle = "台灣銀行日幣現金賣出 " + data.rate.toFixed(4) + " TWD／JPY；以 1 ÷ 牌告匯率換算。最新牌告僅供參考，報價匯率請自行設定。";
       bankRateTitle = "1 JPY = " + data.rate + " TWD；台銀最新牌告，僅供參考。點擊查看來源。";
     } catch (_) {
       bankRateText = "台銀匯率暫時無法取得｜查看來源";
+      reverseBankRateText = "台灣銀行匯率暫時無法取得｜查看來源";
+      reverseBankRateTitle = "請點擊查看台灣銀行最新牌告。";
     } finally { clearTimeout(timer); bankRateLoading = false; renderBankRate(); }
   }
 
@@ -692,7 +703,7 @@
           escapeHtml(item.quantity || 1) + '" type="number" min="0" step="1" value="' +
           escapeHtml(unitPrices[index] ?? "") + '" placeholder="0"><strong data-quote-line>¥0</strong></div>').join("") +
         '</div><div class="personal-quote-costs">' +
-        '<label>匯率（' + source + ' → ' + currency + '）<input data-quote-rate type="number" min="0" step="0.0001" value="' + escapeHtml(quote.exchange_rate ?? "") + '" placeholder="' + (japan ? '例如 4.5' : '例如 0.22') + '"></label>' +
+        '<label>匯率（' + source + ' → ' + currency + '）' + (japan ? ' <a data-bot-twd-jpy-rate href="https://rate.bot.com.tw/xrt?Lang=zh-TW" target="_blank" rel="noopener noreferrer" aria-live="polite" style="color:#8b7561;font-size:12px;font-weight:400">台灣銀行即時匯率：讀取中…</a>' : '') + '<input data-quote-rate type="number" min="0" step="0.0001" value="' + escapeHtml(quote.exchange_rate ?? "") + '" placeholder="' + (japan ? '例如 4.5' : '例如 0.22') + '"></label>' +
         '<label>' + origin + '國內運費（' + source + '）<input data-quote-domestic type="number" min="0" step="1" value="' + escapeHtml(quote[japan ? 'domestic_shipping_twd' : 'domestic_shipping_jpy'] ?? "") + '" placeholder="0"></label>' +
         '<label>關稅及手續費（' + currency + '）<input data-quote-fees type="number" min="0" step="1" value="' + escapeHtml(quote[japan ? 'duties_and_fees_jpy' : 'duties_and_fees_twd'] ?? "") + '" placeholder="0"></label>' +
         '<label>國際運費（' + currency + '）<input data-quote-international type="number" min="0" step="1" value="' + escapeHtml(quote[japan ? 'international_shipping_jpy' : 'international_shipping_twd'] ?? "") + '" placeholder="0"></label>' +
