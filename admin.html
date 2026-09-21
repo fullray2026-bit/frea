@@ -157,8 +157,8 @@
         </section>
 
         <section class="admin-view" data-admin-panel="members" hidden>
-          <div class="admin-toolbar"><input id="memberSearch" type="search" placeholder="搜尋姓名、Email 或手機"><select id="memberStatusFilter"><option value="">全部狀態</option><option value="pending">待審核</option><option value="approved">已通過</option><option value="rejected">未通過</option></select><span id="memberCount"></span></div>
-          <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>會員</th><th>聯絡方式</th><th>預設收件資料</th><th>EZ WAY</th><th>會員狀態</th><th>操作</th></tr></thead><tbody id="memberRows"></tbody></table></div>
+          <div class="admin-toolbar"><input id="memberSearch" type="search" placeholder="搜尋姓名、Email 或手機"><select id="memberStatusFilter"><option value="">全部狀態</option><option value="pending">待審核</option><option value="approved">已通過</option><option value="rejected">未通過</option></select><button id="memberDownload" type="button">下載會員資料 CSV</button><span id="memberCount"></span></div>
+          <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>會員</th><th>會員編號／類別</th><th>聯絡方式</th><th>審核狀態／申請資料</th><th>操作</th><th>註冊時間</th></tr></thead><tbody id="memberRows"></tbody></table></div>
         </section>
 
         <section class="admin-view" data-admin-panel="orders" hidden>
