@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>自選代購｜fréa</title>
+  <title>日本商品自選代購｜fréa</title><meta name="description" content="日本商品寄送台灣，台灣商品寄送日本。提供商品資訊，確認報價並完成匯款後，由 fréa 安排採購與寄送。"><link rel="canonical" href="https://www.thefrea.com/personal-shopping.html"><link rel="alternate" hreflang="zh-Hant" href="https://www.thefrea.com/personal-shopping.html"><link rel="alternate" hreflang="ja" href="https://www.thefrea.com/personal-shopping-ja.html"><meta property="og:title" content="日本商品自選代購｜fréa"><meta property="og:description" content="日本商品寄送台灣，台灣商品寄送日本。提供商品資訊，確認報價並完成匯款後，由 fréa 安排採購與寄送。"><meta property="og:url" content="https://www.thefrea.com/personal-shopping.html"><meta property="og:image" content="https://www.thefrea.com/assets/logo_round.png">
   <link rel="stylesheet" href="style.css?v=personal-shopping-specification-1">
 
   <style>
@@ -26,17 +26,17 @@
       #personalForm .items { margin-bottom: 24px; }
     }
   </style>
-</head>
+<style id="personal-service-layout">html[lang=ja] #personalTitle{font-size:clamp(28px,4vw,48px)}.personal-service-options{display:flex;gap:12px;flex-wrap:wrap;align-items:end;margin:18px 0}.personal-service-options label{display:grid;gap:6px;flex:1;min-width:180px}.personal-service-options select{width:100%;padding:12px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink)}#personalContact{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:24px}#personalContact label,#personalAuth label{display:grid;gap:8px;min-width:0}#personalContact input,#personalAuth input,#personalContact select{box-sizing:border-box;min-width:0;width:100%;padding:12px;border:1px solid var(--line);border-radius:8px;color:var(--ink);background:#fff}#personalContact .wide{grid-column:1/-1}#personalAuth{padding:20px;border:1px solid var(--line);border-radius:12px;margin-bottom:24px}#personalAuth .auth-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}#personalAuth [type=checkbox]{width:auto}#personalAuth .form-actions{margin-top:16px}#personalContact [hidden],#personalAuth[hidden],#personalAuth [hidden]{display:none!important}@media(max-width:640px){#personalContact,#personalAuth .auth-fields{grid-template-columns:1fr}.personal-service-options{align-items:stretch}.personal-service-options a{padding:12px 0}}</style></head>
 <body>
 <header class="header"><div class="container header-inner"><a class="wordmark serif" href="index.html">fréa</a><div></div><div class="actions"><button class="icon" title="搜尋" aria-label="搜尋"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="14" r="9.5"></circle><path d="M21.2 21.2 28 28"></path></svg></button><a class="icon" title="會員登入" aria-label="會員登入" href="register.html"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M18 5h9v22h-9"></path><path d="M4 16h16"></path><path d="m14 10 6 6-6 6"></path></svg></a><a class="icon" title="購物車" aria-label="購物車" href="cart.html"><svg viewBox="0 0 36 32" aria-hidden="true"><path d="M3 4h4l3.2 17h18.2l3.6-12H9"></path><circle cx="14" cy="27" r="1.8"></circle><circle cx="27" cy="27" r="1.8"></circle></svg></a></div></div></header>
 <main>
-  <section class="page-hero"><div class="container"><h1 class="serif">自選代購 <span style="font-size:22px;color:var(--muted)">Personal Shopping</span></h1><p>如果 fréa 現有商品中沒有您正在尋找的日本商品，可以使用自選代購服務。填寫商品名稱、連結與數量後送出，我們確認供貨狀況與相關費用後提供報價；待您了解價格並明確同意購買、完成匯款後，我們才於日本正式下單。</p></div></section>
-  <section class="form-wrap"><div class="container"><form id="personalForm" class="shopping-form">
-    <div class="items"><div class="section-head"><div><h2 style="font-size:28px">代購品項</h2><div class="section-sub">預留 2 筆，可再新增更多商品</div></div></div><div id="itemList"></div><button type="button" id="addItem" class="btn outline">＋ 新增商品</button></div>
+  <section class="page-hero"><div class="container"><h1 class="serif" id="personalTitle">日本商品自選代購 <span style="font-size:22px;color:var(--muted)">Personal Shopping</span></h1><p id="personalIntro">日本商品寄送台灣，台灣商品寄送日本。提供商品資訊，確認報價並完成匯款後，由 fréa 安排採購與寄送。</p><div class="personal-service-options"><label>代購方向<select id="personalDirection"><option value="jp_to_tw" selected>日本商品 → 寄送台灣</option><option value="tw_to_jp" >台灣商品 → 寄送日本</option></select></label><label>聯絡語言<select id="personalLanguage"><option value="zh-Hant" selected>繁體中文</option><option value="ja" >日本語</option></select></label><a id="personalLanguageLink" href="personal-shopping-ja.html?direction=jp_to_tw">日本語ページ</a></div></div></section>
+  <section class="form-wrap"><div class="container"><form data-service-form id="personalForm" class="shopping-form">
+    <div id="personalContact"><label>聯絡人姓名<input name="customer_name" autocomplete="name" maxlength="100" required></label><label>聯絡電話<input name="phone" type="tel" autocomplete="tel" minlength="5" maxlength="40" required></label><label>收件人姓名<input name="recipient" autocomplete="shipping name" maxlength="100" required></label><label>郵遞區號<input name="postal_code" autocomplete="shipping postal-code" maxlength="10" required></label><label><span id="personalRegionLabel">縣市</span><input name="region" autocomplete="shipping address-level1" maxlength="100" required></label><label><span id="personalCityLabel">鄉鎮市區</span><input name="city" autocomplete="shipping address-level2" maxlength="100" required></label><label class="wide">街道門牌、樓層及室號<input name="address_line" autocomplete="shipping address-line1" maxlength="300" required></label></div><div class="items"><div class="section-head"><div><h2 style="font-size:28px">代購品項</h2><div class="section-sub">預留 2 筆，可再新增更多商品</div></div></div><div id="itemList"></div><button type="button" id="addItem" class="btn outline">＋ 新增商品</button></div>
     <div class="form-grid">
       <div class="field full"><label for="personalNote">備註</label><textarea id="personalNote" name="note" maxlength="2000" placeholder="例如顏色、尺寸、型號、缺貨時是否接受替代等"></textarea></div>
     </div>
-    <div class="notice"><strong>服務說明：</strong><br>1. 填寫需求後，fréa 將確認商品供貨狀況並提供報價。<br>2. 您確認價格並提出購買同意、完成匯款後，我們才正式於日本下單採購。<br>3. 商品可直接寄至您指定的台灣地址。跨境包裹通關時，收件人需使用 EZ WAY 易利委完成實名認證與報關委任。<br>4. 報價將依商品售價、日本國內運費、代購服務費、國際運費及必要的進口相關費用個別計算。</div>
+    <div class="notice" id="personalServiceNotice"><strong>服務說明：</strong><br>1. 填寫需求後，fréa 將確認商品供貨狀況並提供報價。<br>2. 您確認價格並提出購買同意、完成匯款後，我們才正式於日本下單採購。<br>3. 商品可直接寄至您指定的台灣地址。跨境包裹通關時，收件人需使用 EZ WAY 易利委完成實名認證與報關委任。<br>4. 報價將依商品售價、日本國內運費、代購服務費、國際運費及必要的進口相關費用個別計算。</div>
     <p id="personalFormMessage" class="notice" role="status" hidden></p>
     <div class="form-actions"><button class="btn" id="personalSubmit" type="submit">送出代購需求</button><a class="btn outline" href="index.html">返回首頁</a></div>
   </form></div></section>
@@ -45,8 +45,8 @@
 <div class="toast"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.3/dist/umd/supabase.js"></script>
 <script src="supabase-config.js"></script>
-<script src="personal-shopping-auth.js?v=1"></script>
-<script src="script.js?v=live-search-20260909"></script>
+
+<script src="script.js?v=personal-bidirectional-20260921"></script><script src="personal-service.js?v=20260921-1"></script>
 </body>
 </html>
 

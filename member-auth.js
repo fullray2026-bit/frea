@@ -145,7 +145,7 @@
         .eq("user_id", currentUser.id)
         .order("created_at", { ascending: false }),
       client.from("personal_shopping_requests")
-        .select("request_number,status,quote_amount,created_at,items")
+        .select("request_number,status,quote_amount,quote_currency,service_direction,created_at,items")
         .eq("user_id", currentUser.id)
         .order("created_at", { ascending: false })
     ]);
@@ -168,10 +168,10 @@
       if (order.kind === "personal") {
         const total = order.quote_amount == null
           ? "尚未報價"
-          : formatMoney(order.quote_amount, "TWD");
+          : formatMoney(order.quote_amount, order.quote_currency || "TWD");
         const itemNames = (Array.isArray(order.items) ? order.items : []).map(item => item.name).filter(Boolean).join("、");
         const detail = itemNames ? '<small>代購品項：' + escapeHtml(itemNames) + '</small>' : "";
-        return '<article class="member-order"><div><strong>' + escapeHtml(order.request_number) + '</strong><small>自選代購 · ' + escapeHtml(date) + ' · ' + escapeHtml(personalStatuses[order.status] || order.status) + '</small>' + detail + '</div><div>' + escapeHtml(total) + '</div></article>';
+        return '<article class="member-order"><div><strong>' + escapeHtml(order.request_number) + '</strong><small>自選代購 · ' + escapeHtml(date) + ' · ' + escapeHtml(order.service_direction === 'tw_to_jp' && order.status === 'purchased' ? '台灣已下單' : personalStatuses[order.status] || order.status) + '</small>' + detail + '</div><div>' + escapeHtml(total) + '</div></article>';
       }
       const total = formatMoney(order.total_amount, order.currency || "TWD");
       const tracking = order.status === "shipped" && order.tracking_number

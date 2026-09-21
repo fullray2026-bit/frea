@@ -14,7 +14,7 @@ function addRow(v={}){
   r.append(number,name,url,specification,quantity,remove);l.appendChild(r);
 }
 const itemList=qs("#itemList");
-if(itemList){
+if(itemList && !qs("#personalForm")?.hasAttribute("data-service-form")){
   addRow();addRow();qs("#addItem").onclick=()=>addRow();
   const params=new URLSearchParams(location.search),first=qsa(".item-row",itemList)[0];
   if(params.get("product"))qs("[data-item-name]",first).value=params.get("product");

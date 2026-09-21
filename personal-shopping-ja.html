@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>台湾商品の購入代行｜fréa</title><meta name="description" content="台湾の商品を日本へ。商品名・URL・数量からお見積もり。ご承諾と福岡銀行への日本円ATM振込を確認後、購入・発送を手配します。"><link rel="canonical" href="https://www.thefrea.com/personal-shopping-ja.html"><link rel="alternate" hreflang="zh-Hant" href="https://www.thefrea.com/personal-shopping.html"><link rel="alternate" hreflang="ja" href="https://www.thefrea.com/personal-shopping-ja.html"><meta property="og:title" content="台湾商品の購入代行｜fréa"><meta property="og:description" content="台湾の商品を日本へ。商品名・URL・数量からお見積もり。ご承諾と福岡銀行への日本円ATM振込を確認後、購入・発送を手配します。"><meta property="og:url" content="https://www.thefrea.com/personal-shopping-ja.html"><meta property="og:image" content="https://www.thefrea.com/assets/logo_round.png">
+  <link rel="stylesheet" href="style.css?v=personal-shopping-specification-1">
+
+  <style>
+    /* Keep mobile item fields in one flexible column after shared desktop rules. */
+    @media (max-width: 640px) {
+      #personalForm { padding: 24px 18px; }
+      #personalForm .item-row {
+        grid-template-columns: 24px minmax(0, 1fr);
+        gap: 10px;
+        align-items: start;
+        padding-bottom: 20px;
+        margin-bottom: 20px;
+        border-bottom: 1px solid var(--line);
+      }
+      #personalForm .item-row > div { grid-column: 1; padding-top: 10px; }
+      #personalForm .item-row input,
+      #personalForm .item-row .remove { grid-column: 2; min-width: 0; width: 100%; }
+      #personalForm .item-row input { font-size: 16px; }
+      #personalForm .item-row .remove { width: 44px; min-height: 44px; justify-self: end; color: var(--ink); }
+      #personalForm .items { margin-bottom: 24px; }
+    }
+  </style>
+<style id="personal-service-layout">html[lang=ja] #personalTitle{font-size:clamp(28px,4vw,48px)}.personal-service-options{display:flex;gap:12px;flex-wrap:wrap;align-items:end;margin:18px 0}.personal-service-options label{display:grid;gap:6px;flex:1;min-width:180px}.personal-service-options select{width:100%;padding:12px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink)}#personalContact{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:24px}#personalContact label,#personalAuth label{display:grid;gap:8px;min-width:0}#personalContact input,#personalAuth input,#personalContact select{box-sizing:border-box;min-width:0;width:100%;padding:12px;border:1px solid var(--line);border-radius:8px;color:var(--ink);background:#fff}#personalContact .wide{grid-column:1/-1}#personalAuth{padding:20px;border:1px solid var(--line);border-radius:12px;margin-bottom:24px}#personalAuth .auth-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}#personalAuth [type=checkbox]{width:auto}#personalAuth .form-actions{margin-top:16px}#personalContact [hidden],#personalAuth[hidden],#personalAuth [hidden]{display:none!important}@media(max-width:640px){#personalContact,#personalAuth .auth-fields{grid-template-columns:1fr}.personal-service-options{align-items:stretch}.personal-service-options a{padding:12px 0}}</style></head>
+<body>
+<header class="header"><div class="container header-inner"><a class="wordmark serif" href="index.html">fréa</a><div></div><div class="actions"><button class="icon" title="搜尋" aria-label="搜尋"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="14" r="9.5"></circle><path d="M21.2 21.2 28 28"></path></svg></button><a class="icon" title="會員登入" aria-label="會員登入" href="register.html"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M18 5h9v22h-9"></path><path d="M4 16h16"></path><path d="m14 10 6 6-6 6"></path></svg></a><a class="icon" title="購物車" aria-label="購物車" href="cart.html"><svg viewBox="0 0 36 32" aria-hidden="true"><path d="M3 4h4l3.2 17h18.2l3.6-12H9"></path><circle cx="14" cy="27" r="1.8"></circle><circle cx="27" cy="27" r="1.8"></circle></svg></a></div></div></header>
+<main>
+  <section class="page-hero"><div class="container"><h1 class="serif" id="personalTitle">台湾商品の購入代行 <span style="font-size:22px;color:var(--muted)">Personal Shopping</span></h1><p id="personalIntro">台湾の商品を日本へ。商品名・URL・数量からお見積もり。ご承諾と福岡銀行への日本円ATM振込を確認後、購入・発送を手配します。</p><div class="personal-service-options"><label>購入・配送ルート<select id="personalDirection"><option value="jp_to_tw" >日本の商品 → 台湾へお届け</option><option value="tw_to_jp" selected>台湾の商品 → 日本へお届け</option></select></label><label>ご連絡の言語<select id="personalLanguage"><option value="zh-Hant" >繁體中文</option><option value="ja" selected>日本語</option></select></label><a id="personalLanguageLink" href="personal-shopping.html?direction=tw_to_jp">繁體中文頁面</a></div></div></section>
+  <section class="form-wrap"><div class="container"><form id="personalAuth"><h2>ログイン・新規会員登録</h2><p>お申し込みには会員ログインが必要です。登録済みの方はメールアドレスとパスワードでログインしてください。</p><div class="auth-fields"><label>メールアドレス<input name="email" type="email" autocomplete="email" maxlength="254" required></label><label>パスワード（8文字以上）<input name="password" type="password" autocomplete="current-password" minlength="8" required></label><label data-signup hidden>お名前<input name="name" autocomplete="name" maxlength="100"></label><label data-signup hidden>電話番号<input name="phone" type="tel" autocomplete="tel" minlength="5" maxlength="40"></label></div><label data-signup hidden style="display:block;margin-top:16px"><input name="consent" type="checkbox"> <a href="terms.html" target="_blank" rel="noopener">会員規約（中国語）</a>と<a href="privacy.html" target="_blank" rel="noopener">プライバシーポリシー（中国語）</a>に同意します。</label><p id="personalAuthMessage" role="status"></p><div class="form-actions"><button class="btn" type="submit" id="personalAuthSubmit">ログイン</button><button class="btn outline" type="button" id="personalAuthMode">新規会員登録へ</button><a href="register.html?view=forgot">パスワードをお忘れの方（中国語）</a></div></form><form data-service-form id="personalForm" class="shopping-form">
+    <div id="personalContact"><label>お名前<input name="customer_name" autocomplete="name" maxlength="100" required></label><label>電話番号<input name="phone" type="tel" autocomplete="tel" minlength="5" maxlength="40" required></label><label>受取人のお名前<input name="recipient" autocomplete="shipping name" maxlength="100" required></label><label>郵便番号<input name="postal_code" autocomplete="shipping postal-code" maxlength="10" required></label><label><span id="personalRegionLabel">都道府県</span><input name="region" autocomplete="shipping address-level1" maxlength="100" required></label><label><span id="personalCityLabel">市区町村</span><input name="city" autocomplete="shipping address-level2" maxlength="100" required></label><label class="wide">番地・建物名・部屋番号<input name="address_line" autocomplete="shipping address-line1" maxlength="300" required></label></div><div class="items"><div class="section-head"><div><h2 style="font-size:28px">ご希望の商品</h2><div class="section-sub">商品欄は追加できます</div></div></div><div id="itemList"></div><button type="button" id="addItem" class="btn outline">＋ 商品を追加</button></div>
+    <div class="form-grid">
+      <div class="field full"><label for="personalNote">備考</label><textarea id="personalNote" name="note" maxlength="2000" placeholder="色・サイズ・型番、品切れの場合のご希望など"></textarea></div>
+    </div>
+    <div class="notice" id="personalServiceNotice"><strong>服務說明：</strong><br>1. 填寫需求後，fréa 將確認商品供貨狀況並提供報價。<br>2. 您確認價格並提出購買同意、完成匯款後，我們才正式於日本下單採購。<br>3. 商品可直接寄至您指定的台灣地址。跨境包裹通關時，收件人需使用 EZ WAY 易利委完成實名認證與報關委任。<br>4. 報價將依商品售價、日本國內運費、代購服務費、國際運費及必要的進口相關費用個別計算。</div>
+    <p id="personalFormMessage" class="notice" role="status" hidden></p>
+    <div class="form-actions"><button class="btn" id="personalSubmit" type="submit">見積もりを依頼する</button><a class="btn outline" href="index.html">ホームへ</a></div>
+  </form></div></section>
+</main>
+<footer class="footer"><div class="container"><div class="footer-grid"><div class="footer-brand"><img src="assets/logo_round.png" alt="fréa"><p>暮らしに、あたたかさを。</p><p>FUKUOKA, JAPAN</p></div><div><h4>fréa について</h4><a href="about.html">ブランドストーリー（中国語）</a><a href="contact.html">お問い合わせ（中国語）</a><a href="intellectual-property.html">知的財産について（中国語）</a></div><div><h4>ご利用ガイド</h4><a href="shopping-guide.html">お買い物ガイド（中国語）</a><a href="returns.html">返品・交換（中国語）</a><a href="terms.html">会員規約（中国語）</a><a href="privacy.html">プライバシーポリシー（中国語）</a></div></div><div class="copyright">© 2026 fréa. All rights reserved.</div></div></footer>
+<div class="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.3/dist/umd/supabase.js"></script>
+<script src="supabase-config.js"></script>
+
+<script src="script.js?v=personal-bidirectional-20260921"></script><script src="personal-service.js?v=20260921-1"></script>
+</body>
+</html>
+

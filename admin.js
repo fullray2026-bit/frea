@@ -121,7 +121,7 @@
       client.from("member_addresses").select("user_id,recipient_name,recipient_phone,postal_code,address,is_default").eq("is_default", true),
       client.from("ezway_profiles").select("user_id,real_name,mobile"),
       client.from("orders").select("id,user_id,order_number,status,currency,total_amount,created_at,updated_at,recipient_name,recipient_phone,postal_code,shipping_address,payment_proof_name,payment_proof_path,admin_note,tracking_number,order_items(product_name,specification,quantity,unit_price,line_total)").order("created_at", { ascending: false }),
-      client.from("personal_shopping_requests").select("id,request_number,user_id,customer_name,email,phone,line_id,note,items,status,quote_amount,quote_details,admin_note,created_at,updated_at").order("created_at", { ascending: false }),
+      client.from("personal_shopping_requests").select("id,request_number,user_id,customer_name,email,phone,line_id,note,items,status,quote_amount,quote_details,service_direction,contact_language,quote_currency,delivery_address,payment_method,admin_note,created_at,updated_at").order("created_at", { ascending: false }),
       client.from("products").select("*,product_variants(id,option_value,sku,image_url,stock_quantity,sort_order,is_active)").order("brand_code").order("sort_order").order("created_at"),
       client.from("product_master").select("*").order("created_at", { ascending: false }),
       client.from("cost_scenarios").select("*").order("created_at", { ascending: false }),
@@ -663,6 +663,10 @@
     target.innerHTML = filtered.map(request => {
       const items = Array.isArray(request.items) ? request.items : [];
       const quote = request.quote_details && typeof request.quote_details === "object" ? request.quote_details : {};
+      const japan = request.service_direction === 'tw_to_jp';
+      const source = japan ? 'TWD' : 'JPY', currency = japan ? 'JPY' : 'TWD';
+      const origin = japan ? '台灣' : '日本', destination = japan ? '日本' : '台灣';
+      const address = request.delivery_address || {};
       const unitPrices = Array.isArray(quote.unit_prices) ? quote.unit_prices : [];
       const itemHtml = items.length ? '<ul class="admin-order-items">' + items.map(item => {
         const itemUrl = safeHttpUrl(item.url);
@@ -671,34 +675,34 @@
         (itemUrl ? '｜<a href="' + escapeHtml(itemUrl) + '" target="_blank" rel="noopener">商品連結</a>' : "") + "</li>"
         );
       }).join("") + "</ul>" : "<p>沒有商品明細</p>";
-      return '<article class="admin-order" data-personal-id="' + escapeHtml(request.id) + '">' +
+      return '<article class="admin-order" data-personal-id="' + escapeHtml(request.id) + '" data-service-direction="' + (japan ? 'tw_to_jp' : 'jp_to_tw') + '">' +
         '<div class="admin-order-head"><div><h3>' + escapeHtml(request.request_number) +
         '</h3><p class="admin-order-meta">' + escapeHtml(formatDate(request.created_at)) + " · " +
-        escapeHtml(personalStatusLabels[request.status] || request.status) + '</p></div><div><strong>' +
+        escapeHtml(japan && request.status === 'purchased' ? '台灣已下單' : personalStatusLabels[request.status] || request.status) + ' · ' + origin + ' → ' + destination + ' · ' + currency + '</p></div><div><strong>' +
         escapeHtml(request.customer_name) + '</strong><p class="admin-order-meta">' +
         escapeHtml(request.email) + "／" + escapeHtml(request.phone) + '</p></div><strong class="admin-order-total" data-quote-display>' +
-        (request.quote_amount == null ? "尚未報價" : escapeHtml(formatMoney(request.quote_amount, "TWD"))) + '</strong></div>' +
+        (request.quote_amount == null ? "尚未報價" : escapeHtml(formatMoney(request.quote_amount, currency))) + '</strong></div>' +
         '<div class="admin-order-grid"><div><h4>代購品項</h4>' + itemHtml +
         '</div><div><h4>顧客資料與備註</h4><p>LINE ID：' + escapeHtml(request.line_id || "—") +
-        '</p><p>' + escapeHtml(request.note || "無備註") + '</p></div></div>' +
+        '</p><p>' + escapeHtml(request.note || "無備註") + '</p><p>聯絡語言：' + (request.contact_language === 'ja' ? '日本語' : '繁體中文') + ' · 收件國家：' + destination + '</p><p>' + escapeHtml([address.recipient,address.postal_code,address.region,address.city,address.address_line].filter(Boolean).join(' ')) + '</p>' + (japan ? '<p>付款：福岡銀行 ATM 日圓匯款（帳戶資訊於報價確認後提供）</p>' : '') + '</div></div>' +
         '<div class="personal-quote-sheet"><h4>報價試算表</h4><div class="personal-quote-table">' +
-        '<div class="personal-quote-row personal-quote-head"><span>商品</span><span>數量</span><span>商品單價（JPY）</span><span>小計（JPY）</span></div>' +
+        '<div class="personal-quote-row personal-quote-head"><span>商品</span><span>數量</span><span>商品單價（' + source + '）</span><span>小計（' + source + '）</span></div>' +
         items.map((item, index) => '<div class="personal-quote-row"><span>' + escapeHtml(item.name || "未填商品名稱") +
           '</span><span>' + escapeHtml(item.quantity || 1) + '</span><input data-quote-unit data-quantity="' +
           escapeHtml(item.quantity || 1) + '" type="number" min="0" step="1" value="' +
           escapeHtml(unitPrices[index] ?? "") + '" placeholder="0"><strong data-quote-line>¥0</strong></div>').join("") +
         '</div><div class="personal-quote-costs">' +
-        '<label>匯率（JPY → TWD）<input data-quote-rate type="number" min="0" step="0.0001" value="' + escapeHtml(quote.exchange_rate ?? "") + '" placeholder="例如 0.22"></label>' +
-        '<label>日本國內運費（JPY）<input data-quote-domestic type="number" min="0" step="1" value="' + escapeHtml(quote.domestic_shipping_jpy ?? "") + '" placeholder="0"></label>' +
-        '<label>關稅及手續費（TWD）<input data-quote-fees type="number" min="0" step="1" value="' + escapeHtml(quote.duties_and_fees_twd ?? "") + '" placeholder="0"></label>' +
-        '<label>國際運費（TWD）<input data-quote-international type="number" min="0" step="1" value="' + escapeHtml(quote.international_shipping_twd ?? "") + '" placeholder="0"></label>' +
-        '<label>台灣國內運費（TWD）<input data-quote-taiwan type="number" min="0" step="1" value="' + escapeHtml(quote.taiwan_shipping_twd ?? '') + '" placeholder="0"></label>' +
-        '<label>其他（TWD）<input data-quote-other type="number" min="0" step="1" value="' + escapeHtml(quote.other_fees_twd ?? '') + '" placeholder="0"></label>' +
-        '<label class="personal-quote-total">總金額（TWD）<output data-quote-total>NT$0</output></label></div>' +
-        '<p class="admin-order-meta"><a data-bot-jpy-rate href="https://rate.bot.com.tw/xrt?Lang=zh-TW" target="_blank" rel="noopener noreferrer" aria-live="polite" style="color:#8b7561">台銀日幣現金賣出：讀取中…</a></p>' +
-        '<p class="admin-order-meta">計算方式：（商品小計＋日本國內運費）× 匯率＋關稅及手續費＋國際運費＋台灣國內運費＋其他</p></div>' +
+        '<label>匯率（' + source + ' → ' + currency + '）<input data-quote-rate type="number" min="0" step="0.0001" value="' + escapeHtml(quote.exchange_rate ?? "") + '" placeholder="' + (japan ? '例如 4.5' : '例如 0.22') + '"></label>' +
+        '<label>' + origin + '國內運費（' + source + '）<input data-quote-domestic type="number" min="0" step="1" value="' + escapeHtml(quote[japan ? 'domestic_shipping_twd' : 'domestic_shipping_jpy'] ?? "") + '" placeholder="0"></label>' +
+        '<label>關稅及手續費（' + currency + '）<input data-quote-fees type="number" min="0" step="1" value="' + escapeHtml(quote[japan ? 'duties_and_fees_jpy' : 'duties_and_fees_twd'] ?? "") + '" placeholder="0"></label>' +
+        '<label>國際運費（' + currency + '）<input data-quote-international type="number" min="0" step="1" value="' + escapeHtml(quote[japan ? 'international_shipping_jpy' : 'international_shipping_twd'] ?? "") + '" placeholder="0"></label>' +
+        '<label>' + destination + '國內運費（' + currency + '）<input data-quote-taiwan type="number" min="0" step="1" value="' + escapeHtml(quote[japan ? 'japan_shipping_jpy' : 'taiwan_shipping_twd'] ?? '') + '" placeholder="0"></label>' +
+        '<label>其他（' + currency + '）<input data-quote-other type="number" min="0" step="1" value="' + escapeHtml(quote[japan ? 'other_fees_jpy' : 'other_fees_twd'] ?? '') + '" placeholder="0"></label>' +
+        '<label class="personal-quote-total">總金額（' + currency + '）<output data-quote-total>NT$0</output></label></div>' +
+        (japan ? '' : '<p class="admin-order-meta"><a data-bot-jpy-rate href="https://rate.bot.com.tw/xrt?Lang=zh-TW" target="_blank" rel="noopener noreferrer" aria-live="polite" style="color:#8b7561">台銀日幣現金賣出：讀取中…</a></p>') +
+        '<p class="admin-order-meta">計算方式：（商品小計＋' + origin + '國內運費）× 匯率＋關稅及手續費＋國際運費＋' + destination + '國內運費＋其他</p></div>' +
         '<div class="admin-order-controls"><label>處理狀態<select data-personal-status>' +
-        personalStatusOptions(request.status) + '</select></label><label>後台備註<textarea data-personal-note rows="2" placeholder="僅供管理使用">' +
+        personalStatusOptions(request.status).replace('日本已下單', japan ? '台灣已下單' : '日本已下單') + '</select></label><label>後台備註<textarea data-personal-note rows="2" placeholder="僅供管理使用">' +
         escapeHtml(request.admin_note || "") + '</textarea></label><button class="admin-save" type="button" data-save-personal>儲存變更</button></div><div class="personal-quote-actions"><button type="button" data-preview-personal>報價單預覽</button><button type="button" data-download-personal>下載報價單 PDF</button><button type="button" class="danger" data-delete-personal>刪除訂單</button></div></article>';
     }).join("");
     target.querySelectorAll("[data-personal-id]").forEach(recalculatePersonalQuote);
@@ -712,11 +716,11 @@
   function recalculatePersonalQuote(card) {
     const quote = window.FreaPersonalQuote.read(card);
     card.querySelectorAll('[data-quote-unit]').forEach((input,index)=>{
-      input.closest('.personal-quote-row').querySelector('[data-quote-line]').textContent = '¥' + quote.lines[index].toLocaleString('zh-TW');
+      input.closest('.personal-quote-row').querySelector('[data-quote-line]').textContent = formatMoney(quote.lines[index],quote.sourceCurrency);
     });
     card.dataset.quoteTotal=String(quote.total);
-    card.querySelector('[data-quote-total]').textContent=formatMoney(quote.total,'TWD');
-    card.querySelector('[data-quote-display]').textContent=quote.total>0?formatMoney(quote.total,'TWD'):'尚未報價';
+    card.querySelector('[data-quote-total]').textContent=formatMoney(quote.total,quote.currency);
+    card.querySelector('[data-quote-display]').textContent=quote.total>0?formatMoney(quote.total,quote.currency):'尚未報價';
   }
 
   async function deletePersonalRequest(card) {
@@ -744,15 +748,16 @@
     if(!window.FreaPersonalQuote.validate(card,true)) return;
     recalculatePersonalQuote(card);
     const unitPrices = [...card.querySelectorAll("[data-quote-unit]")].map(input => Math.max(0, Math.round(Number(input.value) || 0)));
+    const japan = card.dataset.serviceDirection === 'tw_to_jp';
     const quoteDetails = {
       ...(personalRequests.find(item=>String(item.id)===String(id))?.quote_details || {}),
       unit_prices: unitPrices,
       exchange_rate: quoteNumber(card, "[data-quote-rate]"),
-      domestic_shipping_jpy: Math.round(quoteNumber(card, "[data-quote-domestic]")),
-      duties_and_fees_twd: Math.round(quoteNumber(card, "[data-quote-fees]")),
-      international_shipping_twd: Math.round(quoteNumber(card, "[data-quote-international]")),
-      taiwan_shipping_twd: Math.round(quoteNumber(card, "[data-quote-taiwan]")),
-      other_fees_twd: Math.round(quoteNumber(card, "[data-quote-other]"))
+      [japan ? 'domestic_shipping_twd' : 'domestic_shipping_jpy']: Math.round(quoteNumber(card, "[data-quote-domestic]")),
+      [japan ? 'duties_and_fees_jpy' : 'duties_and_fees_twd']: Math.round(quoteNumber(card, "[data-quote-fees]")),
+      [japan ? 'international_shipping_jpy' : 'international_shipping_twd']: Math.round(quoteNumber(card, "[data-quote-international]")),
+      [japan ? 'japan_shipping_jpy' : 'taiwan_shipping_twd']: Math.round(quoteNumber(card, "[data-quote-taiwan]")),
+      [japan ? 'other_fees_jpy' : 'other_fees_twd']: Math.round(quoteNumber(card, "[data-quote-other]"))
     };
     const updates = {
       status: card.querySelector("[data-personal-status]").value,
