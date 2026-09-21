@@ -134,10 +134,22 @@
       client.from("products").select("slug,brand_code,name,description,specification,usage_flavor,price,currency,stock_quantity,image_url,sort_order,is_active").eq("is_active", true).order("brand_code").order("sort_order").order("created_at"),
       client.rpc("get_public_product_variants")
     ]);
-    if (error || variantError || !data) return;
+    if (error || variantError || !data) {
+      const status=document.getElementById("kitchenCatalogStatus");
+      if(status)status.textContent="暫時無法取得最新價格與庫存，請重新整理後再購買。";
+      return;
+    }
     data.forEach(product => { product.product_variants = (variantData || []).filter(item => item.product_slug === product.slug); });
 
     const current = location.pathname.split("/").pop() || "index.html";
+    if(current==="category-kitchen.html"){
+      document.querySelectorAll("[data-kitchen-brand]").forEach(group=>{
+        replaceList(group.querySelector(".brand-product-list"),data.filter(product=>product.brand_code===group.dataset.kitchenBrand));
+      });
+      const count=data.filter(p=>["akomeya","kayanoya"].includes(p.brand_code)).length;
+      document.getElementById("kitchenCatalogStatus").textContent="共 "+count+" 項上架商品";
+      return;
+    }
     if (pageBrand[current]) {
       let list = document.querySelector(".brand-product-list");
       if (!list && current === "category-lifestyle.html") {
