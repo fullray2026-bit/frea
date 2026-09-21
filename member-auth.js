@@ -132,7 +132,7 @@
     if(!row||!currentUser)return;
     if(event.type==="keydown"&&!["Enter"," "].includes(event.key))return;
     event.preventDefault();
-    window.freaOrderDetails?.open(client,row.dataset.memberOrderId,currentUser.id,row);
+    window.freaOrderDetails?.open(client,row.dataset.memberOrderId,currentUser.id,row,row.dataset.memberOrderKind);
   }
   byId("orderList").addEventListener("click",showOrderDetails);
   byId("orderList").addEventListener("keydown",showOrderDetails);
@@ -145,7 +145,7 @@
         .eq("user_id", currentUser.id)
         .order("created_at", { ascending: false }),
       client.from("personal_shopping_requests")
-        .select("request_number,status,quote_amount,quote_currency,service_direction,created_at,items")
+        .select("id,request_number,status,quote_amount,quote_currency,service_direction,created_at")
         .eq("user_id", currentUser.id)
         .order("created_at", { ascending: false })
     ]);
@@ -169,9 +169,7 @@
         const total = order.quote_amount == null
           ? "尚未報價"
           : formatMoney(order.quote_amount, order.quote_currency || "TWD");
-        const itemNames = (Array.isArray(order.items) ? order.items : []).map(item => item.name).filter(Boolean).join("、");
-        const detail = itemNames ? '<small>代購品項：' + escapeHtml(itemNames) + '</small>' : "";
-        return '<article class="member-order"><div><strong>' + escapeHtml(order.request_number) + '</strong><small>自選代購 · ' + escapeHtml(date) + ' · ' + escapeHtml(order.service_direction === 'tw_to_jp' && order.status === 'purchased' ? '台灣已下單' : personalStatuses[order.status] || order.status) + '</small>' + detail + '</div><div>' + escapeHtml(total) + '</div></article>';
+        return '<article class="member-order" role="button" tabindex="0" aria-haspopup="dialog" aria-label="查看代購訂單 ' + escapeHtml(order.request_number) + ' 明細" data-member-order-id="' + escapeHtml(order.id) + '" data-member-order-kind="personal"><div><strong>' + escapeHtml(order.request_number) + '</strong><small>' + escapeHtml(date) + ' · ' + escapeHtml(order.service_direction === 'tw_to_jp' && order.status === 'purchased' ? '台灣已下單' : personalStatuses[order.status] || order.status) + '</small></div><div>' + escapeHtml(total) + '<span class="member-order-details-link">查看明細</span></div></article>';
       }
       const total = formatMoney(order.total_amount, order.currency || "TWD");
       const tracking = order.status === "shipped" && order.tracking_number
