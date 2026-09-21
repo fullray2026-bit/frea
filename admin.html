@@ -108,6 +108,17 @@
             <h2>近期訂單</h2>
             <div id="recentOrders"></div>
           </div>
+          <div class="admin-card" style="margin-top:20px">
+            <h2>訂單紀錄篩選</h2>
+            <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin-bottom:20px">
+              <label>訂單起日<input id="overviewStart" type="date"></label>
+              <label>訂單迄日<input id="overviewEnd" type="date"></label>
+              <button id="overviewPreviewButton" type="button">預覽</button>
+              <button id="overviewClear" type="button">清除篩選</button>
+              <button id="overviewDownload" type="button">下載訂單紀錄 CSV</button>
+            </div>
+            <div id="overviewPreview" aria-live="polite"></div>
+          </div>
         </section>
 
         <section class="admin-view" data-admin-panel="master" hidden>
