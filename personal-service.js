@@ -12,9 +12,9 @@
  function route(){
   const japan=direction.value==='tw_to_jp';
   by('personalTitle').firstChild.textContent=t(japan?'台灣商品自選代購 ':'日本商品自選代購 ',japan?'台湾商品の購入代行 ':'日本商品の購入代行 ');
-  by('personalIntro').textContent=t(japan?'把喜歡的台灣商品帶到日本。提供商品名稱、連結與數量，我們確認供貨與配送可行性後，以日圓提供報價。您確認購買並完成福岡銀行 ATM 日圓匯款後，我們再於台灣安排採購。':'提供想購買的日本商品名稱、連結與數量，我們確認供貨與費用後，以新台幣提供報價。您確認購買並完成匯款後，我們再於日本安排採購，寄送至台灣。',japan?'台湾で見つけたお気に入りを、日本の暮らしへ。\n商品名・URL・数量をお知らせください。在庫と配送の可否を確認し、日本円でお見積もりします。\nご承諾と福岡銀行へのATM振込を確認後、台湾で購入を手配します。':'ご希望の日本商品の商品名・URL・数量をお知らせください。在庫と費用を確認し、台湾ドルでお見積もりします。ご承諾・ご入金後に日本で購入し、台湾へ発送します。');
-  by('personalIntro').style.whiteSpace=ja&&japan?'pre-line':'';
-  by('personalIntro').style.maxWidth=ja&&japan?'none':'';
+  by('personalIntro').textContent=t(japan?'把喜歡的台灣商品帶到日本。\n提供商品名稱、連結與數量，我們確認供貨與配送可行性後，以日圓提供報價。\n您確認購買並完成福岡銀行 ATM 日圓匯款後，我們再於台灣安排採購。':'提供想購買的日本商品名稱、連結與數量，我們確認供貨與費用後，以新台幣提供報價。您確認購買並完成匯款後，我們再於日本安排採購，寄送至台灣。',japan?'台湾で見つけたお気に入りを、日本の暮らしへ。\n商品名・URL・数量をお知らせください。在庫と配送の可否を確認し、日本円でお見積もりします。\nご承諾と福岡銀行へのATM振込を確認後、台湾で購入を手配します。':'ご希望の日本商品の商品名・URL・数量をお知らせください。在庫と費用を確認し、台湾ドルでお見積もりします。ご承諾・ご入金後に日本で購入し、台湾へ発送します。');
+  by('personalIntro').style.whiteSpace=japan?'pre-line':'';
+  by('personalIntro').style.maxWidth=japan?'none':'';
   by('personalRegionLabel').textContent=t(japan?'都道府縣':'縣市',japan?'都道府県':'台湾の県・市');
   by('personalCityLabel').textContent=t(japan?'市區町村':'鄉鎮市區',japan?'市区町村':'区・郷・鎮');
   field('postal_code').pattern=japan?'[0-9]{3}-?[0-9]{4}':'[0-9]{3}([0-9]{2,3})?';
