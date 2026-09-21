@@ -810,20 +810,46 @@
     }
   }
 
-  function renderRecentOrders() {
-    const target = byId("recentOrders");
-    if (!orders.length) {
-      target.innerHTML = '<div class="admin-empty">目前尚無訂單。</div>';
-      return;
-    }
-    target.innerHTML = orders.slice(0, 5).map(order => {
-      const member = profiles.find(profile => profile.id === order.user_id);
-      return '<div class="admin-recent"><div><strong>' + escapeHtml(order.order_number) +
-        '</strong><small>' + escapeHtml(member?.full_name || order.recipient_name || "未填姓名") +
-        ' · ' + escapeHtml(statusLabels[order.status] || order.status) + '</small></div><strong>' +
-        escapeHtml(formatMoney(order.total_amount, order.currency)) + '</strong></div>';
-    }).join("");
+  function overviewRecords() {
+    return [...orders.map(o=>({...o,kind:"一般訂單",number:o.order_number,amount:o.total_amount,statusText:statusLabels[o.status]||o.status})),
+      ...personalRequests.map(o=>({...o,kind:"自選代購",number:o.request_number,amount:o.quote_amount,currency:o.quote_currency||(o.service_direction==="tw_to_jp"?"JPY":"TWD"),statusText:o.status==="purchased"&&o.service_direction==="tw_to_jp"?"台灣已下單":personalStatusLabels[o.status]||o.status}))]
+      .map(o=>({...o,name:profiles.find(p=>p.id===o.user_id)?.full_name||o.customer_name||o.recipient_name||"未填姓名"}))
+      .sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
   }
+  function overviewDay(value) {
+    const parts=new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Taipei",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date(value));
+    const get=t=>parts.find(p=>p.type===t).value;
+    return get("year")+"-"+get("month")+"-"+get("day");
+  }
+  function overviewFiltered() {
+    const start=byId("overviewStart").value,end=byId("overviewEnd").value;
+    if(start&&end&&start>end)return null;
+    return overviewRecords().filter(o=>{const day=overviewDay(o.created_at);return (!start||day>=start)&&(!end||day<=end);});
+  }
+  function renderOverviewPreview() {
+    const rows=overviewFiltered(),target=byId("overviewPreview");
+    byId("overviewDownload").disabled=!rows?.length;
+    if(!rows){target.innerHTML='<p role="alert">起日不可晚於迄日。</p>';return;}
+    target.innerHTML='<p>共 '+rows.length+' 筆（依台灣時間，包含起訖日）</p><div style="overflow-x:auto"><table style="width:100%;text-align:left"><thead><tr><th>日期</th><th>類型</th><th>訂單編號</th><th>姓名</th><th>狀態</th><th>金額</th></tr></thead><tbody>'+
+      rows.map(o=>'<tr><td>'+escapeHtml(overviewDay(o.created_at))+'</td><td>'+escapeHtml(o.kind)+'</td><td>'+escapeHtml(o.number)+'</td><td>'+escapeHtml(o.name)+'</td><td>'+escapeHtml(o.statusText)+'</td><td>'+escapeHtml(o.amount==null?"尚未報價":formatMoney(o.amount,o.currency))+'</td></tr>').join("")+'</tbody></table></div>';
+  }
+  function downloadOverview() {
+    const rows=overviewFiltered();if(!rows?.length)return;
+    const cell=v=>{let t=String(v??"");if(/^[=+@\-\t\r\n]/.test(t))t="'"+t;return '"'+t.replaceAll('"','""')+'"';};
+    const data=[["日期（台灣時間）","類型","訂單編號","姓名","狀態","幣別","金額"],...rows.map(o=>[overviewDay(o.created_at),o.kind,o.number,o.name,o.statusText,o.currency,o.amount==null?"尚未報價":o.amount])];
+    const blob=new Blob(["\uFEFF"+data.map(r=>r.map(cell).join(",")).join("\r\n")],{type:"text/csv;charset=utf-8"});
+    const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="訂單紀錄_"+(byId("overviewStart").value||"全部")+"_"+(byId("overviewEnd").value||"全部")+".csv";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+  function renderRecentOrders() {
+    const target = byId("recentOrders"),records=overviewRecords();
+    target.innerHTML=records.length?records.slice(0,5).map(o=>'<div class="admin-recent"><div><strong>'+escapeHtml(o.number)+'</strong><small>'+escapeHtml(o.kind+" · "+o.name+" · "+o.statusText)+'</small></div><strong>'+escapeHtml(o.amount==null?"尚未報價":formatMoney(o.amount,o.currency))+'</strong></div>').join(""):'<div class="admin-empty">目前尚無訂單。</div>';
+    renderOverviewPreview();
+  }
+  byId("overviewStart").addEventListener("change",renderOverviewPreview);
+  byId("overviewEnd").addEventListener("change",renderOverviewPreview);
+  byId("overviewPreviewButton").addEventListener("click",renderOverviewPreview);
+  byId("overviewDownload").addEventListener("click",downloadOverview);
+  byId("overviewClear").addEventListener("click",()=>{byId("overviewStart").value="";byId("overviewEnd").value="";renderOverviewPreview();});
 
   function renderMembers() {
     const term = byId("memberSearch").value.trim().toLowerCase();
