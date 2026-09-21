@@ -127,11 +127,21 @@
     return "目前無法完成操作，請稍後再試。";
   }
 
+  function showOrderDetails(event){
+    const row=event.target.closest("[data-member-order-id]");
+    if(!row||!currentUser)return;
+    if(event.type==="keydown"&&!["Enter"," "].includes(event.key))return;
+    event.preventDefault();
+    window.freaOrderDetails?.open(client,row.dataset.memberOrderId,currentUser.id,row);
+  }
+  byId("orderList").addEventListener("click",showOrderDetails);
+  byId("orderList").addEventListener("keydown",showOrderDetails);
+
   async function renderOrders() {
     const target = byId("orderList");
     const [orderResult, personalResult] = await Promise.all([
       client.from("orders")
-        .select("order_number,status,total_amount,currency,created_at,tracking_number")
+        .select("id,order_number,status,total_amount,currency,created_at,tracking_number")
         .eq("user_id", currentUser.id)
         .order("created_at", { ascending: false }),
       client.from("personal_shopping_requests")
@@ -167,7 +177,7 @@
       const tracking = order.status === "shipped" && order.tracking_number
         ? '<small>出貨單號：' + escapeHtml(order.tracking_number) + '</small>'
         : "";
-      return '<article class="member-order"><div><strong>' + escapeHtml(order.order_number) + '</strong><small>' + escapeHtml(date) + ' · ' + escapeHtml(statuses[order.status] || order.status) + '</small>' + tracking + '</div><div>' + escapeHtml(total) + '</div></article>';
+      return '<article class="member-order" role="button" tabindex="0" aria-haspopup="dialog" aria-label="查看訂單 ' + escapeHtml(order.order_number) + ' 明細" data-member-order-id="' + escapeHtml(order.id) + '"><div><strong>' + escapeHtml(order.order_number) + '</strong><small>' + escapeHtml(date) + ' · ' + escapeHtml(statuses[order.status] || order.status) + '</small>' + tracking + '</div><div>' + escapeHtml(total) + '<span class="member-order-details-link">查看明細</span></div></article>';
     }).join("");
   }
 
@@ -412,7 +422,7 @@
       recoveryMode = true; recoveryReady = true; show("reset", false); return;
     }
     if (recoveryMode) return;
-    if (event === "SIGNED_OUT") show("login", false);
+    if (event === "SIGNED_OUT") { window.freaOrderDetails?.close(); currentUser=null; show("login", false); }
     if (event === "SIGNED_IN" && session && (!currentUser || currentUser.id !== session.user.id)) {
       if (redirectAfterAuth()) return;
       setTimeout(() => loadMember(session.user).catch(async () => { await client.auth.signOut(); show("login", false); }), 0);

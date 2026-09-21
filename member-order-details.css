@@ -1,0 +1,25 @@
+.frea-order-dialog{box-sizing:border-box;width:min(820px,calc(100% - 32px));max-height:88dvh;margin:auto;padding:0;border:1px solid #e5d9cc;border-radius:18px;background:#fffdf9;color:#504336;box-shadow:0 20px 80px #30241a33}
+.frea-order-dialog::backdrop{background:rgba(40,32,26,.42)}
+.frea-order-dialog .frea-order-dialog-head{position:sticky;top:0;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 24px;background:#fffdf9;border-bottom:1px solid #e5d9cc;z-index:1}
+.frea-order-dialog h2{margin:4px 0 0;font-size:26px;font-weight:500}
+.frea-order-dialog small{display:block;color:#918679;font-size:13px}
+.frea-order-dialog .frea-order-dialog-head small{letter-spacing:.15em}
+.frea-order-dialog button{width:44px;height:44px;flex-shrink:0;border:1px solid #e5d9cc;border-radius:50%;background:transparent;color:#504336;font-size:26px;cursor:pointer}
+.frea-order-dialog button:focus-visible{outline:2px solid #9e8062;outline-offset:3px}
+.frea-order-dialog-body{padding:24px;overflow-wrap:anywhere}
+.frea-order-dialog p{margin:8px 0;line-height:1.7}
+.frea-order-table-wrap{overflow-x:auto;margin:24px 0}
+.frea-order-dialog table{border-collapse:collapse;width:100%;font-size:14px}
+.frea-order-dialog caption{text-align:left;font-size:16px;margin-bottom:12px}
+.frea-order-dialog th,.frea-order-dialog td{padding:12px 8px;border-bottom:1px solid #e5d9cc;text-align:right;vertical-align:top}
+.frea-order-dialog th:first-child,.frea-order-dialog td:first-child{text-align:left;width:48%}
+.frea-order-dialog td:not(:first-child){white-space:nowrap}
+.frea-order-dialog th{font-weight:500;color:#918679}
+.frea-order-totals p{display:flex;justify-content:space-between;gap:20px}
+.frea-order-totals p:last-child{border-top:1px solid #e5d9cc;padding-top:12px;font-size:19px}
+.frea-order-recipient{border-top:1px solid #e5d9cc;margin-top:24px;padding-top:16px}
+.frea-order-recipient h3{font-size:16px;margin:0}
+#orderList .member-order[data-member-order-id]{cursor:pointer}
+#orderList .member-order[data-member-order-id]:focus-visible{outline:2px solid #9e8062;outline-offset:3px}
+#orderList .member-order-details-link{display:block;text-align:right;font-size:13px;text-decoration:underline;color:#8f755d;margin-top:8px}
+@media(max-width:600px){.frea-order-dialog{width:calc(100% - 16px);max-height:94dvh;border-radius:12px}.frea-order-dialog .frea-order-dialog-head{padding:14px 16px}.frea-order-dialog-body{padding:16px}.frea-order-dialog th,.frea-order-dialog td{padding:10px 4px;font-size:12px}.frea-order-dialog td:first-child{width:40%}}
