@@ -1,6 +1,6 @@
-.collection-products .brand-product-thumb[data-gallery-ready]{position:relative;cursor:zoom-in}
-.collection-products .brand-product-thumb[data-gallery-ready]:focus-visible{outline:2px solid #9e8062;outline-offset:3px}
-.collection-products .lg-count{position:absolute;right:4px;bottom:4px;background:#fffdf9e8;color:#4b3d32;border-radius:9px;padding:2px 6px;font-size:11px;line-height:1.4;pointer-events:none}
+.brand-product-list .brand-product-thumb[data-gallery-ready]{position:relative;cursor:zoom-in}
+.brand-product-list .brand-product-thumb[data-gallery-ready]:focus-visible{outline:2px solid #9e8062;outline-offset:3px}
+.brand-product-list .lg-count{position:absolute;right:4px;bottom:4px;background:#fffdf9e8;color:#4b3d32;border-radius:9px;padding:2px 6px;font-size:11px;line-height:1.4;pointer-events:none}
 .lifestyle-gallery-dialog{box-sizing:border-box;width:min(1000px,calc(100% - 24px));height:min(900px,92dvh);max-height:92dvh;padding:16px;margin:auto;border:1px solid #dfd4c8;border-radius:16px;background:#fffdf9;color:#4b3d32;overflow:hidden;font:inherit}
 .lifestyle-gallery-dialog::backdrop{background:#30271fc4}
 .lifestyle-gallery-dialog[open]{display:flex;flex-direction:column;gap:12px}

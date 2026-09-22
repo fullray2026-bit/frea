@@ -6,7 +6,7 @@
   if (!sdk || !config) return;
 
   const client = sdk.createClient(config.url, config.publishableKey);
-  const lifestyleGallery = location.pathname.endsWith("/category-lifestyle.html");
+  const lifestyleGallery = ["category-lifestyle.html","brand-fukuoka-coffee.html","category-kitchen.html","brand-kinto.html"].includes(location.pathname.split("/").pop());
   const cartKey = "frea_demo_cart_v1";
   const pageBrand = {
     "brand-kayanoya.html": "kayanoya",

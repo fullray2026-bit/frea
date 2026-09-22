@@ -1,6 +1,6 @@
 (function(){
  "use strict";
- if(!location.pathname.endsWith("/category-lifestyle.html"))return;
+ if(!["category-lifestyle.html","brand-fukuoka-coffee.html","category-kitchen.html","brand-kinto.html"].includes(location.pathname.split("/").pop()))return;
  let dialog,photo,counter,previous,next,opener,images=[],index=0,overflow,scrollY,start;
  const safe=value=>{try{const u=new URL(value,location.href);return /^(https?:)$/.test(u.protocol)?u.href:"";}catch{return "";}};
  function urls(row){return [...new Set([row.querySelector(".brand-product-thumb img")?.src,...JSON.parse(row.dataset.galleryImages||"[]")].map(safe).filter(Boolean))].slice(0,3);}
@@ -21,7 +21,7 @@
  function move(step){index=(index+step+images.length)%images.length;photo.src=images[index];photo.alt=dialog.querySelector(".lg-title").textContent+"，第 "+(index+1)+" 張";counter.textContent=(index+1)+"／"+images.length;previous.hidden=next.hidden=images.length<2;dialog.querySelector(".lg-error").hidden=true;}
  function open(row,button){images=urls(row);if(!images.length)return;setup();opener=button;index=0;scrollY=window.scrollY;overflow=document.body.style.overflow;document.body.style.overflow="hidden";dialog.querySelector(".lg-title").textContent=row.dataset.name||"商品照片";dialog.showModal();move(0);}
  function enhance(){
-  document.querySelectorAll(".collection-products .brand-product-row").forEach(row=>{
+  document.querySelectorAll(".brand-product-list .brand-product-row").forEach(row=>{
    const thumb=row.querySelector(".brand-product-thumb");if(!thumb)return;
    let badge=thumb.querySelector(".lg-count");
    if(!thumb.dataset.galleryReady){
@@ -32,7 +32,7 @@
    const count=urls(row).length;badge.textContent=count>1?"共 "+count+" 張":"放大";thumb.setAttribute("aria-label","放大 "+(row.dataset.name||"商品")+" 照片，共 "+count+" 張");
   });
  }
- const root=document.querySelector(".collection-products");if(!root)return;
+ const root=document.querySelector("main");if(!root)return;
  new MutationObserver(records=>{if(records.some(r=>r.type==="attributes"||[...r.addedNodes].some(n=>n.nodeType===1&&n.matches?.(".brand-product-row,.brand-product-list"))))enhance();}).observe(root,{childList:true,subtree:true,attributes:true,attributeFilter:["src","data-gallery-images"]});
  enhance();
 })();

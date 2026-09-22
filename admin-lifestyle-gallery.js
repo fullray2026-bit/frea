@@ -1,9 +1,10 @@
 (function(){
  "use strict";
+ const supported=brand=>["lifestyle-picks","fukuoka-coffee","akomeya","kayanoya","kinto"].includes(brand);
  const by=id=>document.getElementById(id);let slots=[null,null],box;
- function visible(){box.hidden=by("productBrand").value!=="lifestyle-picks";}
+ function visible(){box.hidden=!supported(by("productBrand").value);}
  function draw(){
-  box.replaceChildren();const title=document.createElement("p");title.textContent="生活雜貨附圖（主圖沿用上方照片，最多三張）";box.append(title);
+  box.replaceChildren();const title=document.createElement("p");title.textContent="商品附圖（主圖沿用上方照片，最多三張）";box.append(title);
   const grid=document.createElement("div");grid.style.cssText="display:flex;gap:16px;flex-wrap:wrap";box.append(grid);
   slots.forEach((slot,i)=>{
    const card=document.createElement("div");card.style.cssText="flex:1;min-width:180px";grid.append(card);
@@ -24,7 +25,7 @@
  window.freaLifestyleGalleryEditor={
   load(product){setup();slots.forEach(s=>{if(s?.file)URL.revokeObjectURL(s.url);});slots=[null,null];(product?.gallery_images||[]).slice(0,2).forEach((url,i)=>{slots[i]={url};});draw();visible();},
   async upload(brand,slug,upload){
-   if(brand!=="lifestyle-picks")return undefined;
+   if(!supported(brand))return undefined;
    box.inert=true;
    try{const urls=[];for(let i=0;i<slots.length;i++){const s=slots[i];if(!s)continue;if(s.file){const result=await upload(s.file,brand,slug+"-gallery-"+i+"-"+crypto.randomUUID());URL.revokeObjectURL(s.url);slots[i]={url:result.url};}urls.push(slots[i].url);}return urls;}
    finally{box.inert=false;draw();}
