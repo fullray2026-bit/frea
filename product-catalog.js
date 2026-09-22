@@ -6,6 +6,7 @@
   if (!sdk || !config) return;
 
   const client = sdk.createClient(config.url, config.publishableKey);
+  const lifestyleGallery = location.pathname.endsWith("/category-lifestyle.html");
   const cartKey = "frea_demo_cart_v1";
   const pageBrand = {
     "brand-kayanoya.html": "kayanoya",
@@ -37,7 +38,7 @@
     const variants = (product.product_variants || []).sort((a, b) => a.sort_order - b.sort_order);
     const stock = Math.max(0, Number(product.stock_quantity) || 0);
     const disabled = stock === 0;
-    return '<article class="brand-product-row" data-cart-product data-product-id="' + escapeHtml(product.slug) +
+    return '<article ' + (lifestyleGallery ? 'data-gallery-images="' + escapeHtml(JSON.stringify(product.gallery_images || [])) + '" ' : '') + 'class="brand-product-row" data-cart-product data-product-id="' + escapeHtml(product.slug) +
       '" data-name="' + escapeHtml(product.name) + '" data-spec="' + escapeHtml(product.specification) +
       '" data-price="' + escapeHtml(product.price) + '" data-currency="' + escapeHtml(product.currency) +
       '" data-image="' + escapeHtml(product.image_url) + '" data-product-stock="' + stock + '" data-stock="' + stock + '">' +
@@ -131,7 +132,7 @@
 
   async function loadCatalog() {
     const [{ data, error }, { data: variantData, error: variantError }] = await Promise.all([
-      client.from("products").select("slug,brand_code,name,description,specification,usage_flavor,price,currency,stock_quantity,image_url,sort_order,is_active").eq("is_active", true).order("brand_code").order("sort_order").order("created_at"),
+      client.from("products").select("slug,brand_code,name,description,specification,usage_flavor,price,currency,stock_quantity,image_url,sort_order,is_active" + (lifestyleGallery ? ",gallery_images" : "")).eq("is_active", true).order("brand_code").order("sort_order").order("created_at"),
       client.rpc("get_public_product_variants")
     ]);
     if (error || variantError || !data) {

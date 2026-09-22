@@ -544,6 +544,7 @@
     byId("productSort").value = product?.sort_order ?? 0;
     byId("productActive").value = String(product?.is_active ?? false);
     renderProductVariants(product?.product_variants || []);
+    window.freaLifestyleGalleryEditor?.load(product);
     byId("productFormTitle").textContent = product ? "編輯商品" : "新增商品";
     setProductPreview(product?.image_url || "");
     showMessage("productFormMessage", "");
@@ -577,6 +578,7 @@
 
   async function saveProduct(event) {
     event.preventDefault();
+    if(byId("productSave").disabled)return;
     const id = byId("productId").value;
     const brand = byId("productBrand").value;
     const name = byId("productName").value.trim();
@@ -609,6 +611,8 @@
         cost_scenario_id: byId("productCostScenarioId").value || null,
         updated_at: new Date().toISOString()
       };
+      const gallery = await window.freaLifestyleGalleryEditor?.upload(brand,slug,uploadProductImage);
+      if(gallery !== undefined) payload.gallery_images=gallery;
       if (!id) payload.slug = slug;
       const query = id ? client.from("products").update(payload).eq("id", id).select("id").single() : client.from("products").insert(payload).select("id").single();
       const { data: savedProduct, error } = await query;

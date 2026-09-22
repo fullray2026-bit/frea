@@ -1,0 +1,16 @@
+.collection-products .brand-product-thumb[data-gallery-ready]{position:relative;cursor:zoom-in}
+.collection-products .brand-product-thumb[data-gallery-ready]:focus-visible{outline:2px solid #9e8062;outline-offset:3px}
+.collection-products .lg-count{position:absolute;right:4px;bottom:4px;background:#fffdf9e8;color:#4b3d32;border-radius:9px;padding:2px 6px;font-size:11px;line-height:1.4;pointer-events:none}
+.lifestyle-gallery-dialog{box-sizing:border-box;width:min(1000px,calc(100% - 24px));height:min(900px,92dvh);max-height:92dvh;padding:16px;margin:auto;border:1px solid #dfd4c8;border-radius:16px;background:#fffdf9;color:#4b3d32;overflow:hidden;font:inherit}
+.lifestyle-gallery-dialog::backdrop{background:#30271fc4}
+.lifestyle-gallery-dialog[open]{display:flex;flex-direction:column;gap:12px}
+.lifestyle-gallery-dialog .lg-head,.lifestyle-gallery-dialog .lg-nav{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-shrink:0}
+.lifestyle-gallery-dialog .lg-title{overflow-wrap:anywhere}
+.lifestyle-gallery-dialog button{font:inherit;font-size:28px;line-height:1;width:44px;height:44px;flex-shrink:0;border:1px solid #dfd4c8;border-radius:50%;color:#4b3d32;background:#fffdf9;cursor:pointer}
+.lifestyle-gallery-dialog button[hidden]{display:none}
+.lifestyle-gallery-dialog .lg-stage{flex:1;min-height:0;position:relative;touch-action:pan-y pinch-zoom}
+.lifestyle-gallery-dialog img{width:100%;height:100%;object-fit:contain;display:block}
+.lifestyle-gallery-dialog .lg-nav{justify-content:center}
+.lifestyle-gallery-dialog .lg-error{position:absolute;inset:40% 10%;text-align:center;background:#fffdf9}
+@media(max-width:600px){.lifestyle-gallery-dialog{width:calc(100% - 16px);height:92dvh;padding:12px}}
+
