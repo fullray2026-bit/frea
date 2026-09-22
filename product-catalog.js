@@ -47,7 +47,7 @@
       '<div class="brand-product-spec">' + escapeHtml(product.specification) + (variants.length ? '<label class="product-variant-label">顏色<select data-product-variant required><option value="">請選擇</option>' + variants.map(item => '<option value="' + escapeHtml(item.id) + '" data-label="' + escapeHtml(item.option_value) + '" data-image="' + escapeHtml(item.image_url || product.image_url) + '" data-available="' + item.available + '">' + escapeHtml(item.option_value) + (item.available ? '' : '（售罄）') + '</option>').join("") + '</select></label>' : '') + '</div>' +
       '<p class="brand-product-use">' + escapeHtml(product.usage_flavor) + '</p>' +
       '<div class="brand-product-price"><strong>' + escapeHtml(formatPrice(product.price, product.currency)) + '</strong><span data-stock-label>' +
-      (disabled ? "暫時售罄" : "庫存 " + stock) + '</span></div>' +
+      (disabled ? "暫時售罄" : lifestyleGallery ? "" : "庫存 " + stock) + '</span></div>' +
       '<div class="brand-product-quantity"><div class="brand-quantity" aria-label="' + escapeHtml(product.name) + '商品數量">' +
       '<button type="button" data-qty-action="decrease" aria-label="減少數量"' + (disabled ? " disabled" : "") + '>−</button>' +
       '<input data-quantity type="number" min="1" max="' + Math.max(1, stock) + '" value="1" inputmode="numeric" aria-label="數量"' +
@@ -89,7 +89,7 @@
           input.max = Math.max(1, selectedStock);
           input.value = 1;
           const stockLabel = row.querySelector("[data-stock-label]");
-          if (stockLabel) stockLabel.textContent = selectedStock > 0 ? "庫存 " + selectedStock : "暫時售罄";
+          if (stockLabel) stockLabel.textContent = selectedStock > 0 ? (lifestyleGallery ? "" : "庫存 " + selectedStock) : "暫時售罄";
           const image = row.querySelector(".brand-product-thumb img");
           if (image && option?.dataset.image) image.src = option.dataset.image;
           addButton.disabled = !hasSelection || selectedStock === 0;
