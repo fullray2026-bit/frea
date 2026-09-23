@@ -939,7 +939,7 @@
     const status = byId("orderStatusFilter").value;
     const filtered = orders.filter(order => {
       const member = profiles.find(profile => profile.id === order.user_id);
-      const searchable = [order.order_number, order.recipient_name, order.recipient_phone, member?.email].join(" ").toLowerCase();
+      const searchable = [order.order_number, order.recipient_name, order.recipient_phone, member?.full_name, member?.email].join(" ").toLowerCase();
       return (!term || searchable.includes(term)) && (!status || order.status === status);
     });
     byId("orderCount").textContent = "共 " + filtered.length + " 筆";
@@ -958,15 +958,17 @@
       return '<article class="admin-order" data-order-id="' + escapeHtml(order.id) + '">' +
         '<div class="admin-order-head"><div><h3>' + escapeHtml(order.order_number) +
         '</h3><p class="admin-order-meta">' + escapeHtml(formatDate(order.created_at)) + " · " +
-        escapeHtml(statusLabels[order.status] || order.status) + '</p></div><div><strong>' +
-        escapeHtml(order.recipient_name || member?.full_name || "未填姓名") + '</strong><p class="admin-order-meta">' +
+        escapeHtml(statusLabels[order.status] || order.status) + '</p></div><div><small class="admin-order-meta">所屬會員</small><br><strong>' +
+        escapeHtml(member?.full_name || "未填姓名") + '</strong><p class="admin-order-meta">' +
         escapeHtml(member?.email || "") + '</p></div><strong class="admin-order-total">' +
         escapeHtml(formatMoney(order.total_amount, order.currency)) + '</strong></div>' +
         '<div class="admin-order-grid"><div><h4>商品明細</h4>' + itemHtml +
-        '</div><div><h4>收件與付款資料</h4><p>' + escapeHtml(order.recipient_name || "—") + "／" +
-        escapeHtml(order.recipient_phone || "—") + '</p><p>' +
-        escapeHtml([order.postal_code, order.shipping_address].filter(Boolean).join(" ") || "未填地址") +
-        '</p><p>匯款證明：' + escapeHtml(order.payment_proof_name || "未上傳") + "</p>" +
+        '</div><div><h4>收件與付款資料</h4><div class="order-recipient-editor">' +
+        '<label>本次收件人<input data-recipient-name maxlength="100" required value="' + escapeHtml(order.recipient_name || "") + '"></label>' +
+        '<label>聯絡電話<input data-recipient-phone type="tel" maxlength="40" required value="' + escapeHtml(order.recipient_phone || "") + '"></label>' +
+        '<label>郵遞區號<input data-recipient-postal maxlength="20" value="' + escapeHtml(order.postal_code || "") + '"></label>' +
+        '<label class="order-recipient-address">完整收件地址<textarea data-recipient-address rows="2" maxlength="500" required>' + escapeHtml(order.shipping_address || "") + '</textarea></label></div>' +
+        '<p>匯款證明：' + escapeHtml(order.payment_proof_name || "未上傳") + "</p>" +
         (order.payment_proof_path ? '<button class="admin-save" type="button" data-view-payment-proof>查看匯款證明</button>' : "") + "</div></div>" +
         '<div class="admin-order-controls"><label>訂單狀態<select data-order-status>' +
         statusOptions(order.status) + '</select></label><label data-tracking-wrap' + (order.status === "shipped" ? "" : " hidden") +
@@ -1018,6 +1020,7 @@
   async function saveOrder(card) {
     const id = card.dataset.orderId;
     const button = card.querySelector("[data-save-order]");
+    if (button.disabled) return;
     const status = card.querySelector("[data-order-status]").value;
     const trackingNumber = card.querySelector("[data-tracking-number]").value.trim();
     const note = card.querySelector("[data-order-note]").value.trim();
@@ -1026,23 +1029,36 @@
       card.querySelector("[data-tracking-number]").focus();
       return;
     }
+    const recipient = {
+      recipient_name: card.querySelector("[data-recipient-name]").value.trim(),
+      recipient_phone: card.querySelector("[data-recipient-phone]").value.trim(),
+      postal_code: card.querySelector("[data-recipient-postal]").value.trim(),
+      shipping_address: card.querySelector("[data-recipient-address]").value.trim()
+    };
+    for (const input of card.querySelectorAll(".order-recipient-editor input,.order-recipient-editor textarea")) {
+      if (!input.value.trim() && input.required) { input.focus();showMessage("adminGlobalMessage","請填寫收件人姓名、電話及完整地址。","error");return; }
+      if (!input.reportValidity()) return;
+    }
     button.disabled = true;
     button.textContent = "儲存中…";
+    try {
     const { data, error } = await client.from("orders")
-      .update({ status, tracking_number: trackingNumber, admin_note: note })
+      .update({ status, tracking_number: trackingNumber, admin_note: note, ...recipient })
       .eq("id", id)
-      .select("id,status,tracking_number,admin_note,updated_at")
+      .select("id,status,tracking_number,admin_note,updated_at,recipient_name,recipient_phone,postal_code,shipping_address")
       .single();
     button.disabled = false;
     button.textContent = error ? "儲存失敗" : "已儲存";
-    if (error) {
-      showMessage("adminGlobalMessage", error.message || "訂單更新失敗。", "error");
+    if (error || !data) {
+      showMessage("adminGlobalMessage", error?.message || "訂單更新失敗。", "error");
       return;
     }
     const order = orders.find(item => String(item.id) === String(id));
     if (order) Object.assign(order, data);
     showMessage("adminGlobalMessage", "訂單 " + (order?.order_number || id) + " 已更新。", "success");
     renderAll();
+    } catch (error) {showMessage("adminGlobalMessage",error.message || "訂單更新失敗，請稍後再試。","error");}
+    finally {button.disabled=false;button.textContent="儲存變更";}
   }
 
   function switchView(view) {
