@@ -48,13 +48,19 @@
 <style id="lifestyle-mobile-purchase-row">
 .lifestyle-purchase-row{display:contents}
 @media(max-width:760px){
-.collection-products .lifestyle-purchase-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;grid-column:1/-1!important;grid-row:4;min-width:0}
-.collection-products .lifestyle-purchase-row .brand-product-price{flex:0 0 auto;white-space:nowrap}
-.collection-products .lifestyle-purchase-row .brand-product-quantity{flex:0 0 110px}
+.collection-products .lifestyle-purchase-row{display:grid;grid-template-columns:110px 110px minmax(0,1fr);align-items:center;gap:8px;grid-column:1/-1!important;grid-row:4;min-width:0}
+.collection-products .lifestyle-purchase-row .brand-product-price{grid-column:1!important;grid-row:1;white-space:nowrap;min-width:0}
+.collection-products .lifestyle-purchase-row .brand-product-quantity{grid-column:2!important;grid-row:1;min-width:0}
 .collection-products .lifestyle-purchase-row .brand-quantity{grid-template-columns:36px 36px 36px;width:110px}
 .collection-products .lifestyle-purchase-row .brand-quantity input{width:36px}
-.collection-products .lifestyle-purchase-row .brand-product-action{flex:1 0 8em;min-width:0}
-.collection-products .lifestyle-purchase-row .brand-cart-btn{white-space:nowrap;margin-top:0}
+.collection-products .lifestyle-purchase-row .brand-product-action{grid-column:3!important;grid-row:1;min-width:0}
+.collection-products .lifestyle-purchase-row .brand-cart-btn{white-space:nowrap;margin-top:0;height:48px;min-height:48px;box-sizing:border-box}
+}
+@media(max-width:379px){
+.collection-products .lifestyle-purchase-row{grid-template-columns:110px minmax(0,1fr)}
+.collection-products .lifestyle-purchase-row .brand-product-price{grid-column:1/-1!important;grid-row:1}
+.collection-products .lifestyle-purchase-row .brand-product-quantity{grid-column:1!important;grid-row:2}
+.collection-products .lifestyle-purchase-row .brand-product-action{grid-column:2!important;grid-row:2}
 }
 </style></head><body><header class="header"><div class="container header-inner"><a class="wordmark serif" href="index.html">fréa</a><div></div><div class="actions"><button class="icon" title="搜尋" aria-label="搜尋"><svg viewBox="0 0 32 32"><circle cx="14" cy="14" r="9.5"></circle><path d="M21.2 21.2 28 28"></path></svg></button><a class="icon" title="會員登入" aria-label="會員登入" href="register.html"><svg viewBox="0 0 32 32"><path d="M18 5h9v22h-9"></path><path d="M4 16h16"></path><path d="m14 10 6 6-6 6"></path></svg></a><a class="icon" title="購物車" aria-label="購物車" href="cart.html"><svg viewBox="0 0 36 32"><path d="M3 4h4l3.2 17h18.2l3.6-12H9"></path><circle cx="14" cy="27" r="1.8"></circle><circle cx="27" cy="27" r="1.8"></circle></svg></a></div></div></header><main class="collection-page"><div class="container"><a class="collection-back" href="index.html#brands">← Featured Brands</a><section class="collection-intro"><div><div class="collection-name">生活雜貨精選</div><div class="collection-origin">Lifestyle Picks · Japan</div></div><section class="collection-story lifestyle-details" id="lifestyle-story"><div class="collection-kicker">Collection Story</div><p>生活不只由一種品牌構成。生活雜貨精選收錄藥妝、零食、小家電與日常用品，讓不同用途的物件，都能以清楚而一致的方式被看見。</p><p>fréa 將依實用性、品質、來源與使用情境逐一挑選；不追求品項繁多，而是在需要時，提供值得帶進生活的選擇。</p></section></section><div class="lifestyle-summary"><figure class="collection-hero"><img src="assets/featured_lifestyle.png" alt="生活雜貨精選"></figure><div><p class="collection-lead">從日常需要出發，挑選安靜、實用，也值得長久相處的生活物件。</p><h1>跨越品牌與品類，回到生活真正需要的選擇。</h1><a class="lifestyle-story-link" href="#lifestyle-story">閱讀選品介紹</a></div></div><section class="collection-products"><div class="collection-kicker">Selected Items</div><h2>精選商品</h2><div class="collection-empty">精選商品將陸續上架。</div></section></div></main><footer class="footer"><div class="container"><div class="footer-grid"><div class="footer-brand"><img src="assets/logo_round.png" alt="fréa"><p>讓生活，回到它該有的溫度。</p><p>FUKUOKA, JAPAN</p></div><div><h4>關於 fréa</h4><a href="about.html">品牌故事</a><a href="contact.html">聯絡我們</a><a href="intellectual-property.html">品牌與智慧財產權聲明</a></div><div><h4>購物指南</h4><a href="shopping-guide.html">購物須知</a><a href="returns.html">退換貨政策</a><a href="terms.html">會員條款</a><a href="privacy.html">隱私權政策</a></div></div><div class="copyright">© 2026 fréa. All rights reserved.</div></div></footer><div class="toast"></div><script src="script.js?v=stock-display-20260922"></script><script src="lifestyle-gallery.js?v=all-collections-20260922"></script>
 <script>
