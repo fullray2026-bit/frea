@@ -20,3 +20,5 @@
 .about-page .story-everyday-image{width:min(100%,420px);height:auto;justify-self:center;object-fit:contain}
 
 .about-page .story-origin .story-two-col{display:block}.about-page .story-origin .story-copy{max-width:900px;margin:0 auto;text-align:center}
+
+.about-page .story-origin .story-copy{max-width:1200px}.about-page .story-origin-lines p{line-height:2;margin:0}.origin-desktop-break{display:block}@media(max-width:760px){.origin-desktop-break{display:none}.about-page .story-origin-lines{max-width:36em;margin:0 auto;text-align:left}.about-page .story-origin-lines p{line-height:1.9;margin-bottom:14px}.about-page .story-origin-lines p:first-child,.about-page .story-origin-lines p:last-child{text-align:center}}
