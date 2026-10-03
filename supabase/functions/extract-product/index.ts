@@ -1,3 +1,4 @@
+import { translateProduct } from './translate.mjs';
 import { sourceURL, parseProduct } from './parser.mjs';
 const origins=new Set(['https://www.thefrea.com','https://thefrea.com','https://fullray2026-bit.github.io']);
 Deno.serve(async req=>{
@@ -27,6 +28,7 @@ Deno.serve(async req=>{
     while(true){const {value,done}=await reader.read();if(done)break;size+=value.length;if(size>3_000_000){await reader.cancel();throw new Error('來源網頁過大，請手動填寫。');}chunks.push(value);}
     const bytes=new Uint8Array(size);let offset=0;for(const c of chunks){bytes.set(c,offset);offset+=c.length;}
     const charset=response.headers.get('content-type')?.match(/charset=([^;\s]+)/i)?.[1]||'utf-8';
-    return out(parseProduct(new TextDecoder(charset).decode(bytes),url.href));
+    const result=parseProduct(new TextDecoder(charset).decode(bytes),url.href);
+    return out(await translateProduct(result,Deno.env.get('OPENAI_API_KEY'),Deno.env.get('OPENAI_TRANSLATION_MODEL')||'gpt-4o-mini'));
   }catch(error){return out({error:error instanceof Error && !['TimeoutError','AbortError'].includes(error.name)?error.message:'擷取逾時，請稍後再試或手動填寫。'},400);}
 });

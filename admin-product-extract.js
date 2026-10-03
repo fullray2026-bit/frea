@@ -1,10 +1,11 @@
 (() => {
   let client, generation=0;
   const el=id=>document.getElementById(id);
-  const fields={name:['masterName','商品名稱'],brand_name:['masterBrandName','品牌名稱'],specification:['masterSpecification','規格'],description:['masterDescription','簡短介紹'],model:['masterModel','型號'],barcode:['masterBarcode','JAN／條碼'],reference_price_jpy:['masterReferencePrice','參考售價（JPY）'],weight_g:['masterWeight','商品重量（g）']};
+  const fields={name:['masterName','商品名稱'],brand_name:['masterBrandName','品牌名稱'],specification:['masterSpecification','規格'],usage_flavor:['masterUsage','用途／風味（建議）'],description:['masterDescription','簡短介紹'],model:['masterModel','型號'],barcode:['masterBarcode','JAN／條碼'],reference_price_jpy:['masterReferencePrice','參考售價（JPY）'],weight_g:['masterWeight','商品重量（g）']};
   function reset(){generation++;el('masterExtractResult').replaceChildren();el('masterExtractMessage').textContent='';el('masterExtract').disabled=false;}
   function preview(data){
     const box=el('masterExtractResult');box.replaceChildren();const heading=document.createElement('p');heading.textContent='勾選要帶入的資料。已有內容的欄位預設不勾選；勾選後會取代原內容。';box.append(heading);
+    if(data.original_fields){const details=document.createElement('details'),summary=document.createElement('summary'),original=document.createElement('pre');summary.textContent='查看來源原文';original.textContent=Object.entries(data.original_fields).filter(([k])=>fields[k]).map(([k,v])=>fields[k][1]+'：'+v).join('\n\n');original.style.whiteSpace='pre-wrap';original.style.overflowWrap='anywhere';details.append(summary,original);box.append(details);}
     const choices=[];
     for(const [key,[id,title]] of Object.entries(fields)){
       if(data.fields?.[key]===undefined)continue;
@@ -24,8 +25,8 @@
     el('masterSourceUrl').addEventListener('input',reset);el('masterCancel').addEventListener('click',reset);
     el('masterExtract').addEventListener('click',async()=>{
       reset();const source=el('masterSourceUrl').value.trim();try{if(new URL(source).protocol!=='https:')throw 0;}catch{el('masterExtractMessage').textContent='請先輸入完整的 https:// 商品網址。';return;}
-      const current=generation;el('masterExtract').disabled=true;el('masterExtractMessage').textContent='正在讀取商品資料…';
-      try{const {data,error}=await client.functions.invoke('extract-product',{body:{url:source}});if(current!==generation)return;if(error){let message='擷取失敗，請稍後再試或手動填寫。';try{message=(await error.context.json()).error||message;}catch{}throw new Error(message);}if(data.error)throw new Error(data.error);preview(data);el('masterExtractMessage').textContent='擷取完成，請核對下方資料。';}
+      const current=generation;el('masterExtract').disabled=true;el('masterExtractMessage').textContent='正在擷取、翻譯商品資料及整理用途／風味…';
+      try{const {data,error}=await client.functions.invoke('extract-product',{body:{url:source}});if(current!==generation)return;if(error){let message='擷取失敗，請稍後再試或手動填寫。';try{message=(await error.context.json()).error||message;}catch{}throw new Error(message);}if(data.error)throw new Error(data.error);preview(data);el('masterExtractMessage').textContent=data.translation_status==='translated'?'擷取及繁體中文翻譯完成，請核對下方資料。':data.translation_status==='unavailable'?'已擷取原文，翻譯尚未完成，請查看下方說明。':'擷取完成，請核對下方資料。';}
       catch(error){if(current===generation)el('masterExtractMessage').textContent=error.message;}
       finally{if(current===generation)el('masterExtract').disabled=false;}
     });

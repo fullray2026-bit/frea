@@ -9,6 +9,13 @@ export function sourceURL(value) {
 export function parseProduct(html, url) {
   const $ = load(html), clean = v => typeof v === 'string' ? load(v).text().replace(/\s+/g,' ').trim().slice(0,5000) : '';
   const nodes=[];
+  if(new URL(url).hostname==='tokado-coffee.shop-pro.jp') {
+    const name=clean($('.product__name').first().text());
+    if(!name)throw new Error('找不到這個商品的資料，請確認商品網址。');
+    const description=clean($('.product__explain').first().html()||'');
+    const images=$('.product__image img').map((_,e)=>$(e).attr('src')).get();
+    nodes.push({'@type':'Product',name,description,brand:{name:'豆香洞コーヒー'},image:images,offers:{price:$('.product__price').first().text().replace(/[^0-9]/g,''),priceCurrency:'JPY'}});
+  }
   function walk(x) { if (!x || typeof x !== 'object') return; if (Array.isArray(x)) { x.forEach(walk); return; } nodes.push(x); if(x['@graph'])walk(x['@graph']); if(x.mainEntity)walk(x.mainEntity); }
   $('script[type="application/ld+json"]').each((_,el)=>{try{walk(JSON.parse($(el).text()));}catch{}});
   const products=nodes.filter(x=>[x['@type']].flat().some(t=>t==='Product'));
@@ -18,7 +25,7 @@ export function parseProduct(html, url) {
   const data={}, put=(key,v)=>{const s=clean(v);if(s)data[key]=s;};
   put('name',p?.name||meta('og:title')); put('brand_name',typeof p?.brand==='string'?p.brand:p?.brand?.name);
   if(new URL(url).hostname==='kinto.co.jp')data.brand_name='KINTO';
-  put('description',p?.description||meta('og:description')); put('model',p?.model); put('barcode',p?.gtin13||p?.gtin12||p?.gtin14||p?.gtin8||p?.gtin);
+  put('description',p ? p.description : meta('og:description')); put('model',p?.model); put('barcode',p?.gtin13||p?.gtin12||p?.gtin14||p?.gtin8||p?.gtin);
   const offers=[p?.offers].flat().filter(Boolean), variant=new URL(url).searchParams.get('variant');
   const offer=variant?offers.find(o=>{try{return new URL(o.url,url).searchParams.get('variant')===variant;}catch{return false;}}):offers.length && offers.every(o=>o.price===offers[0].price && o.priceCurrency===offers[0].priceCurrency)?offers[0]:null;
   if(offer?.priceCurrency==='JPY' && offer.price!==undefined && /^\d+(\.\d+)?$/.test(String(offer.price)))data.reference_price_jpy=Number(offer.price);
