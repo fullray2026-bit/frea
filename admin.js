@@ -522,23 +522,32 @@
     else image.removeAttribute("src");
   }
 
-  function renderProductVariants(variants = []) {
-    const target = byId("productVariantRows");
-    target.innerHTML = variants.length ? variants.sort((a,b)=>(a.sort_order||0)-(b.sort_order||0)).map(item =>
-      '<div class="product-variant-row"><input data-variant-label placeholder="顏色名稱" value="'+escapeHtml(item.option_value||"")+'"><input data-variant-sku placeholder="商品編號" value="'+escapeHtml(item.sku||"")+'"><input data-variant-stock type="number" min="0" step="1" placeholder="庫存" value="'+escapeHtml(item.stock_quantity??0)+'"><input data-variant-image type="url" placeholder="該色圖片網址" value="'+escapeHtml(item.image_url||"")+'"><button class="product-variant-remove" type="button">移除</button></div>'
-    ).join("") : '<div class="product-variant-empty">此商品沒有顏色規格。</div>';
-    target.querySelectorAll(".product-variant-remove").forEach(button=>button.addEventListener("click",()=>{button.closest(".product-variant-row").remove();if(!target.querySelector(".product-variant-row"))renderProductVariants([]);}));
-  }
-
-  function addProductVariant() {
+  function appendProductVariant(item = {}) {
     const target=byId("productVariantRows");
-    if(target.querySelector(".product-variant-empty"))target.innerHTML="";
+    target.querySelector(".product-variant-empty")?.remove();
     const row=document.createElement("div");
     row.className="product-variant-row";
-    row.innerHTML='<input data-variant-label placeholder="顏色名稱"><input data-variant-sku placeholder="商品編號"><input data-variant-stock type="number" min="0" step="1" placeholder="庫存" value="0"><input data-variant-image type="url" placeholder="該色圖片網址"><button class="product-variant-remove" type="button">移除</button>';
-    row.querySelector(".product-variant-remove").addEventListener("click",()=>{row.remove();if(!target.querySelector(".product-variant-row"))renderProductVariants([]);});
+    row.dataset.variantId=item.id||crypto.randomUUID();
+    row.dataset.active=String(item.is_active??true);
+    row.innerHTML='<input data-variant-label aria-label="規格/款式名稱" placeholder="規格/款式名稱" value="'+escapeHtml(item.option_value||"")+'"><input data-variant-sku aria-label="款式編號" placeholder="款式編號（留空自動產生）" value="'+escapeHtml(item.sku||"")+'"><input data-variant-stock aria-label="款式庫存" type="number" min="0" step="1" value="'+escapeHtml(item.stock_quantity??0)+'"><div class="variant-photo"><input data-variant-image type="hidden" value="'+escapeHtml(item.image_url||"")+'"><input data-variant-file aria-label="上傳款式照片" type="file" accept="image/jpeg,image/png,image/webp"><small>JPG、PNG、WebP，3MB 以下</small><img data-variant-preview alt="款式照片預覽" '+(item.image_url?'src="'+escapeHtml(item.image_url)+'"':'hidden')+'></div><button class="product-variant-remove" type="button">移除</button>';
+    row.querySelector('[data-variant-file]').addEventListener('change',event=>{
+      if(row.previewUrl)URL.revokeObjectURL(row.previewUrl);
+      const file=event.target.files[0],img=row.querySelector('[data-variant-preview]');
+      row.previewUrl=file?URL.createObjectURL(file):null;
+      const url=row.previewUrl||row.querySelector('[data-variant-image]').value;
+      img.hidden=!url;if(url)img.src=url;else img.removeAttribute('src');
+    });
+    row.querySelector('.product-variant-remove').addEventListener('click',()=>{if(row.previewUrl)URL.revokeObjectURL(row.previewUrl);row.remove();if(!target.querySelector('.product-variant-row'))renderProductVariants([]);});
     target.appendChild(row);
   }
+  function renderProductVariants(variants = []) {
+    const target=byId("productVariantRows");
+    target.querySelectorAll('.product-variant-row').forEach(row=>{if(row.previewUrl)URL.revokeObjectURL(row.previewUrl);});
+    target.innerHTML='';
+    if(variants.length)[...variants].sort((a,b)=>(a.sort_order||0)-(b.sort_order||0)).forEach(appendProductVariant);
+    else target.innerHTML='<div class="product-variant-empty">尚未設定規格/款式。</div>';
+  }
+  function addProductVariant() { appendProductVariant(); }
 
   function openProductForm(product) {
     const form = byId("productForm");
@@ -614,6 +623,19 @@
     button.disabled = true;
     button.textContent = "儲存中…";
     try {
+      const variantRows=[...byId("productVariantRows").querySelectorAll(".product-variant-row")];
+      const labels=new Set(),skus=new Set();
+      const variantDrafts=variantRows.map((row,index)=>{
+        const label=row.querySelector('[data-variant-label]').value.trim();
+        if(!label)throw new Error('請填寫第 '+(index+1)+' 筆規格/款式名稱，或移除空白列。');
+        const skuInput=row.querySelector('[data-variant-sku]');
+        const sku=skuInput.value.trim()||('VAR-'+row.dataset.variantId);
+        if(labels.has(label)||skus.has(sku))throw new Error('規格/款式名稱或編號重複，請調整後再儲存。');
+        labels.add(label);skus.add(sku);skuInput.value=sku;
+        const file=row.querySelector('[data-variant-file]').files[0];
+        if(file&&(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>3*1024*1024))throw new Error('款式照片僅接受 3MB 以下的 JPG、PNG 或 WebP。');
+        return {id:row.dataset.variantId,option_name:'規格/款式',option_value:label,sku,image_url:row.querySelector('[data-variant-image]').value,stock_quantity:Number(row.querySelector('[data-variant-stock]').value)||0,sort_order:index,is_active:row.dataset.active==='true'};
+      });
       const slug = id ? products.find(item => item.id === id)?.slug : productSlug(brand, name);
       const uploaded = await uploadProductImage(file, brand, slug);
       const payload = {
@@ -635,10 +657,15 @@
       const { data: savedProduct, error } = await query;
       if (error) throw error;
       const productId=savedProduct.id;
-      const variants=[...byId("productVariantRows").querySelectorAll(".product-variant-row")].map((row,index)=>({product_id:productId,option_name:"顏色",option_value:row.querySelector("[data-variant-label]").value.trim(),sku:row.querySelector("[data-variant-sku]").value.trim(),image_url:row.querySelector("[data-variant-image]").value.trim(),stock_quantity:Math.max(0,Math.round(Number(row.querySelector("[data-variant-stock]").value)||0)),sort_order:index,is_active:true})).filter(item=>item.option_value&&item.sku);
-      const removed=await client.from("product_variants").delete().eq("product_id",productId);
-      if(removed.error)throw removed.error;
-      if(variants.length){const inserted=await client.from("product_variants").insert(variants);if(inserted.error)throw inserted.error;}
+      byId("productId").value=productId;
+      for(let index=0;index<variantDrafts.length;index++){
+        const row=variantRows[index],file=row.querySelector('[data-variant-file]').files[0];
+        if(file){const uploadedVariant=await uploadProductImage(file,brand,slug+'-'+variantDrafts[index].id);variantDrafts[index].image_url=uploadedVariant.url;row.querySelector('[data-variant-image]').value=uploadedVariant.url;row.querySelector('[data-variant-file]').value='';}
+      }
+      const variantResult=await client.rpc('save_product_variants',{p_product_id:productId,p_variants:variantDrafts});
+      if(variantResult.error)throw variantResult.error;
+      byId('productId').value=productId;
+
 
       showMessage("adminGlobalMessage", "商品「" + name + "」已儲存。", "success");
       byId("productForm").hidden = true;
@@ -1206,6 +1233,7 @@
     if (ok) loadData();
   });
 })();
+
 
 
 

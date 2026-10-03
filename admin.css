@@ -97,3 +97,6 @@
 @media(max-width:1180px){#personalCards .personal-quote-costs{grid-template-columns:repeat(2,minmax(0,1fr))}#personalCards .personal-quote-total{grid-column:1/-1}}
 @media(max-width:620px){#personalCards .personal-quote-costs{grid-template-columns:1fr}.personal-preview-toolbar{flex-wrap:wrap}.personal-preview-toolbar span{flex-basis:100%}}
 
+
+.variant-photo{min-width:0}.variant-photo input{width:100%;max-width:100%}.variant-photo small{display:block;color:var(--admin-muted);font-size:11px}.variant-photo img{display:block;width:72px;height:72px;object-fit:contain;margin-top:6px}.variant-photo img[hidden]{display:none}
+

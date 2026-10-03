@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>後台管理｜fréa</title>
   <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="admin.css?v=personal-quote-20260916-1">
+  <link rel="stylesheet" href="admin.css?v=variant-upload-20261004">
 <style id="supplier-compact-layout">
 #supplierForm { padding:20px; min-width:0; }
 #supplierForm .supplier-compact-heading { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:14px; }
@@ -231,7 +231,7 @@
               <label class="product-wide">商品照片（JPG、PNG、WebP，3MB 以內）<input id="productImage" type="file" accept="image/jpeg,image/png,image/webp"></label>
               <label>上架狀態<select id="productActive"><option value="true">上架</option><option value="false">下架</option></select></label>
               <div class="product-preview"><img id="productImagePreview" alt="商品圖片預覽" hidden><span id="productPreviewEmpty">尚未選擇圖片</span></div>
-              <div class="product-wide product-variants-editor"><div class="product-variants-head"><span>顏色規格（選填）</span><button id="productVariantAdd" type="button">＋ 新增顏色</button></div><div id="productVariantRows"></div></div>
+              <div class="product-wide product-variants-editor"><div class="product-variants-head"><span>規格/款式（選填）</span><button id="productVariantAdd" type="button">＋ 新增規格/款式</button></div><div id="productVariantRows"></div></div>
             </div>
             <div class="product-form-actions"><button class="admin-primary" id="productSave" type="submit">儲存商品</button><p class="admin-message" id="productFormMessage" role="status"></p></div>
           </form>
@@ -247,9 +247,10 @@
   <script src="admin-lifestyle-gallery.js?v=all-collections-20260922"></script>
   <script src="admin-merchandising.js?v=category-filter-20261003-master"></script>
   <script src="admin-product-extract.js?v=20261003-translate"></script>
-  <script src="admin.js?v=category-filter-product-extract-20261003"></script>
+  <script src="admin.js?v=variant-upload-20261004"></script>
   <script src="admin-payment-proof.js?v=20260910-1"></script>
 </body>
 </html>
+
 
 
