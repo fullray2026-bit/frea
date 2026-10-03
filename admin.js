@@ -12,7 +12,7 @@
   const shell = document.getElementById("adminShell");
   const loginForm = document.getElementById("adminLoginForm");
   const titles = { merchCategories:"分類管理",merchActivities:"活動管理", overview: "管理總覽", members: "會員管理", orders: "訂單管理", personal: "代購訂單管理", master: "商品主檔", costs: "商品成本試算", purchases: "進貨管理", products: "商品管理" };
-  const brandLabels = { kayanoya: "茅乃舍", kinto: "KINTO", kajidonya: "家事問屋", akomeya: "AKOMEYA TOKYO", "fukuoka-coffee": "福岡咖啡精選", "lifestyle-picks": "生活雜貨精選" };
+  const brandLabels = { catalog: "依商品主檔分類", kayanoya: "茅乃舍", kinto: "KINTO", kajidonya: "家事問屋", akomeya: "AKOMEYA TOKYO", "fukuoka-coffee": "福岡咖啡精選", "lifestyle-picks": "生活雜貨精選" };
   const statusLabels = {
     pending_payment: "待匯款",
     payment_review: "待核款",
@@ -212,10 +212,12 @@
     byId("masterStatus").value = item?.status || "pending_review";
     byId("masterExistingImage").value = item?.image_url || ""; byId("masterStoragePath").value = item?.storage_path || "";
     byId("masterFormTitle").textContent = item ? "編輯商品主檔" : "新增候選商品"; setMasterPreview(item?.image_url || "");
+    showMessage("masterFormMessage", "");
     window.FreaMerchandising.setMaster(item);
   }
 
   function renderMasterProducts() {
+    byId("masterBrandSuggestions").innerHTML=[...new Set(masterProducts.map(p=>p.brand_name).filter(Boolean))].sort().map(n=>'<option value="'+escapeHtml(n)+'"></option>').join("");
     const term = byId("masterSearch").value.trim().toLowerCase();
     const rows = masterProducts.filter(item => [item.product_code,item.name,item.brand_name,item.source_url].join(" ").toLowerCase().includes(term));
     byId("masterCount").textContent = "共 " + rows.length + " 項";
@@ -224,7 +226,7 @@
       const action = related ? "封存" : "刪除";
       return '<article class="product-item" data-master-id="'+escapeHtml(item.id)+'"><img src="'+escapeHtml(item.image_url||"assets/logo_round.png")+'" alt=""><div><h3>'+escapeHtml(item.name)+'</h3><small>'+escapeHtml(item.product_code)+' · '+escapeHtml(item.brand_name)+'</small><span class="product-status">'+escapeHtml(masterStatusLabels[item.status]||item.status)+'</span></div><div class="product-meta"><p>'+escapeHtml(item.specification||"—")+'</p><small class="master-source">'+escapeHtml(item.source_url||"無來源網址")+'</small></div><strong>'+escapeHtml(formatMoney(item.reference_price_jpy,"JPY"))+'</strong><div class="product-actions"><button type="button" data-edit-master>編輯</button><button class="danger" type="button" data-delete-master>'+action+'</button></div></article>';
     }).join("") : '<div class="admin-empty">目前尚無商品主檔。</div>';
-    const ready=masterProducts.filter(item=>item.status==="ready_to_publish"&&!item.published_product_id&&!linkedProduct(item.id)&&item.storefront_brand_code&&adoptedCost(item.id));
+    const ready=masterProducts.filter(item=>item.status==="ready_to_publish"&&!item.published_product_id&&!linkedProduct(item.id)&&adoptedCost(item.id));
     byId("productCandidate").innerHTML='<option value="">從待上架主檔選擇（'+ready.length+'）</option>'+ready.map(item=>'<option value="'+item.id+'">'+escapeHtml(item.product_code+'｜'+item.name)+'</option>').join("");
   }
 
@@ -493,7 +495,7 @@
     }
     target.innerHTML = filtered.map(product => '<article class="product-item" data-product-id="' + escapeHtml(product.id) + '">' +
       '<img src="' + escapeHtml(product.image_url || "assets/logo_round.png") + '" alt="' + escapeHtml(product.name) + '">' +
-      '<div><h3>' + escapeHtml(product.name) + '</h3><small>' + escapeHtml(brandLabels[product.brand_code] || product.brand_code) +
+      '<div><h3>' + escapeHtml(product.name) + '</h3><small>' + escapeHtml(masterProducts.find(m=>m.id===product.product_master_id)?.brand_name || brandLabels[product.brand_code] || product.brand_code) +
       ' · ' + escapeHtml(product.specification) + '</small><span class="product-status' + (product.is_active ? "" : " inactive") + '">' +
       (product.is_active ? "上架中" : "已下架") + '</span></div><div class="product-meta"><p>' + escapeHtml(product.usage_flavor || "—") +
       '</p></div><strong class="product-price">' + escapeHtml(formatMoney(product.price, product.currency)) +
@@ -540,6 +542,7 @@
     byId("productExistingImage").value = product?.image_url || "";
     byId("productStoragePath").value = product?.storage_path || "";
     byId("productBrand").value = product?.brand_code || "";
+    byId("productBrand").closest("label").hidden=Boolean(product?.product_master_id);
     byId("productName").value = product?.name || "";
     byId("productSpecification").value = product?.specification || "";
     byId("productUsage").value = product?.usage_flavor || "";
@@ -565,8 +568,8 @@
     const existing=linkedProduct(masterId);
     if(existing)return openProductForm(existing);
     const scenario=adoptedCost(item.id);
-    if(!scenario||!item.storefront_brand_code)return showMessage("adminGlobalMessage","請先指定網站品牌，並採用實際銷售價大於 0 的成本方案。","error");
-    openProductForm({product_master_id:item.id,cost_scenario_id:scenario.id,brand_code:item.storefront_brand_code,name:item.name,specification:item.specification,usage_flavor:item.usage_flavor,description:item.description,price:scenario.actual_sale_price_twd,currency:"TWD",stock_quantity:0,sort_order:0,is_active:false,image_url:item.image_url,storage_path:item.storage_path});
+    if(!scenario)return showMessage("adminGlobalMessage","請先採用實際銷售價大於 0 的成本方案。","error");
+    openProductForm({product_master_id:item.id,cost_scenario_id:scenario.id,brand_code:item.storefront_brand_code||"catalog",name:item.name,specification:item.specification,usage_flavor:item.usage_flavor,description:item.description,price:scenario.actual_sale_price_twd,currency:"TWD",stock_quantity:0,sort_order:0,is_active:false,image_url:item.image_url,storage_path:item.storage_path});
     byId("productFormTitle").textContent="新增商品";
     showMessage("productFormMessage","已帶入採用的成本方案售價；目前預設未上架，請確認資料後再選擇上架。");
   }
