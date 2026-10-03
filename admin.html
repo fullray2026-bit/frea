@@ -44,7 +44,7 @@
 #purchaseListToolbar input,#purchaseListToolbar>button{width:100%;min-width:0;box-sizing:border-box;height:46px;margin:0}
 #purchaseListToolbar>button{white-space:nowrap;padding:10px 12px}
 @media(max-width:700px){#purchaseListToolbar{grid-template-columns:repeat(2,minmax(0,1fr))}#purchaseListToolbar>button{white-space:normal;height:auto;min-height:46px}}
-</style><style>.order-recipient-editor{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.order-recipient-editor label{display:grid;gap:6px;min-width:0}.order-recipient-editor input,.order-recipient-editor textarea{width:100%;box-sizing:border-box;font:inherit}.order-recipient-editor .order-recipient-address{grid-column:1/-1}@media(max-width:480px){.order-recipient-editor{grid-template-columns:1fr}}</style><link rel="stylesheet" href="admin-merchandising.css?v=20261003-master"></head>
+</style><style>.order-recipient-editor{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.order-recipient-editor label{display:grid;gap:6px;min-width:0}.order-recipient-editor input,.order-recipient-editor textarea{width:100%;box-sizing:border-box;font:inherit}.order-recipient-editor .order-recipient-address{grid-column:1/-1}@media(max-width:480px){.order-recipient-editor{grid-template-columns:1fr}}</style><link rel="stylesheet" href="admin-merchandising.css?v=20261003-master"><link rel="stylesheet" href="admin-product-extract.css?v=20261003"></head>
 <body class="admin-page">
   <main>
     <section class="admin-login" id="adminLogin">
@@ -131,6 +131,7 @@
             <input id="masterId" type="hidden"><input id="masterExistingImage" type="hidden"><input id="masterStoragePath" type="hidden">
             <div class="product-form-grid">
               <label>商品編號<input id="masterCode" readonly placeholder="儲存後自動產生 FR-000001"></label><label class="product-wide">商品來源網址<input id="masterSourceUrl" type="url" placeholder="https://"></label>
+              <div id="masterExtractPanel"><button id="masterExtract" type="button">擷取商品資料</button><p id="masterExtractMessage" role="status" aria-live="polite"></p><div id="masterExtractResult"></div></div>
               <label>品牌名稱 *<input id="masterBrandName" required></label><label>前台品牌位置<select id="masterBrandCode"><option value="">尚未指定</option><option value="kayanoya">茅乃舍</option><option value="kinto">KINTO</option><option value="akomeya">AKOMEYA TOKYO</option><option value="fukuoka-coffee">福岡咖啡精選</option><option value="lifestyle-picks">生活雜貨精選</option></select></label>
               <label class="product-wide">商品名稱 *<input id="masterName" required></label><label>規格<input id="masterSpecification"></label><label>用途／風味<input id="masterUsage"></label>
               <label>型號<input id="masterModel"></label><label>JAN／條碼<input id="masterBarcode"></label><label>參考售價（JPY）<input id="masterReferencePrice" type="number" min="0"></label><label>商品重量（g）<input id="masterWeight" type="number" min="0"></label>
@@ -252,7 +253,8 @@
   <script src="admin-personal-quote.js?v=personal-bidirectional-20260921"></script>
   <script src="admin-lifestyle-gallery.js?v=all-collections-20260922"></script>
   <script src="admin-merchandising.js?v=20261003-master"></script>
-  <script src="admin.js?v=master-classification-20261003"></script>
+  <script src="admin-product-extract.js?v=20261003"></script>
+  <script src="admin.js?v=product-extract-20261003"></script>
   <script src="admin-payment-proof.js?v=20260910-1"></script>
 </body>
 </html>

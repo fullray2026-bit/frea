@@ -7,6 +7,7 @@
 
   const client = sdk.createClient(config.url, config.publishableKey);
   window.FreaMerchandising?.init(client);
+  window.FreaProductExtract?.init(client);
   const login = document.getElementById("adminLogin");
   const shell = document.getElementById("adminShell");
   const loginForm = document.getElementById("adminLoginForm");
@@ -199,6 +200,7 @@
   }
 
   function openMasterForm(item) {
+    window.FreaProductExtract?.reset();
     const form = byId("masterForm"); form.hidden = false; form.reset();
     byId("masterId").value = item?.id || ""; byId("masterCode").value = item?.product_code || "";
     byId("masterSourceUrl").value = item?.source_url || ""; byId("masterBrandName").value = item?.brand_name || "";
