@@ -191,15 +191,8 @@
 
         <section class="admin-view" data-admin-panel="products" hidden>
           <div class="admin-toolbar product-toolbar">
-            <input id="productSearch" type="search" placeholder="搜尋商品名稱、規格或用途／風味">
-            <select id="productBrandFilter">
-              <option value="">全部品牌</option><option value="catalog">其他品牌（依商品分類）</option>
-              <option value="kayanoya">茅乃舍</option>
-              <option value="kinto">KINTO</option>
-              <option value="akomeya">AKOMEYA TOKYO</option>
-              <option value="fukuoka-coffee">福岡咖啡精選</option>
-              <option value="lifestyle-picks">生活雜貨精選</option>
-            </select>
+            <input id="productSearch" type="search" placeholder="搜尋商品名稱、品牌、編號、規格或用途／風味">
+            <select id="productCategoryFilter" aria-label="商品分類"><option value="">全部分類</option></select>
             <select id="productStatusFilter">
               <option value="">全部狀態</option>
               <option value="active">上架中</option>
@@ -252,9 +245,9 @@
   <script src="supabase-config.js"></script>
   <script src="admin-personal-quote.js?v=personal-bidirectional-20260921"></script>
   <script src="admin-lifestyle-gallery.js?v=all-collections-20260922"></script>
-  <script src="admin-merchandising.js?v=category-workflow-20261003-master"></script>
+  <script src="admin-merchandising.js?v=category-filter-20261003-master"></script>
   <script src="admin-product-extract.js?v=20261003-translate"></script>
-  <script src="admin.js?v=category-workflow-product-extract-20261003"></script>
+  <script src="admin.js?v=category-filter-product-extract-20261003"></script>
   <script src="admin-payment-proof.js?v=20260910-1"></script>
 </body>
 </html>

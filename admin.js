@@ -127,7 +127,7 @@
     showMessage("adminGlobalMessage", "正在讀取最新資料…");
     let loadingTimeout;
     try {
-    const [profileResult, accountResult, applicationResult, addressResult, ezwayResult, orderResult, personalResult, productResult, masterResult, costResult, supplierResult, purchaseResult] = await Promise.race([Promise.all([
+    const [profileResult, accountResult, applicationResult, addressResult, ezwayResult, orderResult, personalResult, productResult, masterResult, costResult, supplierResult, purchaseResult, categoryResult, categoryLinkResult] = await Promise.race([Promise.all([
       client.from("profiles").select("id,email,full_name,phone,referrer,newsletter,created_at").order("created_at", { ascending: false }),
       client.from("member_accounts").select("*").order("created_at", { ascending: false }),
       client.from("membership_applications").select("*").order("created_at", { ascending: false }),
@@ -139,11 +139,13 @@
       client.from("product_master").select("*").order("created_at", { ascending: false }),
       client.from("cost_scenarios").select("*").order("created_at", { ascending: false }),
       client.from("suppliers").select("*").order("name"),
-      client.from("purchase_orders").select("*,suppliers(name),purchase_order_items(*,product_master(name,product_code))").order("created_at", { ascending: false })
+      client.from("purchase_orders").select("*,suppliers(name),purchase_order_items(*,product_master(name,product_code))").order("created_at", { ascending: false }),
+      client.from("storefront_categories").select("*").order("sort_order"),
+      client.from("storefront_product_categories").select("master_id,category_id,is_primary")
     ]), new Promise((_, reject) => {
       loadingTimeout = setTimeout(() => reject(new Error("資料讀取逾時，請按重新整理再試一次。")), 20000);
     })]);
-    const failed = [profileResult, accountResult, applicationResult, addressResult, ezwayResult, orderResult, personalResult, productResult, masterResult, costResult, supplierResult, purchaseResult].find(result => result.error);
+    const failed = [profileResult, accountResult, applicationResult, addressResult, ezwayResult, orderResult, personalResult, productResult, masterResult, costResult, supplierResult, purchaseResult, categoryResult, categoryLinkResult].find(result => result.error);
     if (failed) {
       showMessage("adminGlobalMessage", failed.error.message || "資料讀取失敗。", "error");
       return;
@@ -160,6 +162,7 @@
     costScenarios = costResult.data || [];
     suppliers = supplierResult.data || [];
     purchaseOrders = purchaseResult.data || [];
+    productCategories=categoryResult.data||[];productCategoryLinks=categoryLinkResult.data||[];renderProductCategoryOptions();
     renderAll();
     showMessage("adminGlobalMessage", "資料更新時間：" + new Date().toLocaleTimeString("zh-TW"), "success");
     } catch (error) {
@@ -478,14 +481,19 @@
     finally{form.dataset.saving="false";controls.forEach(el=>el.disabled=false);}
   }
 
+  let productCategories=[],productCategoryLinks=[];
+  function renderProductCategoryOptions(){const select=byId("productCategoryFilter"),value=select.value;select.innerHTML='<option value="">全部分類</option>'+productCategories.map(c=>'<option value="'+escapeHtml(c.id)+'">'+escapeHtml(c.name)+(c.status==="soon"?"（即將公開）":c.status==="hidden"?"（隱藏）":"")+'</option>').join("")+'<option value="__unclassified">未分類</option>';if([...select.options].some(o=>o.value===value))select.value=value;}
   function renderProducts() {
     const term = byId("productSearch").value.trim().toLowerCase();
-    const brand = byId("productBrandFilter").value;
+    const category = byId("productCategoryFilter").value;
     const status = byId("productStatusFilter").value;
     const filtered = products.filter(product => {
-      const searchable = [product.name, product.specification, product.usage_flavor, product.description].join(" ").toLowerCase();
+      const master=masterProducts.find(m=>m.id===product.product_master_id);
+      const assigned=productCategoryLinks.filter(l=>l.master_id===product.product_master_id);
+      const categoryMatch=!category||(category==="__unclassified"?!assigned.length:assigned.some(l=>l.category_id===category));
+      const searchable = [product.name, product.specification, product.usage_flavor, product.description,master?.brand_name,master?.product_code].join(" ").toLowerCase();
       const statusMatch = !status || (status === "active" ? product.is_active : !product.is_active);
-      return (!term || searchable.includes(term)) && (!brand || product.brand_code === brand) && statusMatch;
+      return (!term || searchable.includes(term)) && categoryMatch && statusMatch;
     });
     byId("productCount").textContent = "共 " + filtered.length + " 項";
     const target = byId("productRows");
@@ -1126,7 +1134,8 @@
   byId("personalSearch").addEventListener("input", renderPersonalRequests);
   byId("personalStatusFilter").addEventListener("change", renderPersonalRequests);
   byId("productSearch").addEventListener("input", renderProducts);
-  byId("productBrandFilter").addEventListener("change", renderProducts);
+  document.addEventListener("frea-merchandising-saved",loadData);
+  byId("productCategoryFilter").addEventListener("change", renderProducts);
   byId("productStatusFilter").addEventListener("change", renderProducts);
   byId("productCreate").addEventListener("click", () => openProductFromMaster(byId("productCandidate").value));
   byId("productCancel").addEventListener("click", () => { byId("productForm").hidden = true; });
