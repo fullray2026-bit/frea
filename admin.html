@@ -44,7 +44,7 @@
 #purchaseListToolbar input,#purchaseListToolbar>button{width:100%;min-width:0;box-sizing:border-box;height:46px;margin:0}
 #purchaseListToolbar>button{white-space:nowrap;padding:10px 12px}
 @media(max-width:700px){#purchaseListToolbar{grid-template-columns:repeat(2,minmax(0,1fr))}#purchaseListToolbar>button{white-space:normal;height:auto;min-height:46px}}
-</style><style>.order-recipient-editor{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.order-recipient-editor label{display:grid;gap:6px;min-width:0}.order-recipient-editor input,.order-recipient-editor textarea{width:100%;box-sizing:border-box;font:inherit}.order-recipient-editor .order-recipient-address{grid-column:1/-1}@media(max-width:480px){.order-recipient-editor{grid-template-columns:1fr}}</style></head>
+</style><style>.order-recipient-editor{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.order-recipient-editor label{display:grid;gap:6px;min-width:0}.order-recipient-editor input,.order-recipient-editor textarea{width:100%;box-sizing:border-box;font:inherit}.order-recipient-editor .order-recipient-address{grid-column:1/-1}@media(max-width:480px){.order-recipient-editor{grid-template-columns:1fr}}</style><link rel="stylesheet" href="admin-merchandising.css?v=20261003"></head>
 <body class="admin-page">
   <main>
     <section class="admin-login" id="adminLogin">
@@ -80,6 +80,9 @@
           <button class="admin-nav" type="button" data-admin-view="costs">商品成本試算</button>
           <button class="admin-nav" type="button" data-admin-view="purchases">進貨管理</button>
           <button class="admin-nav" type="button" data-admin-view="products">商品管理</button>
+          <button class="admin-nav" type="button" data-admin-view="merchProducts">商品分類設定</button>
+          <button class="admin-nav" type="button" data-admin-view="merchCategories">分類管理</button>
+          <button class="admin-nav" type="button" data-admin-view="merchActivities">活動管理</button>
         </nav>
         <div class="admin-sidebar-foot">
           <span id="adminIdentity"></span>
@@ -97,6 +100,9 @@
         </header>
         <p class="admin-message" id="adminGlobalMessage" role="status"></p>
 
+        <section class="admin-view" data-admin-panel="merchProducts" hidden></section>
+        <section class="admin-view" data-admin-panel="merchCategories" hidden></section>
+        <section class="admin-view" data-admin-panel="merchActivities" hidden></section>
         <section class="admin-view" data-admin-panel="overview">
           <div class="admin-stats">
             <article><span>會員總數</span><strong id="statMembers">—</strong></article>
@@ -134,7 +140,7 @@
               <label class="product-wide">簡短介紹<textarea id="masterDescription" rows="3"></textarea></label><label class="product-wide">內部備註<textarea id="masterNotes" rows="3"></textarea></label>
               <label class="product-wide">商品照片<input id="masterImage" type="file" accept="image/jpeg,image/png,image/webp"></label><label>確認狀態<select id="masterStatus"><option value="pending_review">待確認</option><option value="confirmed">已確認</option><option value="costed">已試算</option><option value="ready_to_publish">待上架</option><option value="published">已上架</option><option value="archived">封存</option></select></label>
               <div class="product-preview"><img id="masterImagePreview" alt="商品圖片預覽" hidden><span id="masterPreviewEmpty">尚未選擇圖片</span></div>
-            </div><div class="product-form-actions"><button class="admin-primary" id="masterSave" type="submit">儲存商品主檔</button><p class="admin-message" id="masterFormMessage" role="status"></p></div>
+            <div id="masterMerchandising" class="product-wide"></div></div><div class="product-form-actions"><button class="admin-primary" id="masterSave" type="submit">儲存商品主檔</button><p class="admin-message" id="masterFormMessage" role="status"></p></div>
           </form><div id="masterRows" class="product-list"></div>
         </section>
 
@@ -248,8 +254,10 @@
   <script src="supabase-config.js"></script>
   <script src="admin-personal-quote.js?v=personal-bidirectional-20260921"></script>
   <script src="admin-lifestyle-gallery.js?v=all-collections-20260922"></script>
-  <script src="admin.js?v=recipient-edit-20260923"></script>
+  <script src="admin-merchandising.js?v=20261003"></script>
+  <script src="admin.js?v=merchandising-20261003"></script>
   <script src="admin-payment-proof.js?v=20260910-1"></script>
 </body>
 </html>
+
 

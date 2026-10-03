@@ -6,10 +6,11 @@
   if (!sdk || !config) return;
 
   const client = sdk.createClient(config.url, config.publishableKey);
+  window.FreaMerchandising?.init(client);
   const login = document.getElementById("adminLogin");
   const shell = document.getElementById("adminShell");
   const loginForm = document.getElementById("adminLoginForm");
-  const titles = { overview: "管理總覽", members: "會員管理", orders: "訂單管理", personal: "代購訂單管理", master: "商品主檔", costs: "商品成本試算", purchases: "進貨管理", products: "商品管理" };
+  const titles = { merchProducts:"商品分類設定",merchCategories:"分類管理",merchActivities:"活動管理", overview: "管理總覽", members: "會員管理", orders: "訂單管理", personal: "代購訂單管理", master: "商品主檔", costs: "商品成本試算", purchases: "進貨管理", products: "商品管理" };
   const brandLabels = { kayanoya: "茅乃舍", kinto: "KINTO", kajidonya: "家事問屋", akomeya: "AKOMEYA TOKYO", "fukuoka-coffee": "福岡咖啡精選", "lifestyle-picks": "生活雜貨精選" };
   const statusLabels = {
     pending_payment: "待匯款",
@@ -198,6 +199,7 @@
   }
 
   function openMasterForm(item) {
+    window.FreaMerchandising?.setMaster(item);
     const form = byId("masterForm"); form.hidden = false; form.reset();
     byId("masterId").value = item?.id || ""; byId("masterCode").value = item?.product_code || "";
     byId("masterSourceUrl").value = item?.source_url || ""; byId("masterBrandName").value = item?.brand_name || "";
@@ -1188,6 +1190,7 @@
     if (ok) loadData();
   });
 })();
+
 
 
 
