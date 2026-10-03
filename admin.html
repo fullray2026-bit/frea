@@ -44,7 +44,7 @@
 #purchaseListToolbar input,#purchaseListToolbar>button{width:100%;min-width:0;box-sizing:border-box;height:46px;margin:0}
 #purchaseListToolbar>button{white-space:nowrap;padding:10px 12px}
 @media(max-width:700px){#purchaseListToolbar{grid-template-columns:repeat(2,minmax(0,1fr))}#purchaseListToolbar>button{white-space:normal;height:auto;min-height:46px}}
-</style><style>.order-recipient-editor{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.order-recipient-editor label{display:grid;gap:6px;min-width:0}.order-recipient-editor input,.order-recipient-editor textarea{width:100%;box-sizing:border-box;font:inherit}.order-recipient-editor .order-recipient-address{grid-column:1/-1}@media(max-width:480px){.order-recipient-editor{grid-template-columns:1fr}}</style><link rel="stylesheet" href="admin-merchandising.css?v=20261003"></head>
+</style><style>.order-recipient-editor{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.order-recipient-editor label{display:grid;gap:6px;min-width:0}.order-recipient-editor input,.order-recipient-editor textarea{width:100%;box-sizing:border-box;font:inherit}.order-recipient-editor .order-recipient-address{grid-column:1/-1}@media(max-width:480px){.order-recipient-editor{grid-template-columns:1fr}}</style><link rel="stylesheet" href="admin-merchandising.css?v=20261003-master"></head>
 <body class="admin-page">
   <main>
     <section class="admin-login" id="adminLogin">
@@ -80,7 +80,6 @@
           <button class="admin-nav" type="button" data-admin-view="costs">商品成本試算</button>
           <button class="admin-nav" type="button" data-admin-view="purchases">進貨管理</button>
           <button class="admin-nav" type="button" data-admin-view="products">商品管理</button>
-          <button class="admin-nav" type="button" data-admin-view="merchProducts">商品分類設定</button>
           <button class="admin-nav" type="button" data-admin-view="merchCategories">分類管理</button>
           <button class="admin-nav" type="button" data-admin-view="merchActivities">活動管理</button>
         </nav>
@@ -99,8 +98,6 @@
           <button class="admin-refresh" type="button" id="adminRefresh">重新整理</button>
         </header>
         <p class="admin-message" id="adminGlobalMessage" role="status"></p>
-
-        <section class="admin-view" data-admin-panel="merchProducts" hidden></section>
         <section class="admin-view" data-admin-panel="merchCategories" hidden></section>
         <section class="admin-view" data-admin-panel="merchActivities" hidden></section>
         <section class="admin-view" data-admin-panel="overview">
@@ -254,8 +251,8 @@
   <script src="supabase-config.js"></script>
   <script src="admin-personal-quote.js?v=personal-bidirectional-20260921"></script>
   <script src="admin-lifestyle-gallery.js?v=all-collections-20260922"></script>
-  <script src="admin-merchandising.js?v=20261003"></script>
-  <script src="admin.js?v=merchandising-20261003"></script>
+  <script src="admin-merchandising.js?v=20261003-master"></script>
+  <script src="admin.js?v=master-classification-20261003"></script>
   <script src="admin-payment-proof.js?v=20260910-1"></script>
 </body>
 </html>

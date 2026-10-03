@@ -10,7 +10,7 @@
   const login = document.getElementById("adminLogin");
   const shell = document.getElementById("adminShell");
   const loginForm = document.getElementById("adminLoginForm");
-  const titles = { merchProducts:"商品分類設定",merchCategories:"分類管理",merchActivities:"活動管理", overview: "管理總覽", members: "會員管理", orders: "訂單管理", personal: "代購訂單管理", master: "商品主檔", costs: "商品成本試算", purchases: "進貨管理", products: "商品管理" };
+  const titles = { merchCategories:"分類管理",merchActivities:"活動管理", overview: "管理總覽", members: "會員管理", orders: "訂單管理", personal: "代購訂單管理", master: "商品主檔", costs: "商品成本試算", purchases: "進貨管理", products: "商品管理" };
   const brandLabels = { kayanoya: "茅乃舍", kinto: "KINTO", kajidonya: "家事問屋", akomeya: "AKOMEYA TOKYO", "fukuoka-coffee": "福岡咖啡精選", "lifestyle-picks": "生活雜貨精選" };
   const statusLabels = {
     pending_payment: "待匯款",
@@ -199,7 +199,6 @@
   }
 
   function openMasterForm(item) {
-    window.FreaMerchandising?.setMaster(item);
     const form = byId("masterForm"); form.hidden = false; form.reset();
     byId("masterId").value = item?.id || ""; byId("masterCode").value = item?.product_code || "";
     byId("masterSourceUrl").value = item?.source_url || ""; byId("masterBrandName").value = item?.brand_name || "";
@@ -211,6 +210,7 @@
     byId("masterStatus").value = item?.status || "pending_review";
     byId("masterExistingImage").value = item?.image_url || ""; byId("masterStoragePath").value = item?.storage_path || "";
     byId("masterFormTitle").textContent = item ? "編輯商品主檔" : "新增候選商品"; setMasterPreview(item?.image_url || "");
+    window.FreaMerchandising.setMaster(item);
   }
 
   function renderMasterProducts() {
@@ -228,12 +228,14 @@
 
   async function saveMaster(event) {
     event.preventDefault(); const id=byId("masterId").value; const file=byId("masterImage").files[0];
+    if(byId("masterSave").disabled)return; byId("masterSave").disabled=true;
     try {
+      const classification=window.FreaMerchandising.masterSelection();
       const uploaded=await uploadProductImage(file,"master",byId("masterCode").value.toLowerCase().replace(/[^a-z0-9-]/g,"-")||"candidate");
       const payload={source_url:byId("masterSourceUrl").value.trim(),brand_name:byId("masterBrandName").value.trim(),storefront_brand_code:byId("masterBrandCode").value||null,name:byId("masterName").value.trim(),specification:byId("masterSpecification").value.trim(),usage_flavor:byId("masterUsage").value.trim(),description:byId("masterDescription").value.trim(),model:byId("masterModel").value.trim(),barcode:byId("masterBarcode").value.trim(),reference_price_jpy:Number(byId("masterReferencePrice").value)||0,weight_g:Number(byId("masterWeight").value)||0,notes:byId("masterNotes").value.trim(),status:byId("masterStatus").value,image_url:uploaded?.url||byId("masterExistingImage").value,storage_path:uploaded?.path||byId("masterStoragePath").value||null,updated_at:new Date().toISOString()};
-      const {error}=id?await client.from("product_master").update(payload).eq("id",id):await client.from("product_master").insert(payload); if(error) throw error;
+      const {error}=await client.rpc("save_product_master_classification",{p_id:id||null,p_product:payload,...classification}); if(error) throw error;
       byId("masterForm").hidden=true; await loadData();
-    } catch(error){showMessage("masterFormMessage",error.message||"商品主檔儲存失敗。","error");}
+    } catch(error){showMessage("masterFormMessage",error.message||"商品主檔儲存失敗。","error");} finally{byId("masterSave").disabled=false;}
   }
 
   async function deleteMaster(id) {
