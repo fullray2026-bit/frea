@@ -15,3 +15,5 @@
 
 /* Match the header content to the homepage catalogue edges. */
 .frea-home .home-header{padding:0}.home-header-inner{width:100%;max-width:1600px;box-sizing:border-box;margin:0 auto;padding:0 4%;height:100%;display:flex;align-items:center;justify-content:space-between}@media(max-width:760px){.home-header-inner{padding:0 16px}}
+
+@media(min-width:761px){#homeMain .brand-cart-btn{width:auto;padding-inline:20px}}
