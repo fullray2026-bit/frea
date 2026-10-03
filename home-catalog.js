@@ -44,7 +44,7 @@
       '" data-image="' + escapeHtml(product.image_url) + '" data-product-stock="' + stock + '" data-stock="' + stock + '">' +
       '<div class="brand-product-thumb"><img src="' + escapeHtml(product.image_url) + '" alt="' + escapeHtml(product.name) + '"></div>' +
       '<div class="brand-product-name"><h3>' + escapeHtml(product.name) + '</h3><p>' + escapeHtml(product.description || "") + '</p></div>' +
-      '<div class="brand-product-spec">' + escapeHtml(product.specification) + (variants.length ? '<label class="product-variant-label">顏色<select data-product-variant required><option value="">請選擇</option>' + variants.map(item => '<option value="' + escapeHtml(item.id) + '" data-label="' + escapeHtml(item.option_value) + '" data-image="' + escapeHtml(item.image_url || product.image_url) + '" data-available="' + item.available + '">' + escapeHtml(item.option_value) + (item.available ? '' : '（售罄）') + '</option>').join("") + '</select></label>' : '') + '</div>' +
+      '<div class="brand-product-spec">' + escapeHtml(product.specification) + (variants.length ? '<label class="product-variant-label">規格/款式<select data-product-variant required><option value="">請選擇</option>' + variants.map(item => '<option value="' + escapeHtml(item.id) + '" data-label="' + escapeHtml(item.option_value) + '" data-image="' + escapeHtml(item.image_url || product.image_url) + '" data-available="' + item.available + '">' + escapeHtml(item.option_value) + (item.available ? '' : '（售罄）') + '</option>').join("") + '</select></label>' : '') + '</div>' +
       '<p class="brand-product-use">' + escapeHtml(product.usage_flavor) + '</p>' +
       '<div class="brand-product-price"><strong>' + escapeHtml(formatPrice(product.price, product.currency)) + '</strong><span data-stock-label>' +
       (disabled ? "暫時售罄" : lifestyleGallery ? "" : "庫存 " + stock) + '</span></div>' +
@@ -79,7 +79,7 @@
       const quantity = () => Math.min(currentMax(), Math.max(1, Math.round(Number(input.value) || 1)));
       if (variantSelect) {
         addButton.disabled = true;
-        addButton.textContent = "請先選擇顏色";
+        addButton.textContent = "請選擇規格/款式";
         variantSelect.addEventListener("change", () => {
           const option = variantSelect.selectedOptions[0];
           const productStock = Math.max(0, Number(row.dataset.productStock) || 0);
@@ -93,7 +93,7 @@
           const image = row.querySelector(".brand-product-thumb img");
           if (image && option?.dataset.image) image.src = option.dataset.image;
           addButton.disabled = !hasSelection || selectedStock === 0;
-          addButton.textContent = selectedStock === 0 && hasSelection ? "此色售罄" : (hasSelection ? "加入購物車" : "請先選擇顏色");
+          addButton.textContent = selectedStock === 0 && hasSelection ? "此規格/款式售罄" : (hasSelection ? "加入購物車" : "請選擇規格/款式");
         });
       }
       row.querySelector('[data-qty-action="decrease"]')?.addEventListener("click", () => { input.value = Math.max(1, quantity() - 1); });
@@ -101,7 +101,7 @@
       row.querySelector("[data-add-cart]")?.addEventListener("click", () => {
         const cart = readCart();
         const amount = quantity();
-        if (variantSelect && !variantSelect.value) return notify("請先選擇顏色。");
+        if (variantSelect && !variantSelect.value) return notify("請選擇規格/款式。");
         const productCurrency = row.dataset.currency || "JPY";
         const cartCurrency = cart.find(entry => entry.currency)?.currency;
         if (cartCurrency && cartCurrency !== productCurrency) {
@@ -113,7 +113,7 @@
         const item = cart.find(entry => entry.id === id);
         if (item) item.quantity = Math.min(currentMax(), Number(item.quantity || 0) + amount);
         else cart.push({ id, productId: row.dataset.productId, variantId, name: row.dataset.name,
-          spec: row.dataset.spec + (option?.dataset.label ? "｜顏色：" + option.dataset.label : ""),
+          spec: row.dataset.spec + (option?.dataset.label ? "｜規格/款式：" + option.dataset.label : ""),
           price: Number(row.dataset.price), currency: productCurrency, quantity: amount,
           image: option?.dataset.image || row.dataset.image });
         localStorage.setItem(cartKey, JSON.stringify(cart));
