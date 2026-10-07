@@ -1,5 +1,5 @@
 import {recommendDemo} from './engine.js';
-import './widget.js?v=20261007-clean';
+import './widget.js?v=20261007-close';
 const $=s=>document.querySelector(s);
 let token='',current=null,lastQuery='';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
