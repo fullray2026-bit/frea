@@ -1,5 +1,5 @@
 import {recommendDemo} from './engine.js';
-import './widget.js';
+import './widget.js?v=20261007-clean';
 const $=s=>document.querySelector(s);
 let token='',current=null,lastQuery='';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -15,11 +15,7 @@ $('#settingsForm').onsubmit=async e=>{e.preventDefault();try{await post('/api/se
 $('#mode').onchange=()=>{$('#modeNote').textContent=$('#mode').value==='demo'?'規則展示模式：用於驗證流程，不代表 AI 成效。':'AI 模式：僅從本次 81 件商品選擇，錯誤時不以展示結果替代。'};
 document.querySelectorAll('[data-query]').forEach(b=>b.onclick=()=>{$('#query').value=b.dataset.query;$('#query').focus()});
 const labels={zh:{title:'為你挑選',view:'查看商品 ↗',cart:'加入測試購物車',purchase:'模擬購買',added:'已加入測試購物車',bought:'已記錄模擬購買',currency:'台幣／單件',catalog:'商品快照',demo:'規則展示 · 非 AI',llm:'OpenAI 推薦',conditions:'解析條件',none:'未指定',budget:'單件預算',recipient:'送禮對象',uses:'用途／偏好',evidence:'理由依據：用途、標籤及價格',link:'商品連結開啟官網搜尋結果。'},ja:{title:'おすすめの商品',view:'商品を見る ↗',cart:'テストカートに追加',purchase:'購入を模擬',added:'テストカートに追加済み',bought:'模擬購入を記録しました',currency:'台湾ドル／1点',catalog:'商品スナップショット',demo:'ルール展示・AIではありません',llm:'OpenAI 推薦',conditions:'解析した条件',none:'指定なし',budget:'1点の予算',recipient:'贈る相手',uses:'用途・好み',evidence:'根拠：用途・タグ・価格',link:'商品リンクは本サイトの検索結果です。PoC から注文は行いません。'}};
-function reviewDetails(p,ja){
- const v=p.review||{}, title=ja?'使用上の注意・確認状況（中国語資料）':'使用限制與查核資料';
- const sources=String(v.source||'').split(/\s+/).filter(u=>/^https:\/\//.test(u));
- return '<details class="review"><summary>'+title+'</summary><p>'+esc(p.constraints)+'</p><p>'+esc(v.status)+' · '+esc(v.sourceScope)+'</p><p>'+esc(p.gaps)+'</p><p>'+esc('資料待核對項目如上；未確認的限制不視為已符合。')+'</p>'+sources.map((u,i)=>'<a href="'+esc(u)+'" target="_blank" rel="noopener noreferrer">'+(ja?'資料':'查核來源')+' '+(i+1)+'</a>').join(' · ')+'</details>';
-}
+function reviewDetails(p){const note=String(p.constraints||'').replace(/(?:notes|description|usage_flavor|specification)：/g,'');if(!note||/^未記載|^尚未找到/.test(note))return '';return '<details class="review"><summary>使用注意事項</summary><p>'+esc(note)+'</p><p>請以商品實際標示為準。</p></details>';}
 function giftChoices(r){
  if(r.conditions.clarificationReason!=='gift_preferences')return '';
  const ja=r.language==='ja', names=ja?['コーヒー','マグ・ボトル','ハンドクリーム','フレグランス']:['咖啡','杯子／水瓶','護手霜','香氛'];
@@ -29,7 +25,7 @@ function render(r){
 current=r;const l=labels[r.language],ja=r.language==='ja';
 const c=r.conditions;
 $('#result').lang=ja?'ja':'zh-Hant';
-$('#result').innerHTML='<div class="result-head"><p class="eyebrow">'+l[r.mode]+' · '+r.requestId.slice(0,8)+'</p><h2>'+l.title+'</h2><p>'+esc(r.message)+'</p>'+giftChoices(r)+(r.giftNote?'<p class="note">'+esc(r.giftNote)+'</p>':'')+'<details><summary>'+l.conditions+'</summary><p>'+l.budget+'：'+esc(c.currency)+' '+(c.budgetMin??0)+'–'+(c.budgetMax??'∞')+' · '+l.recipient+'：'+esc(c.recipient||l.none)+'</p><p>'+l.uses+'：'+esc([...c.uses,...c.preferences].join(', ')||l.none)+'</p><pre>'+esc(JSON.stringify(c,null,2))+'</pre></details></div><div class="cards">'+r.recommendations.map(({product:p,reason})=>'<article class="card" data-id="'+p.id+'"><img src="'+esc(p.image)+'" alt="'+esc(p.name[r.language])+'"><div class="copy"><span class="brand">'+esc(p.brand)+' / '+p.id+'</span><h3>'+esc(p.name[r.language])+'</h3><p class="price">NT$'+p.price.toLocaleString()+' <small>'+l.currency+'</small></p><p class="reason">'+esc(reason)+'</p><span class="evidence">'+l.evidence+'</span>'+reviewDetails(p,ja)+'<div class="actions"><a href="'+esc(p.productUrl)+'" target="_blank" rel="noopener noreferrer" data-action="click">'+l.view+'</a></div><p class="event-status" role="status"></p></div></article>').join('')+'</div><p class="note">'+l.catalog+'：'+r.catalogVersion+' · '+r.latencyMs+' ms</p><p class="note">'+l.link+'</p>';
+$('#result').innerHTML='<div class="result-head"><h2>'+l.title+'</h2><p>'+esc(r.message.replace("fréa 測試商品","fréa 商品"))+'</p>'+giftChoices(r)+(r.giftNote?'<p class="note">'+esc(r.giftNote)+'</p>':'')+'</div><div class="cards">'+r.recommendations.map(({product:p,reason})=>'<article class="card" data-id="'+p.id+'"><img src="'+esc(p.image)+'" alt="'+esc(p.name[r.language])+'"><div class="copy"><span class="brand">'+esc(p.brand)+'</span><h3>'+esc(p.name[r.language])+'</h3><p class="price">NT$'+p.price.toLocaleString()+' <small>'+l.currency+'</small></p><p class="reason">'+esc(reason)+'</p>'+reviewDetails(p,ja)+'<div class="actions"><a href="'+esc(p.productUrl)+'" target="_blank" rel="noopener noreferrer" data-action="click">'+l.view+'</a></div><p class="event-status" role="status"></p></div></article>').join('')+'</div>';
 $('#result').querySelectorAll('[data-gift]').forEach(el=>el.onclick=()=>{$('#query').value=el.dataset.gift;$('#queryForm').requestSubmit()});
 $('#result').querySelectorAll('[data-action]').forEach(el=>el.onclick=async e=>{
  const card=el.closest('.card'),type=el.dataset.action;

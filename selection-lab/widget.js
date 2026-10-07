@@ -16,3 +16,5 @@ dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoun
 q('#language').value='zh';q('#language').closest('label').hidden=true;
 
 q('body>header').hidden=true;q('main').hidden=true;q('footer').hidden=true;q('#chatLauncher').hidden=true;q('#chatLauncher').click();q('#chatDialog').addEventListener('close',()=>parent.postMessage({type:'frea-lab-close'},location.origin));window.addEventListener('message',e=>{if(e.origin===location.origin&&e.source===parent&&e.data?.type==='frea-lab-open'&&!q('#chatDialog').open)q('#chatLauncher').click()});
+
+q('#modeNote').hidden=true;
