@@ -12,6 +12,7 @@
   const previous=form.querySelector('[data-address-ui]');if(previous){const grid=previous.querySelector('.form-grid');if(grid)form.prepend(grid);previous.remove();}
   const ui=document.createElement('div');ui.dataset.addressUi='';ui.className='address-book';ui.innerHTML='<label>常用收件資料（最多3組）<select data-select></select></label><label>地址名稱<input data-label maxlength="30" placeholder="例如：住家、公司、媽媽家"></label><label class="address-check"><input type="checkbox" data-default>設為預設收件資料</label><div class="address-actions"><button type="button" data-save>儲存此收件資料</button><button type="button" data-delete>刪除此地址</button></div><p data-message role="status"></p>';
   const grid=form.querySelector('.form-grid');if(grid)ui.insertBefore(grid,ui.querySelector('.address-actions'));
+  ui.insertBefore(ui.querySelector('.address-check'),ui.querySelector('.address-actions'));
   form.prepend(ui);const select=ui.querySelector('[data-select]'),label=ui.querySelector('[data-label]'),def=ui.querySelector('[data-default]'),msg=ui.querySelector('[data-message]');
   function selectRow(){const row=rows.find(r=>String(r.id)===select.value);fill(form,row);label.value=row?.label||'';def.checked=row?.is_default||!rows.length;ui.querySelector('[data-delete]').disabled=!row;}
   function render(id){select.innerHTML=rows.map(option).join('')+(rows.length<3?'<option value="">＋ 新增收件資料</option>':'');select.value=String(id??rows.find(r=>r.is_default)?.id??rows[0]?.id??'');selectRow()}

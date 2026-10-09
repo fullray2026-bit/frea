@@ -1,1 +1,16 @@
 .address-book{display:grid;gap:14px;padding:18px;border:1px solid #e5d9cb;border-radius:12px;margin-bottom:24px;background:#faf7f2}.address-book label{display:grid;gap:7px}.address-book select,.address-book input:not([type=checkbox]),.address-book button{font:inherit;padding:10px 12px;min-width:0;width:100%;box-sizing:border-box;border:1px solid #d8cabc;border-radius:8px;background:white;color:#4b3d32}.address-book .address-check{display:flex;align-items:flex-start;gap:9px;line-height:1.7}.address-book input[type=checkbox]{width:18px;height:18px;min-height:18px;flex:0 0 18px;padding:0;margin:4px 0 0}.address-book [data-options]:not([hidden]){display:grid;gap:12px}.address-actions{display:flex;gap:12px}.address-book small,.address-book p{font-size:13px;line-height:1.7}.address-book button{cursor:pointer}.address-book button:disabled{opacity:.5}
+/* Compact member delivery layout; checkout keeps its existing layout. */
+#deliveryForm .address-book{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px 14px;padding:14px;margin-bottom:16px}
+#deliveryForm .address-book>.form-grid,#deliveryForm .address-check,#deliveryForm .address-actions,#deliveryForm [data-message]{grid-column:1/-1}
+#deliveryForm .form-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px 14px;margin:0}
+#deliveryForm .field.full{grid-column:auto}
+#deliveryForm label{font-size:14px;margin:0 0 4px;gap:4px}
+#deliveryForm input:not([type=checkbox]),#deliveryForm select{padding:9px 10px;min-height:42px;font-size:15px;width:100%;min-width:0;box-sizing:border-box}
+#deliveryForm .address-actions button{padding:9px 10px;font-size:14px}
+#deliveryForm [data-message]{margin:0}
+#deliveryForm [data-message]:empty{display:none}
+#deliveryForm .member-form-title{margin:16px 0 8px}
+#deliveryForm .member-privacy-note{margin:0 0 12px;line-height:1.6}
+#deliveryForm>.auth-btn{margin-top:14px;padding:11px 16px}
+.member-panel:has(#deliveryForm) .member-section-head{margin-bottom:16px}
+@media(max-width:480px){#deliveryForm .address-book{padding:12px;gap:10px}#deliveryForm .form-grid{gap:10px}#deliveryForm .field:has([name=address]){grid-column:1/-1}}
