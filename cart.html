@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>購物車｜fréa</title>
 <meta name="description" content="查看 fréa 購物車中的商品、數量與總價。">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css"><link rel="stylesheet" href="cart-shipping-offer.css?v=20261009">
 <style>
 .cart-page{padding:72px 0 112px;min-height:62vh}
 .cart-head{display:flex;align-items:end;justify-content:space-between;gap:30px;margin-bottom:44px}
@@ -53,7 +53,7 @@
 <footer class="footer"><div class="container"><div class="footer-grid"><div class="footer-brand"><img src="assets/logo_round_transparent.png" alt="fréa"><div class="footer-brand-copy"><p>讓生活，回到它該有的溫度。</p><p>FUKUOKA, JAPAN</p></div></div><div class="footer-navigation"><div class="footer-link-group"><h4>關於 fréa</h4><a href="about.html">品牌故事</a><a href="intellectual-property.html">品牌與智慧財產權聲明</a></div><div class="footer-link-group footer-shopping"><h4>購物指南</h4><a href="shopping-guide.html">購物須知</a><a href="returns.html">退換貨政策</a><a href="terms.html">會員條款</a><a href="privacy.html">隱私權政策</a></div></div><div class="footer-contact"><p><strong>聯絡我們</strong> <span>frea.global@gmail.com</span></p></div></div><div class="copyright">© 2026 fréa. All rights reserved.</div></div></footer>
 <div class="toast"></div><script src="script.js?v=live-search-20260909"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.3/dist/umd/supabase.js"></script><script src="supabase-config.js"></script><script src="checkout-auth.js?v=1"></script>
-<script>
+<script src="cart-shipping-offer.js?v=20261009"></script><script>
 (function(){
   const key="frea_demo_cart_v1";
   const itemsElement=document.getElementById("cartItems");
@@ -103,6 +103,7 @@
   const checkoutButton=document.getElementById("checkoutButton");
   checkoutButton.addEventListener("click",async()=>{
     if(!readCart().length||checkoutButton.disabled)return;
+    if(window.freaShippingOffer && !(await window.freaShippingOffer()))return;
     checkoutButton.disabled=true;checkoutButton.textContent="確認會員中…";
     try{
       if(!window.freaCheckoutAuth)throw new Error("auth unavailable");
@@ -110,6 +111,7 @@
     }catch(error){toast("暫時無法確認會員狀態，請稍後再試。")}
     finally{checkoutButton.disabled=false;checkoutButton.textContent="確認結帳";}
   });
+  window.addEventListener("frea-cart-updated",render);
   render();
 })();
 </script>
