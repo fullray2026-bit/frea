@@ -205,6 +205,7 @@
     setField(deliveryForm, "address", address.address);
     setField(deliveryForm, "ezwayName", ezway.real_name);
     setField(deliveryForm, "ezwayPhone", ezway.mobile);
+    try { await window.FreaAddressBook.member(client,user,deliveryForm); } catch { message("deliveryMessage","常用地址暫時無法載入，請重新整理。","error"); }
     await renderOrders();
     activateTab("profile");
     show("member", false);
@@ -384,26 +385,14 @@
   deliveryForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     const data = new FormData(deliveryForm);
-    const address = {
-      user_id: currentUser.id,
-      recipient_name: String(data.get("recipientName") || "").trim(),
-      recipient_phone: String(data.get("recipientPhone") || "").trim(),
-      postal_code: String(data.get("postalCode") || "").trim(),
-      address: String(data.get("address") || "").trim(),
-      is_default: true
-    };
-    const addressQuery = currentAddressId
-      ? client.from("member_addresses").update(address).eq("id", currentAddressId).eq("user_id", currentUser.id).select("id").single()
-      : client.from("member_addresses").insert(address).select("id").single();
     const ezwayQuery = client.from("ezway_profiles").upsert({
       user_id: currentUser.id,
       real_name: String(data.get("ezwayName") || "").trim(),
       mobile: String(data.get("ezwayPhone") || "").trim()
     }, { onConflict: "user_id" });
-    const [addressResult, ezwayResult] = await Promise.all([addressQuery, ezwayQuery]);
-    if (addressResult.error || ezwayResult.error) return message("deliveryMessage", readableError(addressResult.error || ezwayResult.error), "error");
-    currentAddressId = addressResult.data.id;
-    message("deliveryMessage", "收件與 EZ WAY 資訊已儲存。", "success");
+    const ezwayResult = await ezwayQuery;
+    if (ezwayResult.error) return message("deliveryMessage", readableError(ezwayResult.error), "error");
+    message("deliveryMessage", "EZ WAY 資訊已儲存。", "success");
   });
 
   byId("logoutButton").addEventListener("click", async () => {
