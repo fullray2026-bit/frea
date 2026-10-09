@@ -504,6 +504,9 @@
       const statusMatch = !status || (status === "active" ? product.is_active : !product.is_active);
       return (!term || searchable.includes(term)) && categoryMatch && statusMatch;
     });
+    const sort=byId("productSort").value;
+    if(sort==="priceAsc"||sort==="priceDesc")filtered.sort((a,b)=>(Number(a.price)-Number(b.price))*(sort==="priceAsc"?1:-1));
+    if(sort==="newest"||sort==="oldest")filtered.sort((a,b)=>{const x=Date.parse(a.created_at),y=Date.parse(b.created_at);if(!Number.isFinite(x))return Number.isFinite(y)?1:0;if(!Number.isFinite(y))return -1;return (x-y)*(sort==="oldest"?1:-1)});
     byId("productCount").textContent = "共 " + filtered.length + " 項";
     const target = byId("productRows");
     if (!filtered.length) {
@@ -1169,6 +1172,7 @@
   byId("orderStatusFilter").addEventListener("change", renderOrders);
   byId("personalSearch").addEventListener("input", renderPersonalRequests);
   byId("personalStatusFilter").addEventListener("change", renderPersonalRequests);
+  byId("productSort").addEventListener("change",renderProducts);
   byId("productSearch").addEventListener("input", renderProducts);
   document.addEventListener("frea-merchandising-saved",loadData);
   byId("productCategoryFilter").addEventListener("change", renderProducts);

@@ -200,7 +200,7 @@
             </select>
             <select id="productCandidate"><option value="">從待上架主檔選擇</option></select>
             <button class="admin-primary" id="productCreate" type="button">＋ 新增商品</button>
-            <span id="productCount"></span>
+            <label style="grid-column:1/-1;display:flex;align-items:center;gap:12px;flex-wrap:wrap">商品排序<select id="productSort" aria-label="商品排序"><option value="default">原有排序</option><option value="newest">上架建檔時間：新到舊</option><option value="oldest">上架建檔時間：舊到新</option><option value="priceAsc">商品價格：低到高</option><option value="priceDesc">商品價格：高到低</option></select><small>時間依商品管理建檔日期</small></label><span id="productCount"></span>
           </div>
 
           <form class="admin-card product-form" id="productForm" hidden>
@@ -247,7 +247,7 @@
   <script src="admin-lifestyle-gallery.js?v=all-collections-20260922"></script>
   <script src="admin-merchandising.js?v=category-filter-20261003-master"></script>
   <script src="admin-product-extract.js?v=20261003-translate"></script>
-  <script src="admin.js?v=cost-search-20261009"></script>
+  <script src="admin.js?v=product-sort-20261009"></script>
   <script src="admin-payment-proof.js?v=20260910-1"></script>
 </body>
 </html>
