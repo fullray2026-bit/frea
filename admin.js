@@ -1245,6 +1245,7 @@
     location.reload();
   });
 
+  window.FreaProcurement?.init({client,getMasters:()=>masterProducts,getProducts:()=>products});
   verifyAdmin().then(ok => {
     if (ok) loadData();
   });
