@@ -17,7 +17,7 @@
   toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-controls','siteSearchPanel');
   toggle.innerHTML='<svg viewBox="0 0 28 28" aria-hidden="true"><circle cx="11.5" cy="11.5" r="7.5"/><path d="m17 17 7 7"/></svg><span>搜尋</span>';
   nav.prepend(toggle);
-  const panel=document.createElement('form');panel.id='siteSearchPanel';panel.className='site-search-panel';panel.hidden=true;panel.setAttribute('role','search');
+  const panel=document.createElement('form');panel.id='siteSearchPanel';panel.className='site-header-search-panel';panel.hidden=true;panel.setAttribute('role','search');
   panel.innerHTML='<label class="site-search-label" for="siteSearchInput">搜尋商品</label><input id="siteSearchInput" type="search" placeholder="搜尋商品、品牌" required><button type="submit">搜尋</button><button type="button" class="site-search-close" aria-label="關閉搜尋">×</button>';
   header.append(panel);
   const input=panel.querySelector('input');
