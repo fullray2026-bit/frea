@@ -1,0 +1,64 @@
+(async function(){
+ 'use strict';
+ const $=id=>document.getElementById(id),rules=window.FreaSocialRules;
+ const client=window.supabase.createClient(window.freaSupabaseConfig.url,window.freaSupabaseConfig.publishableKey);
+ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const date=v=>new Date(v).toLocaleString('zh-TW',{timeZone:'Asia/Tokyo',hour12:false});
+ const labels={draft:'待審閱',reviewed:'已確認・未發布',skipped:'已略過'};
+ const check=r=>{if(r.error)throw r.error;return r.data};
+ let user,products=[],drafts=[],settings,current=null,photoUrl='',photoFile=null,imageReady=false,imageDirty=true,dirty=false,busy=false,mode='manual',limit=50;
+ const say=(text,id='message')=>{$(id).textContent=text};
+ const product=()=>products.find(p=>p.id===$('product').value);
+ const snapshot=p=>Object.fromEntries(['id','name','description','usage_flavor','specification','price','currency','image_url','updated_at'].map(k=>[k,p[k]]));
+ async function run(fn,id='message'){if(busy)return;busy=true;document.querySelectorAll('button').forEach(e=>e.disabled=true);say('',id);try{await fn()}catch(e){say(e.message||'操作未完成，請稍後再試。',id)}finally{busy=false;document.querySelectorAll('button').forEach(e=>e.disabled=false)}}
+ async function imageURL(path){if(!path)return '';return check(await client.storage.from('social-drafts').createSignedUrl(path,3600)).signedUrl}
+ const source=v=>{const u=new URL(v,location.href);if(!['http:','https:'].includes(u.protocol))throw Error('圖片網址不支援');return u.href};
+ async function loadImage(url){return new Promise((resolve,reject)=>{const im=new Image();im.crossOrigin='anonymous';im.onload=()=>resolve(im);im.onerror=()=>reject(Error('商品圖片無法載入，請上傳商品照片後重試。'));im.src=url})}
+ async function render(){
+   imageReady=false;const p=product();if(!p)throw Error('請選擇商品。');
+   const [im,logo]=await Promise.all([loadImage(photoUrl||source(p.image_url)),loadImage('assets/logo_round_transparent.png'),document.fonts.load('72px Chenyu')]);
+   if(!document.fonts.check('72px Chenyu'))throw Error('手寫字型尚未載入，請稍後重試。');
+   const canvas=$('canvas'),ctx=canvas.getContext('2d');ctx.fillStyle='#f6f0e6';ctx.fillRect(0,0,1080,1350);
+   ctx.font='72px Chenyu';ctx.fillStyle='#503721';ctx.textAlign='center';let title=$('title').value.trim()||'留一點時間，給日常',size=72;while(ctx.measureText(title).width>960&&size>28){size-=2;ctx.font=size+'px Chenyu'}ctx.fillText(title,540,142);
+   const scale=Math.min(980/im.width,1020/im.height),w=im.width*scale,h=im.height*scale;ctx.drawImage(im,(1080-w)/2,210+(1020-h)/2,w,h);ctx.drawImage(logo,925,1200,112,112);
+   canvas.toDataURL('image/jpeg');imageReady=true;imageDirty=true;
+ }
+ async function load(){
+   settings=check(await client.from('social_settings').select('*').eq('id',true).single());
+   products=[];for(let from=0;;from+=500){const rows=check(await client.from('products').select('id,name,description,specification,usage_flavor,price,currency,image_url,is_active,stock_quantity,updated_at,product_variants(is_active,stock_quantity)').order('id').range(from,from+499));products.push(...rows);if(rows.length<500)break;}
+   const options=products.map(p=>`<option value="${p.id}">${esc(p.name)}${rules.eligible(p)?'':'（未上架／缺貨／缺圖）'}</option>`).join('');$('product').innerHTML=options;$('preferred').innerHTML=options;$('excluded').innerHTML=options;
+   $('repeatDays').value=settings.avoid_repeat_days;for(const [id,key]of [['preferred','preferred_product_ids'],['excluded','excluded_product_ids']])for(const o of $(id).options)o.selected=settings[key].includes(o.value);
+   await loadDrafts();
+ }
+ async function loadDrafts(){drafts=check(await client.from('social_drafts').select('*').order('created_at',{ascending:false}).limit(limit));$('more').hidden=drafts.length<limit;await listing()}
+ async function listing(){const q=$('search').value.trim().toLowerCase(),status=$('filter').value;const rows=drafts.filter(d=>(!status||d.status===status)&&(!q||(d.title+' '+d.product_snapshot.name).toLowerCase().includes(q)));$('listCount').textContent=`顯示 ${rows.length} 篇草稿（日本時間）`;
+   $('list').innerHTML=rows.length?rows.map(d=>`<article class="card draft-row"><img data-image="${d.id}" alt="草稿圖片"><div><h3>${esc(d.title)}</h3><p>${esc(d.product_snapshot.name)}</p><p>${labels[d.status]} · 第 ${d.revision} 版 · ${date(d.created_at)}</p></div><button data-edit="${d.id}">查看／編輯</button></article>`).join(''):'<div class="card">目前沒有符合的草稿。可先建立一篇商品草稿。</div>';
+   await Promise.all(rows.map(async d=>{const el=document.querySelector(`[data-image="${d.id}"]`);if(!el)return;try{el.src=d.image_path?await imageURL(d.image_path):source(d.product_snapshot.image_url)}catch{el.alt='圖片暫時無法顯示'}}));
+ }
+ async function open(d=null){current=d;dirty=false;photoFile=null;photoUrl=d?.background_path?await imageURL(d.background_path):'';imageReady=false;imageDirty=!d;mode=d?.generation_mode||'manual';$('editorHeading').textContent=d?'編輯商品草稿':'建立商品草稿';$('product').disabled=!!d;$('product').value=d?.product_id||products.find(rules.eligible)?.id||'';$('title').value=d?.title||'';$('facebook').value=d?.facebook_text||'';$('instagram').value=d?.instagram_text||'';$('photo').value='';$('generationNote').textContent=d?`文案來源：${{manual:'手動編輯',template:'商品資料範本',ai:'AI 草稿'}[mode]}`:'先選擇商品，再產生文案。';$('review').hidden=$('skip').hidden=!d;$('versions').hidden=!d;say('','editMessage');$('editor').showModal();$('productLink').href=rules.link(product()||d?.product_snapshot||{name:''});
+   if(d?.image_path){const im=await loadImage(await imageURL(d.image_path));$('canvas').getContext('2d').drawImage(im,0,0,1080,1350);imageReady=true;imageDirty=false}else if(product())await render();
+   if(d){const revisions=check(await client.from('social_revisions').select('revision,snapshot,saved_at').eq('draft_id',d.id).order('revision',{ascending:false}).limit(30));$('versionList').innerHTML=revisions.map(r=>`<details><summary>第 ${r.revision} 版 · ${date(r.saved_at)} · ${labels[r.snapshot.status]}</summary><pre>${esc(r.snapshot.facebook_text)}</pre><pre>${esc(r.snapshot.instagram_text)}</pre></details>`).join('')}
+ }
+ async function save(){if(!$('draftForm').reportValidity())throw Error('請完成商品、標題與文案。');const p=product();if(!p)throw Error('找不到商品。');if(!imageReady||imageDirty)await render();let path=current?.image_path,background=current?.background_path||null;if(photoFile){background=user.id+'/'+crypto.randomUUID()+'.'+photoFile.type.split('/')[1];check(await client.storage.from('social-drafts').upload(background,photoFile,{contentType:photoFile.type,upsert:false}));}
+   if(imageDirty||!path){const blob=await new Promise(r=>$('canvas').toBlob(r,'image/jpeg',.93));if(!blob)throw Error('圖片輸出失敗');path=`${user.id}/${crypto.randomUUID()}.jpg`;check(await client.storage.from('social-drafts').upload(path,blob,{contentType:'image/jpeg',upsert:false}));}
+   const payload={title:$('title').value.trim(),facebook_text:$('facebook').value.trim(),instagram_text:$('instagram').value.trim(),image_path:path,background_path:background,generation_mode:mode};let rows;
+   if(current)rows=check(await client.from('social_drafts').update(payload).eq('id',current.id).eq('revision',current.revision).select());else rows=check(await client.from('social_drafts').insert({...payload,product_id:p.id,product_snapshot:snapshot(p),created_by:user.id}).select());
+   if(!rows.length)throw Error('草稿已在其他視窗更新，請關閉後重新開啟。');current=rows[0];dirty=false;imageDirty=false;photoFile=null;$('review').hidden=$('skip').hidden=false;await loadDrafts();say('草稿已儲存，尚未發布。','editMessage');
+ }
+ async function setStatus(status){if(!current)throw Error('請先儲存草稿。');if(dirty)throw Error('有尚未儲存的修改，請先儲存再確認。');if(status==='reviewed'){const latest=check(await client.from('products').select('*,product_variants(is_active,stock_quantity)').eq('id',current.product_id).single());if(!rules.eligible(latest))throw Error('商品已下架、缺貨或缺少圖片，不能確認。');for(const key of ['name','description','specification','usage_flavor','price','currency','image_url'])if(String(latest[key]??'')!==String(current.product_snapshot[key]??''))throw Error('商品資料已變更，請另建新草稿核對，避免沿用過期內容。');}
+   const rows=check(await client.from('social_drafts').update({status}).eq('id',current.id).eq('revision',current.revision).select());if(!rows.length)throw Error('版本已變更，請重新載入。');current=rows[0];await loadDrafts();say(status==='reviewed'?'此版本已確認。帳號尚未串接，未發布至任何平台。':'此草稿已略過。','editMessage');}
+ function close(){if(busy)return;if(dirty&&!confirm('尚未儲存的修改會捨棄，確定關閉？'))return;$('editor').close();if(photoUrl.startsWith('blob:'))URL.revokeObjectURL(photoUrl)}
+ $('close').onclick=close;$('editor').addEventListener('cancel',e=>{e.preventDefault();close()});
+ $('draftForm').addEventListener('input',e=>{dirty=true;if(e.target.id==='title')imageReady=false});
+ $('product').onchange=()=>run(async()=>{dirty=true;photoFile=null;photoUrl='';imageReady=false;$('title').value='';$('facebook').value='';$('instagram').value='';$('productLink').href=rules.link(product());await render()},'editMessage');
+ $('recommend').onclick=()=>run(async()=>{if(current)throw Error('編輯中的草稿不能更換商品，請建立新草稿。');const since=new Date(Date.now()-settings.avoid_repeat_days*86400000).toISOString();const recent=[];for(let from=0;;from+=500){const rows=check(await client.from('social_drafts').select('product_id').gte('created_at',since).order('id').range(from,from+499));recent.push(...rows.map(r=>r.product_id));if(rows.length<500)break;}const p=rules.choose(products,settings,recent);if(!p)throw Error('目前沒有符合條件且未重複推薦的商品，請手動選擇或調整設定。');$('product').value=p.id;$('productLink').href=rules.link(p);photoFile=null;photoUrl='';$('title').value='';$('facebook').value='';$('instagram').value='';dirty=true;await render()},'editMessage');
+ $('generate').onclick=()=>run(async()=>{const p=product();if(!rules.eligible(p||{}))throw Error('請選擇已上架、有庫存及圖片的商品。');let result;const r=await client.functions.invoke('social-copy',{body:{action:'generate',product_id:p.id}});if(r.error||r.data?.error)throw Error(r.data?.error||'文案服務暫時無法使用，可手動輸入文案。');result=r.data;mode=result.mode;$('title').value=result.title;$('facebook').value=result.facebook_text;$('instagram').value=result.instagram_text;$('generationNote').textContent=result.notice;dirty=true;await render()},'editMessage');
+ $('photo').onchange=()=>run(async()=>{const file=$('photo').files[0];if(!file)return;if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>8*1024*1024)throw Error('請使用 8 MB 以下的 JPG、PNG 或 WebP。');if(photoUrl.startsWith('blob:'))URL.revokeObjectURL(photoUrl);photoFile=file;photoUrl=URL.createObjectURL(file);dirty=true;await render()},'editMessage');
+ $('renderImage').onclick=()=>run(async()=>{dirty=true;await render()},'editMessage');$('download').onclick=()=>run(async()=>{if(!imageReady)await render();const a=document.createElement('a');a.href=$('canvas').toDataURL('image/jpeg',.93);a.download='frea-social-preview.jpg';a.click()},'editMessage');
+ $('draftForm').onsubmit=e=>{e.preventDefault();run(save,'editMessage')};$('review').onclick=()=>run(()=>setStatus('reviewed'),'editMessage');$('skip').onclick=()=>run(()=>setStatus('skipped'),'editMessage');
+ $('newDraft').onclick=()=>run(()=>open());$('list').onclick=e=>{const id=e.target.dataset.edit;if(id)run(()=>open(drafts.find(d=>d.id===id)))};$('search').oninput=()=>listing();$('filter').onchange=()=>listing();$('reload').onclick=()=>run(load);$('more').onclick=()=>run(async()=>{limit+=50;await loadDrafts()});
+ document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(n=>{n.setAttribute('aria-pressed',String(n===b));$(n.dataset.tab).hidden=n!==b})});
+ $('settingsForm').onsubmit=e=>{e.preventDefault();run(async()=>{check(await client.from('social_settings').update({avoid_repeat_days:Number($('repeatDays').value),preferred_product_ids:[...$('preferred').selectedOptions].map(o=>o.value),excluded_product_ids:[...$('excluded').selectedOptions].map(o=>o.value),updated_at:new Date().toISOString()}).eq('id',true));settings=check(await client.from('social_settings').select('*').single());say('製作設定已儲存；每日時間為日本 08:00，自動排程尚未啟用。')})};
+ window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue=''}});
+ try{const auth=check(await client.auth.getUser());user=auth.user;if(user?.app_metadata?.role!=='admin')throw Error('請先以管理員帳號登入後台，再開啟本頁。');$('authMessage').textContent='僅管理員可查看草稿與圖片。';$('app').hidden=false;await load();const r=await client.functions.invoke('social-copy',{body:{action:'status'}});$('connections').textContent=r.error?'文案服務：暫時無法確認。LINE／FB／IG：尚未串接。':`AI 文案：${r.data.ai?'已設定金鑰，使用時仍會檢查服務回應':'尚未設定，使用商品資料範本'}。LINE／FB／IG：尚未串接。`;client.auth.onAuthStateChange((event)=>{if(event==='SIGNED_OUT'){dirty=false;location.href='admin.html'}})}catch(e){say(e.message,'authMessage');$('app').hidden=true}
+})();
