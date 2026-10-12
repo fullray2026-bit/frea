@@ -1,0 +1,23 @@
+-- Keep privileged implementations outside the exposed API schema.
+grant usage on schema social_private to authenticated,service_role;
+alter function public.social_generate_now(uuid) set schema social_private;
+alter function public.social_send_draft(uuid) set schema social_private;
+alter function public.social_pipeline_status() set schema social_private;
+alter function public.social_toggle_pipeline(boolean) set schema social_private;
+alter function public.social_cron_auth(text) set schema social_private;
+alter function public.social_tick() set schema social_private;
+alter function public.social_claim() set schema social_private;
+alter function public.social_review(uuid,text) set schema social_private;
+alter function public.social_finish_draft(uuid,uuid,text) set schema social_private;
+create function public.social_generate_now(chosen uuid) returns uuid language sql security invoker set search_path='' as $$ select social_private.social_generate_now(chosen); $$;
+create function public.social_send_draft(chosen uuid) returns uuid language sql security invoker set search_path='' as $$ select social_private.social_send_draft(chosen); $$;
+create function public.social_pipeline_status() returns jsonb language sql security invoker set search_path='' as $$ select social_private.social_pipeline_status(); $$;
+create function public.social_toggle_pipeline(enable boolean) returns void language sql security invoker set search_path='' as $$ select social_private.social_toggle_pipeline(enable); $$;
+create function public.social_cron_auth(secret_digest text) returns boolean language sql security invoker set search_path='' as $$ select social_private.social_cron_auth(secret_digest); $$;
+create function public.social_tick() returns void language sql security invoker set search_path='' as $$ select social_private.social_tick(); $$;
+create function public.social_claim() returns setof public.social_jobs language sql security invoker set search_path='' as $$ select * from social_private.social_claim(); $$;
+create function public.social_review(token uuid,decision text) returns text language sql security invoker set search_path='' as $$ select social_private.social_review(token,decision); $$;
+create function public.social_finish_draft(job uuid,lock_id uuid,image text) returns uuid language sql security invoker set search_path='' as $$ select social_private.social_finish_draft(job,lock_id,image); $$;
+revoke all on function public.social_generate_now(uuid),public.social_send_draft(uuid),public.social_pipeline_status(),public.social_toggle_pipeline(boolean),public.social_cron_auth(text),public.social_tick(),public.social_claim(),public.social_review(uuid,text),public.social_finish_draft(uuid,uuid,text) from public,anon,authenticated;
+grant execute on function public.social_generate_now(uuid),public.social_send_draft(uuid),public.social_pipeline_status(),public.social_toggle_pipeline(boolean) to authenticated;
+grant execute on function public.social_cron_auth(text),public.social_tick(),public.social_claim(),public.social_review(uuid,text),public.social_finish_draft(uuid,uuid,text) to service_role;

@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {verifyLine,reviewDecision} from '../supabase/functions/social-line-webhook/core.mjs';
+const owner='U'+'a'.repeat(32),token='00000000-0000-4000-8000-000000000001';
+const event={type:'postback',source:{type:'user',userId:owner},postback:{data:'social:approve:'+token}};
+assert.deepEqual(reviewDecision(event,owner),{decision:'approve',token});
+assert.equal(reviewDecision({...event,source:{type:'group',userId:owner}},owner),null);
+assert.equal(reviewDecision({...event,source:{type:'user',userId:'U'+'b'.repeat(32)}},owner),null);
+assert.equal(reviewDecision({...event,type:'message',message:{type:'text',text:'OK'}},owner),null);
+const raw=JSON.stringify({events:[event]}),secret='test-secret';const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(secret),{name:'HMAC',hash:'SHA-256'},false,['sign']);const signature=btoa(String.fromCharCode(...new Uint8Array(await crypto.subtle.sign('HMAC',key,new TextEncoder().encode(raw)))));
+assert.equal(await verifyLine(raw,signature,secret),true);assert.equal(await verifyLine(raw+' ',signature,secret),false);assert.equal(await verifyLine(raw,signature,'other'),false);assert.equal(await verifyLine(raw,null,secret),false);
+console.log('PASS owner-only versioned postbacks / group and stranger rejection / body signature tampering');

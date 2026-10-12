@@ -1,4 +1,4 @@
-// LINE connection handshake only; publication and draft approval remain disabled.
+// HMAC verification and owner-only commands. Publication requires a version-bound postback.
 export async function verifyLine(body, signature, secret) {
   if (!secret || !signature || !/^[A-Za-z0-9+/]{43}=$/.test(signature)) return false;
   try {
@@ -13,3 +13,5 @@ export function ownerCommand(event, owner) {
   if(text==='ok'||text==='可以') return 'not_ready';
   return null;
 }
+
+export function reviewDecision(event,owner){if(!/^U[0-9a-f]{32}$/i.test(owner||'')||event.source?.type!=='user'||event.source.userId!==owner||event.type!=='postback')return null;const match=/^social:(approve|skip):([0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12})$/.exec(event.postback?.data||'');return match?{decision:match[1],token:match[2]}:null;}

@@ -22,7 +22,7 @@ Deno.serve(async req=>{
   if(!response.ok)return out({ok:false,message:'Meta 帳號讀取未通過，請檢查權杖效期與授權。'});
   const page=await response.json();
   const ok=page.id==='477844252406455'&&page.instagram_business_account?.id==='17841426984648877';
-  return out({ok,message:ok?'FB／IG 帳號讀取通過，與指定帳號一致。發布與每日排程尚未啟用。':'讀取結果與指定的 FB／IG 帳號不一致，請重新檢查授權。',checked_at:new Date().toISOString()});
+  return out({ok,message:ok?'FB／IG 帳號讀取通過，與指定帳號一致。發布仍需在 LINE 確認該篇草稿。':'讀取結果與指定的 FB／IG 帳號不一致，請重新檢查授權。',checked_at:new Date().toISOString()});
  }catch{return out({ok:false,message:'連線檢查暫時未完成，請稍後再試。'},502)}
 });
 
