@@ -26,7 +26,7 @@ Deno.serve(async req=>{
    const {data:p,error:pe}=await client.from('products').select('name,description,specification,usage_flavor,image_url,is_active,stock_quantity,product_variants(is_active,stock_quantity)').eq('id',id).single();
    if(pe||!p||!p.is_active||!p.image_url||!(p.product_variants.length?p.product_variants.some(v=>v.is_active&&v.stock_quantity>0):p.stock_quantity>0))return out({error:'商品已下架、缺貨或缺少圖片。'},400);
    facts={name:p.name,description:p.description,specification:p.specification,usage_flavor:p.usage_flavor};
-   if(style.include_link!==false)link='https://www.thefrea.com/index.html#search/'+encodeURIComponent(p.name);
+   if(style.include_link!==false){const bytes=id.replaceAll('-','').match(/../g)!.map((h:string)=>String.fromCharCode(parseInt(h,16))).join('');link='https://www.thefrea.com/p/#'+btoa(bytes).replaceAll('+','-').replaceAll('/','_').replace(/=+$/,'');}
    base='想和你分享一件日常選物：'+p.name+'。\n\n'+(p.usage_flavor||p.description||'替平常的日子，挑一件自己喜歡的選物。');
   }
   const suffix=link?'\n\n到 fréa 看看商品：\n'+link:'';

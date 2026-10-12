@@ -26,7 +26,7 @@
  const isLife=()=>$('postKind').value==='life';
  const material=()=>studio.materials.find(m=>m.id===$('materialPick').value);
  const chosenStyle=()=>studio.styles.find(s=>s.id===$('postStyle').value)||activeStyle;
- function typeUI(){ $('productField').hidden=isLife();$('product').required=!isLife();$('lifeFields').hidden=!isLife();$('materialPick').required=isLife();$('recommend').hidden=isLife();$('productLink').hidden=isLife(); }
+ function typeUI(){ $('productField').hidden=isLife();$('product').required=!isLife();$('lifeFields').hidden=!isLife();$('materialPick').required=isLife();$('recommend').hidden=isLife();$('productLink').hidden=isLife();$('shortenLink').hidden=isLife(); }
  async function pickMaterial(){const m=material();materialBackground=null;photoFile=null;photoUrl='';$('materialPhotoPick').innerHTML=(m?.photo_paths||[]).map((p,i)=>'<option value="'+studio.esc(p)+'">照片 '+(i+1)+'</option>').join('');$('lifeNote').textContent=m?m.location+' · '+m.notes:'';if(m?.photo_paths.length){materialBackground=m.photo_paths[0];photoUrl=await imageURL(materialBackground)}imageReady=false;}
  const product=()=>products.find(p=>p.id===$('product').value);
  const snapshot=p=>Object.fromEntries(['id','name','description','usage_flavor','specification','price','currency','image_url','updated_at'].map(k=>[k,p[k]]));
@@ -75,6 +75,7 @@
  $('postStyle').onchange=()=>run(async()=>{const selected=chosenStyle();if(selected.kind&&selected.kind!==$('postKind').value){$('postStyle').value='';throw Error('請選擇相同貼文類型的風格。')}dirty=true;imageReady=false;$('postStyleNote').textContent='本篇使用：'+(selected.name||'基本排版')+'。既有文字不會自動改寫，可按「產生文案」。';await render()},'editMessage');
  $('materialPick').onchange=()=>run(async()=>{dirty=true;await pickMaterial();await render()},'editMessage');
  $('materialPhotoPick').onchange=()=>run(async()=>{dirty=true;materialBackground=$('materialPhotoPick').value;photoUrl=await imageURL(materialBackground);photoFile=null;await render()},'editMessage');
+ $('shortenLink').onclick=()=>run(async()=>{if(isLife())throw Error('生活貼文沒有商品網址。');const p=product()||current?.product_snapshot;if(!p?.id)throw Error('請先選擇商品。');const names=[p.name,current?.product_snapshot?.name].filter(Boolean),short=rules.link(p);let changed=false;for(const id of ['facebook','instagram'])for(const name of names){const old='https://www.thefrea.com/index.html#search/'+encodeURIComponent(name);if($(id).value.includes(old)){$(id).value=$(id).value.split(old).join(short);changed=true;}}if(changed){dirty=true;say('商品連結已換成短網址，請儲存草稿。','editMessage')}else say('沒有找到需要替換的舊商品網址。','editMessage')},'editMessage');
  $('checkMeta').onclick=()=>run(async()=>{say('正在檢查 FB／IG 帳號…','metaStatus');const r=await client.functions.invoke('social-meta-status',{body:{}});if(r.error)throw Error('無法完成連線檢查，請重新登入後再試。');say(r.data.message||'連線檢查未完成。','metaStatus')},'metaStatus');
  $('close').onclick=close;$('editor').addEventListener('cancel',e=>{e.preventDefault();close()});
  $('draftForm').addEventListener('input',e=>{dirty=true;if(e.target.id==='title')imageReady=false});
