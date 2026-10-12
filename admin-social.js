@@ -3,6 +3,20 @@
  const $=id=>document.getElementById(id),rules=window.FreaSocialRules;
  const client=window.supabase.createClient(window.freaSupabaseConfig.url,window.freaSupabaseConfig.publishableKey);
  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+ function paintPicker(id){
+  const options=[...$(id).options],selected=options.filter(o=>o.selected),term=$(id+'Search').value.trim().toLocaleLowerCase();
+  $(id+'Count').textContent='已選 '+selected.length+' 款商品';
+  $(id+'Tags').innerHTML=selected.length?selected.map(o=>'<button type="button" class="picker-tag" data-remove="'+esc(o.value)+'" aria-label="取消選取 '+esc(o.textContent)+'">'+esc(o.textContent)+'<span aria-hidden="true"> ×</span></button>').join(''):'<span class="muted">尚未選擇商品</span>';
+  const shown=options.filter(o=>o.textContent.toLocaleLowerCase().includes(term));
+  $(id+'Options').innerHTML=shown.length?shown.map(o=>'<label class="picker-option"><input type="checkbox" value="'+esc(o.value)+'" '+(o.selected?'checked':'')+'><span>'+esc(o.textContent)+'</span></label>').join(''):'<p class="muted">找不到符合的商品，請試試其他關鍵字。</p>';
+ }
+ for(const id of ['preferred','excluded']){
+  $(id+'Search').oninput=()=>paintPicker(id);
+  $(id+'Options').onchange=e=>{const o=[...$(id).options].find(o=>o.value===e.target.value);if(o)o.selected=e.target.checked;const pos=$(id+'Options').scrollTop;paintPicker(id);$(id+'Options').scrollTop=pos;const input=[...$(id+'Options').querySelectorAll('input')].find(el=>el.value===e.target.value);input?.focus({preventScroll:true})};
+  $(id+'Tags').onclick=e=>{const button=e.target.closest('[data-remove]');if(!button)return;const o=[...$(id).options].find(o=>o.value===button.dataset.remove);if(o)o.selected=false;paintPicker(id);$(id+'Search').focus({preventScroll:true})};
+ }
+
  const date=v=>new Date(v).toLocaleString('zh-TW',{timeZone:'Asia/Tokyo',hour12:false});
  const labels={draft:'待審閱',reviewed:'已確認・未發布',skipped:'已略過'};
  const check=r=>{if(r.error)throw r.error;return r.data};
@@ -35,7 +49,7 @@
    settings=check(await client.from('social_settings').select('*').eq('id',true).single());
    products=[];for(let from=0;;from+=500){const rows=check(await client.from('products').select('id,name,description,specification,usage_flavor,price,currency,image_url,is_active,stock_quantity,updated_at,product_variants(is_active,stock_quantity)').order('id').range(from,from+499));products.push(...rows);if(rows.length<500)break;}
    const options=products.map(p=>`<option value="${p.id}">${esc(p.name)}${rules.eligible(p)?'':'（未上架／缺貨／缺圖）'}</option>`).join('');$('product').innerHTML=options;$('preferred').innerHTML=options;$('excluded').innerHTML=options;
-   $('repeatDays').value=settings.avoid_repeat_days;for(const [id,key]of [['preferred','preferred_product_ids'],['excluded','excluded_product_ids']])for(const o of $(id).options)o.selected=settings[key].includes(o.value);
+   $('repeatDays').value=settings.avoid_repeat_days;for(const [id,key]of [['preferred','preferred_product_ids'],['excluded','excluded_product_ids']])for(const o of $(id).options)o.selected=settings[key].includes(o.value);for(const id of ['preferred','excluded'])paintPicker(id);
    await loadDrafts();
  }
  async function loadDrafts(){drafts=check(await client.from('social_drafts').select('*').order('created_at',{ascending:false}).limit(limit));$('more').hidden=drafts.length<limit;await listing()}
