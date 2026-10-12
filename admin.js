@@ -1118,6 +1118,7 @@
   }
 
   function switchView(view) {
+    if(view === "social"){const frame=byId("adminSocialFrame");if(!frame.getAttribute("src"))frame.src="admin-social.html?embedded=1&v=20261012-panel";}
     if (view === "costs" || view === "personal") refreshBankRate();
     document.querySelectorAll("[data-admin-panel]").forEach(panel => {
       panel.hidden = panel.dataset.adminPanel !== view;
@@ -1125,7 +1126,7 @@
     document.querySelectorAll("[data-admin-view]").forEach(button => {
       button.classList.toggle("is-active", button.dataset.adminView === view);
     });
-    byId("adminPageTitle").textContent = titles[view] || "後台管理";
+    byId("adminPageTitle").textContent = (view === "social" ? "社群貼文管理" : titles[view]) || "後台管理";
   }
 
   loginForm.addEventListener("submit", async event => {
