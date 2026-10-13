@@ -2,10 +2,13 @@
 import {createClient} from 'npm:@supabase/supabase-js@2.112.3';
 import {db,ok,eligible,writeCopy,asset,signed,put,request,env} from '../_shared/pipeline.ts';
 import {slots,imagePrompt} from '../_shared/three-images.ts';
+import {productInformation} from '../_shared/product-information.ts';
 const origins=new Set(['https://www.thefrea.com','https://thefrea.com','https://fullray2026-bit.github.io']);
 const uuid=(v:any)=>typeof v==='string'&&/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(v);
 async function generate(d:any,slot:number,lock:string){
  try{
+  let path:string;
+  if(slot===1){path=await productInformation(d,lock);}else{
   const original=await asset(d.product_snapshot.image_url),form=new FormData();
   form.set('model',Deno.env.get('SOCIAL_IMAGE_MODEL')||'gpt-image-1.5');form.set('size','1024x1024');form.set('quality','medium');form.set('input_fidelity','high');form.set('output_format','jpeg');form.set('output_compression','90');form.set('n','1');
   form.append('image[]',new Blob([original.bytes],{type:original.type}),'product.'+original.type.split('/')[1]);
@@ -14,7 +17,8 @@ async function generate(d:any,slot:number,lock:string){
   const result=await (await request('https://api.openai.com/v1/images/edits',{method:'POST',headers:{Authorization:'Bearer '+env('OPENAI_API_KEY')},body:form},130000)).json();
   if(result.data?.length!==1||!result.data[0].b64_json)throw Error('圖片回應不完整');
   const bytes=Uint8Array.from(atob(result.data[0].b64_json),c=>c.charCodeAt(0));
-  const path=await put('three-images/'+d.id+'/'+slots[slot].key+'-'+lock+'.jpg',bytes);
+  path=await put('three-images/'+d.id+'/'+slots[slot].key+'-'+lock+'.jpg',bytes);
+  }
   const paths=[...d.image_paths];paths[slot]=path;
   const progress={...d.image_generation,state:paths.filter(Boolean).length===3?'complete':'ready',lock:null,error:null};
   const saved=ok(await db.from('social_drafts').update({image_paths:paths,image_path:paths[0]||null,image_generation:progress}).eq('id',d.id).eq('revision',d.revision).eq('is_test',true).select());
