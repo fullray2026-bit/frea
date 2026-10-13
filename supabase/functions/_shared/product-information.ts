@@ -1,21 +1,28 @@
 import {Resvg,initWasm} from 'npm:@resvg/resvg-wasm@2.6.2';
 import jpeg from 'npm:jpeg-js@0.4.4';
 import {PNG} from 'npm:pngjs@7.0.0';
+import decodeWebp,{init as initWebp} from 'npm:@jsquash/webp@1.5.0/decode.js';
 import {asset,request,put} from './pipeline.ts';
 const xml=(s:string)=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]!));
 const b64=(bytes:Uint8Array)=>{let s='';for(let i=0;i<bytes.length;i+=16384)s+=String.fromCharCode(...bytes.subarray(i,i+16384));return btoa(s);};
-let ready:Promise<void>,font:Uint8Array;
+let ready:Promise<void>,webpReady:Promise<void>,font:Uint8Array;
 function lines(text:string,width:number){const chars=[...text],rows=[];for(let i=0;i<chars.length;i+=width)rows.push(chars.slice(i,i+width).join(''));return rows;}
 export async function productInformation(d:any,lock:string){
  if(!ready)ready=(async()=>{await initWasm(await(await request('https://cdn.jsdelivr.net/npm/@resvg/resvg-wasm@2.6.2/index_bg.wasm')).arrayBuffer());font=new Uint8Array(await(await request('https://www.thefrea.com/assets/social/ChenYuluoyan-2.0-Thin.ttf')).arrayBuffer());})();await ready;
  const original=await asset(d.product_snapshot.image_url),image='data:'+original.type+';base64,'+b64(original.bytes);
  const name=lines(d.product_snapshot.name,8),specs=String(d.product_snapshot.specification||'').split('／').flatMap(s=>lines(s.trim(),11));
- const texts=[...name.map((s,i)=>'<text x="630" y="'+(240+i*54)+'" font-size="42">'+xml(s)+'</text>'),...specs.map((s,i)=>'<text x="630" y="'+(300+name.length*54+i*42)+'" font-size="30">'+xml(s)+'</text>')].join('');
- const svg='<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1024" height="1024"><rect width="1024" height="1024" fill="#efefef"/><g font-family="Chenyu" fill="#503e32"><text x="630" y="150" font-size="34">商品資訊</text>'+texts+'</g></svg>';
+ const texts=[...name.map((s,i)=>'<text x="630" y="'+(240+i*68)+'" font-size="56">'+xml(s)+'</text>'),...specs.map((s,i)=>'<text x="630" y="'+(300+name.length*68+i*52)+'" font-size="42">'+xml(s)+'</text>')].join('');
+ const svg='<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1024" height="1024"><rect width="1024" height="1024" fill="#efefef"/><g font-family="Chenyu" fill="#503e32"><text x="630" y="150" font-size="50">商品資訊</text>'+texts+'</g></svg>';
  const renderer=new Resvg(svg,{font:{fontBuffers:[font],defaultFontFamily:'Chenyu',loadSystemFonts:false}});const png=renderer.render();const pixels=png.pixels;
  // Composite the original pixels explicitly: the WASM SVG renderer omits JPEG images.
- const decoded=original.type==='image/jpeg'?jpeg.decode(original.bytes,{useTArray:true}):original.type==='image/png'?PNG.sync.read(original.bytes):null;
- if(!decoded)throw Error('商品資訊圖請使用 JPG 或 PNG 原始照片');
+ // Sniff file bytes: some catalog .jpg objects actually contain WebP data.
+ const isWebp=String.fromCharCode(...original.bytes.slice(0,4))==='RIFF'&&String.fromCharCode(...original.bytes.slice(8,12))==='WEBP';
+ let decoded:any;
+ if(isWebp){
+  if(!webpReady)webpReady=(async()=>{if(!('ImageData' in globalThis))Object.assign(globalThis,{ImageData:class{constructor(public data:Uint8ClampedArray,public width:number,public height:number){}}});await initWebp(await WebAssembly.compile(await(await request('https://cdn.jsdelivr.net/npm/@jsquash/webp@1.5.0/codec/dec/webp_dec.wasm')).arrayBuffer()));})();await webpReady;decoded=await decodeWebp(original.bytes.buffer);
+ }else if(original.bytes[0]===255&&original.bytes[1]===216)decoded=jpeg.decode(original.bytes,{useTArray:true});
+ else if(original.bytes[0]===137&&original.bytes[1]===80)decoded=PNG.sync.read(original.bytes);
+ else throw Error('商品資訊圖不支援此原始照片格式');
  let left=decoded.width,top=decoded.height,right=0,bottom=0;const bg=[decoded.data[0],decoded.data[1],decoded.data[2]];
  for(let y=0;y<decoded.height;y++)for(let x=0;x<decoded.width;x++){const k=(y*decoded.width+x)*4;if(decoded.data[k+3]>20&&Math.max(...bg.map((v,c)=>Math.abs(decoded.data[k+c]-v)))>45){left=Math.min(left,x);right=Math.max(right,x);top=Math.min(top,y);bottom=Math.max(bottom,y);}}
  if(right<=left||bottom<=top){left=0;top=0;right=decoded.width-1;bottom=decoded.height-1;}
