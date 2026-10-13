@@ -10,14 +10,14 @@ let ready:Promise<void>,webpReady:Promise<void>,font:Uint8Array;
 function lines(text:string,width:number){const chars=[...text],rows=[];for(let i=0;i<chars.length;i+=width)rows.push(chars.slice(i,i+width).join(''));return rows;}
 export async function productInformation(d:any,lock:string){
  if(!ready)ready=(async()=>{await initWasm(await(await request('https://cdn.jsdelivr.net/npm/@resvg/resvg-wasm@2.6.2/index_bg.wasm')).arrayBuffer());font=new Uint8Array(await(await request('https://raw.githubusercontent.com/notofonts/noto-cjk/main/Sans/OTF/TraditionalChinese/NotoSansCJKtc-Regular.otf')).arrayBuffer());})();await ready;
- const original=await asset(d.product_snapshot.image_url),image='data:'+original.type+';base64,'+b64(original.bytes);
+ const original=await asset(d.product_snapshot.image_url);
  const fullName=String(d.product_snapshot.name),brand=fullName.match(/^[A-Za-z0-9][A-Za-z0-9 .&+\-]*(?=[\u3400-\u9fff｜])/u)?.[0].trim()||'';
  const name=lines((brand?fullName.slice(brand.length):fullName).trim().replace(/^[｜|\s]+/,'').replace(/\s*\d+(?:\.\d+)?\s*ml\s*$/i,''),9);
  const specs=String(d.product_snapshot.specification||'').split('／').map(s=>s.trim()).filter(Boolean);
  const text=(s:string,y:number,size:number,color='#503e32')=>'<text x="620" y="'+y+'" font-size="'+size+'" fill="'+color+'">'+xml(s)+'</text>';
  let texts=text('商品資訊',175,24,'#8a8178')+(brand?text(brand,240,30):'')+name.map((s,i)=>text(s,305+i*44,34)).join('');
  let y=355+name.length*44;
- for(const s of specs){const label=/^\d+(?:\.\d+)?\s*ml$/i.test(s)?'容量':/^[WＤDＷH]/i.test(s)?'尺寸':/g\s*$/i.test(s)?'重量':/色/.test(s)?'款式':'規格';texts+=text(label,y,17,'#8a8178');y+=27;for(const row of lines(s,19)){texts+=text(row,y,24);y+=30;}y+=20;}
+ for(const s of specs){const label=/^\d+(?:\.\d+)?\s*ml$/i.test(s)?'容量':/^(?:[WＤDＷH]|寬|高|長|直徑|尺寸)/i.test(s)?'尺寸':/^承重/.test(s)?'承重':/^(提把|把手)/.test(s)?'提把長度':/g\s*$/i.test(s)?'重量':/色/.test(s)?'款式':'規格';texts+=text(label,y,17,'#8a8178');y+=27;for(const row of lines(s,19)){texts+=text(row,y,24);y+=30;}y+=20;}
  const svg='<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024"><rect width="1024" height="1024" fill="#efefef"/><g font-family="Noto Sans CJK TC" font-weight="400">'+texts+'</g></svg>';
  const renderer=new Resvg(svg,{font:{fontBuffers:[font],defaultFontFamily:'Noto Sans CJK TC',loadSystemFonts:false}});const png=renderer.render();const pixels=png.pixels;
  // Composite the original pixels explicitly: the WASM SVG renderer omits JPEG images.
