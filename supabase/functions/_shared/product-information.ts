@@ -1,3 +1,4 @@
+import {Buffer} from 'node:buffer';
 import {Resvg,initWasm} from 'npm:@resvg/resvg-wasm@2.6.2';
 import jpeg from 'npm:jpeg-js@0.4.4';
 import {PNG} from 'npm:pngjs@7.0.0';
@@ -26,10 +27,10 @@ export async function productInformation(d:any,lock:string){
  if(isWebp){
   if(!webpReady)webpReady=(async()=>{if(!('ImageData' in globalThis))Object.assign(globalThis,{ImageData:class{constructor(public data:Uint8ClampedArray,public width:number,public height:number){}}});await initWebp(await WebAssembly.compile(await(await request('https://cdn.jsdelivr.net/npm/@jsquash/webp@1.5.0/codec/dec/webp_dec.wasm')).arrayBuffer()));})();await webpReady;decoded=await decodeWebp(original.bytes.buffer);
  }else if(original.bytes[0]===255&&original.bytes[1]===216)decoded=jpeg.decode(original.bytes,{useTArray:true});
- else if(original.bytes[0]===137&&original.bytes[1]===80)decoded=PNG.sync.read(original.bytes);
+ else if(original.bytes[0]===137&&original.bytes[1]===80)decoded=PNG.sync.read(Buffer.from(original.bytes));
  else throw Error('商品資訊圖不支援此原始照片格式');
  let left=decoded.width,top=decoded.height,right=0,bottom=0;const bg=[decoded.data[0],decoded.data[1],decoded.data[2]];
- for(let y=0;y<decoded.height;y++)for(let x=0;x<decoded.width;x++){const k=(y*decoded.width+x)*4;if(decoded.data[k+3]>20&&Math.max(...bg.map((v,c)=>Math.abs(decoded.data[k+c]-v)))>45){left=Math.min(left,x);right=Math.max(right,x);top=Math.min(top,y);bottom=Math.max(bottom,y);}}
+ for(let y=0;y<decoded.height;y++)for(let x=0;x<decoded.width;x++){const k=(y*decoded.width+x)*4;if(decoded.data[k+3]>20&&(decoded.data[3]<20||Math.max(...bg.map((v,c)=>Math.abs(decoded.data[k+c]-v)))>45)){left=Math.min(left,x);right=Math.max(right,x);top=Math.min(top,y);bottom=Math.max(bottom,y);}}
  if(right<=left||bottom<=top){left=0;top=0;right=decoded.width-1;bottom=decoded.height-1;}
  left=Math.max(0,left-24);top=Math.max(0,top-24);right=Math.min(decoded.width-1,right+24);bottom=Math.min(decoded.height-1,bottom+24);
  const sw=right-left+1,sh=bottom-top+1,scale=Math.min(520/sw,780/sh),w=Math.round(sw*scale),h=Math.round(sh*scale),ox=55+Math.round((520-w)/2),oy=120+Math.round((780-h)/2);
