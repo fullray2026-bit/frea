@@ -49,9 +49,9 @@ Deno.serve(async req=>{
    return out({draft_id:d.id});
   }
   if(!uuid(body.draft_id))return out({error:'請選擇測試草稿'},400);
-  const d=ok(await userClient.from('social_drafts').select('*').eq('id',body.draft_id).eq('is_test',true).eq('kind','product').single());
+  const d=ok(await userClient.from('social_drafts').select('*').eq('id',body.draft_id).eq('kind','product').single());
   if(body.action==='status'){const urls=await Promise.all([0,1,2].map(async i=>d.image_paths[i]?await signed(d.image_paths[i]):null));return out({draft:d,urls,slots:slots.map(s=>s.label)});}
-  if(body.action!=='next')return out({error:'不支援的操作'},400);
+  if(!d.is_test)return out({error:'排程草稿只提供預覽，不能從測試頁改寫'},400);if(body.action!=='next')return out({error:'不支援的操作'},400);
   const slot=[0,1,2].find(i=>!d.image_paths[i]);if(slot===undefined)return out({complete:true});
   if(d.image_generation.state==='generating'&&Date.now()-Date.parse(d.image_generation.started_at)<240000)return out({running:true});
   const product=ok(await userClient.from('products').select('*,product_variants(is_active,stock_quantity)').eq('id',d.product_id).single());
