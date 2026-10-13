@@ -1118,7 +1118,7 @@
   }
 
   function switchView(view) {
-    if(view === "social"){const frame=byId("adminSocialFrame");if(!frame.getAttribute("src"))frame.src="admin-social.html?embedded=1&v=20261012-compact1";}
+    if(view === "social"){const frame=byId("adminSocialFrame");if(!frame.getAttribute("src"))frame.src="admin-social.html?embedded=1&v=20261013-navigation1";}
     if (view === "costs" || view === "personal") refreshBankRate();
     document.querySelectorAll("[data-admin-panel]").forEach(panel => {
       panel.hidden = panel.dataset.adminPanel !== view;
