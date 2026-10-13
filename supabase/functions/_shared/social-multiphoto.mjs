@@ -4,7 +4,7 @@ export function facebookBody(caption,ids){if(!ids.length)throw Error('缺少 Fac
 export function instagramBody(caption,ids){if(ids.length!==3)throw Error('Instagram 三圖尚未完成');return {media_type:'CAROUSEL',children:ids.join(','),caption};}
 export function lineReview(job,urls){
  if(![1,3].includes(urls.length)||urls.some(u=>!u))throw Error('LINE 圖片組不完整');
- const labels=['原圖主視覺（保真）','乾淨商品資訊圖','原圖細節（保真）'];
+ const labels=['生活情境圖','乾淨商品資訊圖','細節／使用感特寫圖'];
  const photo=urls.length===1?{type:'image',originalContentUrl:urls[0],previewImageUrl:urls[0]}:{type:'flex',altText:'fréa 三圖審核：'+job.payload.title,contents:{type:'carousel',contents:urls.map((url,i)=>({type:'bubble',hero:{type:'image',url,size:'full',aspectRatio:'1:1',aspectMode:'fit',action:{type:'uri',uri:url}},body:{type:'box',layout:'vertical',contents:[{type:'text',text:(i+1)+'. '+labels[i],weight:'bold',size:'md',wrap:true}]}}))}};
  const text=(job.is_dry_run?'【fréa 流程測試・不發布】':'【fréa 待審核】')+job.payload.title+'\n第 '+job.draft_revision+' 版\n\nFacebook\n'+job.payload.facebook_text+'\n\nInstagram\n'+job.payload.instagram_text;
  const chunks=[];for(let n=0;n<text.length;n+=4500)chunks.push({type:'text',text:text.slice(n,n+4500)});

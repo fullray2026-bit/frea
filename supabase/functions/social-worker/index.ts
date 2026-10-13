@@ -16,7 +16,7 @@ async function step(j:any){
  if(j.state==='copy')return await patch(j,{copy:await writeCopy(j.kind,j.source_snapshot,j.style_snapshot),state:'image',attempts:0});
  if(j.state==='image'){
   if(j.kind==='product'&&j.style_snapshot.image_count===3){const paths=j.image_paths||[],slot=paths.length;if(slot>=3)return await patch(j,{state:'compose',attempts:0});const path=await autoProductImage(j,slot);return await patch(j,{image_paths:[...paths,path],scene_path:paths[0]||path,state:slot===2?'compose':'image',attempts:0});}
-  return await patch(j,{scene_path:j.kind==='product'?await autoProductImage(j,0):await scene(j),state:'compose',attempts:0});
+  return await patch(j,{scene_path:await scene(j),state:'compose',attempts:0});
  }
  if(j.state==='compose'){
   const path=j.image_paths?.length===3?j.image_paths[0]:await compose(j);ok(await db.rpc('social_finish_draft',{job:j.id,lock_id:j.lease,image:path}));return;
