@@ -25,7 +25,7 @@
  try{const auth=check(await client.auth.getUser());if(auth.user?.app_metadata?.role!=='admin')throw Error('請先在管理後台登入管理員帳號。');
   const products=[];for(let n=0;;n+=500){const rows=check(await client.from('products').select('id,name,image_url,is_active,stock_quantity,product_variants(is_active,stock_quantity)').order('name').range(n,n+499));products.push(...rows);if(rows.length<500)break;}
   const eligible=products.filter(p=>p.is_active&&p.image_url&&(p.product_variants?.length?p.product_variants.some(v=>v.is_active&&v.stock_quantity>0):p.stock_quantity>0));$('product').replaceChildren(...eligible.map(p=>new Option(p.name,p.id)));
-  const styles=check(await client.from('social_styles').select('id,name').eq('kind','product').order('name'));$('style').replaceChildren(...styles.map(s=>new Option(s.name,s.id)));const saved=styles.find(s=>s.name==='fréa 商品三圖組（測試）');if(saved)$('style').value=saved.id;
+  const styles=check(await client.from('social_styles').select('id,name').eq('kind','product').order('name'));$('style').replaceChildren(...styles.map(s=>new Option(s.name,s.id)));const saved=styles.find(s=>['fréa 商品三圖組','fréa 商品三圖組（測試）'].includes(s.name));if(saved)$('style').value=saved.id;
   $('app').hidden=false;await loadDrafts();draftId=new URLSearchParams(location.search).get('draft');if(draftId){$('drafts').value=draftId;await show();}say('已登入。請選擇商品並製作測試三圖組。');
  }catch(e){say(e.message||'無法開啟測試製作。');}
 })();
