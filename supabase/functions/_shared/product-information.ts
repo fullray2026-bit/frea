@@ -8,12 +8,17 @@ const b64=(bytes:Uint8Array)=>{let s='';for(let i=0;i<bytes.length;i+=16384)s+=S
 let ready:Promise<void>,webpReady:Promise<void>,font:Uint8Array;
 function lines(text:string,width:number){const chars=[...text],rows=[];for(let i=0;i<chars.length;i+=width)rows.push(chars.slice(i,i+width).join(''));return rows;}
 export async function productInformation(d:any,lock:string){
- if(!ready)ready=(async()=>{await initWasm(await(await request('https://cdn.jsdelivr.net/npm/@resvg/resvg-wasm@2.6.2/index_bg.wasm')).arrayBuffer());font=new Uint8Array(await(await request('https://www.thefrea.com/assets/social/ChenYuluoyan-2.0-Thin.ttf')).arrayBuffer());})();await ready;
+ if(!ready)ready=(async()=>{await initWasm(await(await request('https://cdn.jsdelivr.net/npm/@resvg/resvg-wasm@2.6.2/index_bg.wasm')).arrayBuffer());font=new Uint8Array(await(await request('https://raw.githubusercontent.com/notofonts/noto-cjk/main/Sans/OTF/TraditionalChinese/NotoSansCJKtc-Regular.otf')).arrayBuffer());})();await ready;
  const original=await asset(d.product_snapshot.image_url),image='data:'+original.type+';base64,'+b64(original.bytes);
- const name=lines(d.product_snapshot.name,8),specs=String(d.product_snapshot.specification||'').split('／').flatMap(s=>lines(s.trim(),11));
- const texts=[...name.map((s,i)=>'<text x="630" y="'+(240+i*68)+'" font-size="56">'+xml(s)+'</text>'),...specs.map((s,i)=>'<text x="630" y="'+(300+name.length*68+i*52)+'" font-size="42">'+xml(s)+'</text>')].join('');
- const svg='<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1024" height="1024"><rect width="1024" height="1024" fill="#efefef"/><g font-family="Chenyu" fill="#503e32"><text x="630" y="150" font-size="50">商品資訊</text>'+texts+'</g></svg>';
- const renderer=new Resvg(svg,{font:{fontBuffers:[font],defaultFontFamily:'Chenyu',loadSystemFonts:false}});const png=renderer.render();const pixels=png.pixels;
+ const fullName=String(d.product_snapshot.name),brand=fullName.match(/^[A-Za-z][A-Za-z0-9 .&+\-]*(?=[\u3400-\u9fff｜])/u)?.[0].trim()||'';
+ const name=lines((brand?fullName.slice(brand.length):fullName).trim().replace(/\s*\d+(?:\.\d+)?\s*ml\s*$/i,''),9);
+ const specs=String(d.product_snapshot.specification||'').split('／').map(s=>s.trim()).filter(Boolean);
+ const text=(s:string,y:number,size:number,color='#503e32')=>'<text x="620" y="'+y+'" font-size="'+size+'" fill="'+color+'">'+xml(s)+'</text>';
+ let texts=text('商品資訊',175,24,'#8a8178')+(brand?text(brand,240,30):'')+name.map((s,i)=>text(s,305+i*49,36)).join('');
+ let y=360+name.length*49;
+ for(const s of specs){const label=/^\d+(?:\.\d+)?\s*ml$/i.test(s)?'容量':/^[WＤDＷH]/i.test(s)?'尺寸':/g\s*$/i.test(s)?'重量':/色/.test(s)?'款式':'規格';texts+=text(label,y,20,'#8a8178');y+=35;for(const row of lines(s,19)){texts+=text(row,y,25);y+=35;}y+=25;}
+ const svg='<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024"><rect width="1024" height="1024" fill="#efefef"/><g font-family="Noto Sans CJK TC" font-weight="400">'+texts+'</g></svg>';
+ const renderer=new Resvg(svg,{font:{fontBuffers:[font],defaultFontFamily:'Noto Sans CJK TC',loadSystemFonts:false}});const png=renderer.render();const pixels=png.pixels;
  // Composite the original pixels explicitly: the WASM SVG renderer omits JPEG images.
  // Sniff file bytes: some catalog .jpg objects actually contain WebP data.
  const isWebp=String.fromCharCode(...original.bytes.slice(0,4))==='RIFF'&&String.fromCharCode(...original.bytes.slice(8,12))==='WEBP';
