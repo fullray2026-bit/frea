@@ -1,7 +1,7 @@
 export const slots = [
- {key:'lifestyle',label:'原圖主視覺（保真）',prompt:'Photograph the complete product in a credible quiet everyday setting. Restrained props and generous negative space. No added text.'},
+ {key:'lifestyle',label:'生活情境圖',prompt:'Photograph the complete product in a credible quiet everyday setting. Restrained props and generous negative space. No added text.'},
  {key:'information',label:'乾淨商品資訊圖',prompt:'Show the complete product on a clean warm white background. No people or scene clutter. Add a small, legible Traditional Chinese product name and only verified specifications from Product facts. Omit unknown information. Simple elegant typography. Do not alter any packaging text.'},
- {key:'detail',label:'原圖細節（保真）',prompt:'A distinct close-up of visible, verified exterior material, texture or construction, or a hand holding the unchanged product. Keep the product recognizable. If the reference shows a closed container, keep it closed: do not remove lids, open it, show the interior or invent unseen contents or parts. No added text.'}
+ {key:'detail',label:'細節／使用感特寫圖',prompt:'A distinct close-up of visible, verified exterior material, texture or construction, or a hand holding the unchanged product. Keep the product recognizable. If the reference shows a closed container, keep it closed: do not remove lids, open it, show the interior or invent unseen contents or parts. No added text.'}
 ];
 export function imagePrompt(slot:number,source:any,style:any,type:string){
  if(!slots[slot] || !['food','object','package'].includes(type))throw Error('Invalid image role');

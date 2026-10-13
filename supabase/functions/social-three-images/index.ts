@@ -8,9 +8,19 @@ const uuid=(v:any)=>typeof v==='string'&&/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-
 async function generate(d:any,slot:number,lock:string){
  try{
   let path:string;
-  path=await productInformation(d,lock,slot===1?'information':slot===2?'detail':'original');
+  if(slot===1){path=await productInformation(d,lock);}else{
+  const original=await asset(d.product_snapshot.image_url),form=new FormData();
+  form.set('model',Deno.env.get('SOCIAL_IMAGE_MODEL')||'gpt-image-1.5');form.set('size','1024x1024');form.set('quality','medium');form.set('input_fidelity','high');form.set('output_format','jpeg');form.set('output_compression','90');form.set('n','1');
+  form.append('image[]',new Blob([original.bytes],{type:original.type}),'product.'+original.type.split('/')[1]);
+  if(d.style_snapshot.reference_path){const mood=await asset(await signed(d.style_snapshot.reference_path));form.append('image[]',new Blob([mood.bytes],{type:mood.type}),'mood.'+mood.type.split('/')[1]);}
+  form.set('prompt',imagePrompt(slot,d.product_snapshot,d.style_snapshot,d.image_generation.product_type));
+  const result=await (await request('https://api.openai.com/v1/images/edits',{method:'POST',headers:{Authorization:'Bearer '+env('OPENAI_API_KEY')},body:form},130000)).json();
+  if(result.data?.length!==1||!result.data[0].b64_json)throw Error('圖片回應不完整');
+  const bytes=Uint8Array.from(atob(result.data[0].b64_json),c=>c.charCodeAt(0));
+  path=await put('three-images/'+d.id+'/'+slots[slot].key+'-'+lock+'.jpg',bytes);
+  }
   const paths=[...d.image_paths];paths[slot]=path;
-  const progress={...d.image_generation,provenance:'original_pixels_v1',state:paths.filter(Boolean).length===3?'complete':'ready',lock:null,error:null};
+  const progress={...d.image_generation,state:paths.filter(Boolean).length===3?'complete':'ready',lock:null,error:null};
   const saved=ok(await db.from('social_drafts').update({image_paths:paths,image_path:paths[0]||null,image_generation:progress}).eq('id',d.id).eq('revision',d.revision).eq('is_test',true).select());
   if(!saved.length)throw Error('草稿版本已變更，未覆寫新版本');
  }catch(e){
