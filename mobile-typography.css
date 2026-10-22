@@ -1,0 +1,18 @@
+/* Shared storefront mobile reading rules. Browser zoom remains available. */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+@media(max-width:640px){
+ body:not(.admin-page) main h1{font-size:clamp(24px,6.5vw,30px);line-height:1.45;letter-spacing:0;text-wrap:balance;overflow-wrap:break-word}
+ body:not(.admin-page) main h2{font-size:clamp(20px,5.5vw,24px);line-height:1.5;letter-spacing:0;text-wrap:balance;overflow-wrap:break-word}
+ body:not(.admin-page) main .serif{font-family:"Noto Serif TC","Songti TC","PMingLiU","Times New Roman",serif}
+ .about-page main .story-hero h1,.about-page main .story-copy h2,.about-page main .story-ending-copy h2{font-size:clamp(18px,5.5vw,26px);white-space:normal;line-height:1.6;letter-spacing:0}
+ .about-page .story-signature{font-size:clamp(19px,5.2vw,22px);line-height:1.7;letter-spacing:0;text-wrap:initial}
+ .about-page .story-signature span{display:block}
+}
+
+@media(max-width:640px){
+ body:not(.admin-page) main h1[data-mobile-long-title]{font-size:20px;line-height:1.6}
+ body:not(.admin-page) main .product-title{font-size:24px}
+ body:not(.admin-page) main .product-title br{display:none}
+}
+
+@media(max-width:640px){body:not(.admin-page) main h1.mobile-section-title{font-size:24px!important}}
