@@ -22,3 +22,11 @@
 .about-page .story-origin .story-two-col{display:block}.about-page .story-origin .story-copy{max-width:900px;margin:0 auto;text-align:center}
 
 .about-page .story-origin .story-copy{max-width:1200px}.about-page .story-origin-lines p{line-height:2;margin:0}.origin-desktop-break{display:block}@media(max-width:760px){.origin-desktop-break{display:none}.about-page .story-origin-lines{max-width:36em;margin:0 auto;text-align:left}.about-page .story-origin-lines p{line-height:1.9;margin-bottom:14px}.about-page .story-origin-lines p:first-child,.about-page .story-origin-lines p:last-child{text-align:center}}
+
+/* Keep mobile headings in complete phrases, with room for larger text. */
+@media(max-width:640px){
+ .about-page .story-hero h1,.about-page .story-copy h2,.about-page .story-ending-copy h2{font-size:clamp(22px,6.2vw,28px);line-height:1.6;letter-spacing:.025em;text-wrap:balance}
+ .about-page .story-heading-line{display:block}
+ .about-page .story-hero-overlay{padding-inline:18px}
+ .about-page .story-signature{font-size:clamp(18px,4.8vw,22px);line-height:1.7;text-wrap:balance}
+}
