@@ -174,11 +174,16 @@
   }
 
   function renderAll() {
-    const pending = orders.filter(order => !["completed", "cancelled"].includes(order.status)).length;
-    byId("statMembers").textContent = profiles.length;
-    byId("statOrders").textContent = orders.length;
-    byId("statPending").textContent = pending;
-    byId("statCompleted").textContent = orders.filter(order => order.status === "completed").length;
+    const count = rows => ({total:rows.length,pending:rows.filter(r=>!["completed","cancelled"].includes(r.status)).length,completed:rows.filter(r=>r.status==="completed").length});
+    const normal=count(orders),personal=count(personalRequests);
+    byId("statMembers").textContent=profiles.length;
+    for(const [id,key] of [["statOrders","total"],["statPending","pending"],["statCompleted","completed"]]){
+      byId(id).textContent=normal[key]+personal[key];
+      byId(id+"Detail").textContent='一般 '+normal[key]+' 筆／代購 '+personal[key]+' 筆';
+    }
+    const awaitingQuote=personalRequests.filter(r=>["new","reviewing"].includes(r.status)).length;
+    const awaitingConfirm=personalRequests.filter(r=>r.status==="quoted").length;
+    byId("statPendingNote").textContent='代購含待報價 '+awaitingQuote+' 筆、待確認 '+awaitingConfirm+' 筆';
     renderRecentOrders();
     renderMembers();
     renderOrders();
