@@ -74,6 +74,35 @@
  $('calendarExport').onclick=()=>{const esc=s=>String(s).replaceAll('\\','\\\\').replaceAll('\n','\\n').replaceAll(',','\\,').replaceAll(';','\\;'),lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//frea//Nora Studio//ZH'];for(const t of tasks.filter(t=>t.due_date&&t.status!=='done'))lines.push('BEGIN:VEVENT','UID:'+t.id+'@thefrea.com','DTSTAMP:'+new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,''),'DTSTART;VALUE=DATE:'+t.due_date.replaceAll('-',''),'SUMMARY:'+esc(t.title),'DESCRIPTION:'+esc(names[t.owner_role]+'\n'+t.notes),'END:VEVENT');lines.push('END:VCALENDAR');download('frea-content-calendar.ics',lines.join('\r\n'),'text/calendar;charset=utf-8');};
  $('checkMeta').onclick=()=>run(async()=>{const r=await client.functions.invoke('social-meta-status',{body:{}});if(r.error)throw Error('FB／IG 讀取檢查未完成，請稍後再試。');$('metaMessage').textContent=r.data.message;});
  $('readAds').onclick=()=>run(async()=>{const r=await api({action:'meta_report'});download('frea-meta-last7days.json',JSON.stringify(r,null,2),'application/json');await panel('chat');selectRole('jack');const content='請分析這份實際取得的 Meta 近七天報表，先確認幣別與期間：\n'+JSON.stringify(r);$('message').value=content.length<=4000?content:'已下載 Meta 近七天報表，共 '+r.report.length+' 列。請告訴我應優先檢查哪些指標；我會分批貼上資料。';say(r.has_more?'報表超過 100 列，此次是部分資料；已下載，請核對輸入框內容。':'報表已下載，請核對輸入框中的內容後再傳送。');});
- async function init(){try{if(!window.supabase||!window.freaSupabaseConfig)throw Error('無法載入登入服務。');client=window.supabase.createClient(window.freaSupabaseConfig.url,window.freaSupabaseConfig.publishableKey);const r=await client.auth.getUser();if(r.error||r.data.user?.app_metadata?.role!=='admin')throw Error('請先登入 fréa 管理後台。');userId=r.data.user.id;authenticated=true;$('authMessage').textContent='';$('workspace').hidden=false;$('teamControls').hidden=false;renderMessages();const status=await api({action:'status'});ready=!!status.ready;capabilities=status.capabilities||{};say(status.message);await list();await loadArtifacts();controls();client.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT'){authenticated=ready=false;referenceText='';if($('socialDialog').open)$('socialDialog').close();turns=[];assets=[];artifacts=[];tasks=[];selected=[];$('workspace').hidden=true;$('teamControls').hidden=true;document.querySelectorAll('[data-work-panel]').forEach(e=>{e.hidden=true;});$('messages').replaceChildren();$('assetGrid').replaceChildren();$('artifactContent').value=$('brandContext').value=$('message').value='';$('publishingFrame').removeAttribute('src');$('authMessage').textContent='已登出，請重新登入管理後台。';}});}catch(e){(authenticated?say:value=>{$('authMessage').textContent=value;})(e.message);}}
+
+ function clearSession(){
+  authenticated=ready=false;referenceText='';artifactDirty=false;activeId=null;userId=null;
+  if($('socialDialog').open)$('socialDialog').close();
+  turns=[];conversations=[];assets=[];artifacts=[];tasks=[];selected=[];
+  $('workspace').hidden=$('teamControls').hidden=true;
+  document.querySelectorAll('[data-work-panel]').forEach(e=>{e.hidden=true;});
+  for(const id of ['messages','assetGrid','artifactList','taskList','conversations','attachments'])$(id).replaceChildren();
+  document.querySelectorAll('textarea,input').forEach(e=>{e.value='';});
+  $('publishingFrame').removeAttribute('src');
+  $('authMessage').textContent='已登出，請重新登入管理後台。';
+ }
+ async function init(){
+  try{
+   if(!window.supabase||!window.freaSupabaseConfig)throw Error('無法載入登入服務。');
+   client=window.supabase.createClient(window.freaSupabaseConfig.url,window.freaSupabaseConfig.publishableKey);
+   const result=await client.auth.getUser();
+   if(result.error||result.data.user?.app_metadata?.role!=='admin')throw Error('請先登入 fréa 管理後台。');
+   userId=result.data.user.id;authenticated=true;
+   client.auth.onAuthStateChange((event,session)=>{
+    if(event==='SIGNED_OUT'||(session?.user&&session.user.app_metadata?.role!=='admin'))clearSession();
+   });
+   $('authMessage').textContent='';$('workspace').hidden=false;$('teamControls').hidden=false;
+   renderMessages();
+   const status=await api({action:'status'});
+   ready=!!status.ready;capabilities=status.capabilities||{};say(status.message);
+   await list();await loadArtifacts();controls();
+  }catch(error){(authenticated?say:value=>{$('authMessage').textContent=value;})(error.message);}
+ }
+
  init();
 })();
