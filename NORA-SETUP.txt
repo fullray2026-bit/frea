@@ -1,44 +1,63 @@
-fréa Nora 行銷工作室 — 第一版
+fréa Nora 行銷工作室 — 團隊工作流程版
 
 功能
-- 後台側欄入口，沿用 Supabase 管理員登入（app_metadata.role=admin）。
-- 預載 Sammi 已確認的 fréa 品牌起始背景。
-- 文字對話、各管理員自己的歷史紀錄、複製回覆、下載文字紀錄。
-- 最近 12 輪送入模型；完整對話最多 100 輪仍可查看。
-- 每位管理員每日最多 100 次請求（日本日期），每次至少間隔 5 秒；同時只允許一個未完成請求。
+- Nora 統籌，依需求交給 Maya／Leon／Iris／Jack，也能手動指定角色。這是網站內的 AI 專業分工，不是把 Codex App 或本機技能直接放入網站。
+- Maya：社群、電子報、腳本及內容日曆；作品可交接到現有社群草稿及 LINE 審核流程。
+- Leon：上傳照片分析、私人素材庫、參考圖製作與無文字情境圖；含文字圖片須先確認目前作品版本。
+- Iris：網頁研究與來源連結、關鍵字方向與 SEO 文章；沒有搜尋量資料時不捏造數字。
+- Jack：廣告策略、CSV／文字報表分析；具備 Meta 廣告帳號與讀取授權時，可讀取近七天前 100 筆活動報表並標示是否為部分資料。
+- 品牌資料可直接編輯並供團隊新回覆使用；作品保存、文案版本確認、待辦與日曆下載、對話及作品匯出。
+- 電子報依 Sammi 2026-11-02 選擇，先保留內容編輯與 .eml 草稿下載，不連寄信服務、不實際寄送。
+- 每位管理員自己的對話、照片、作品、待辦互相隔離；品牌背景為單品牌共用。
+- 最近 12 輪送入模型；原照片只有本次選取的才重新送入，歷史文字與圖片紀錄仍可查看。
+- 每段最多 100 輪，每位管理員每日最多 100 次請求（日本日期），每次至少間隔 5 秒；同時一則未完成請求。
 
 範圍
 網站版與 Codex 分開保存；不會取得本機技能、全部聊天或平台工具。
-此版不提供照片分析、即時網站研究、自動發布或後台資料修改。
-品牌起始背景放在 nora-core.mjs；更新該檔案後需重新部署 nora-chat。
+社群排程與發布沿用原有社群管理功能及授權，不擅自開啟排程。使用者仍需核對草稿並走既有 LINE 審核。
+不直接建立／啟用 Meta 廣告或更改預算；GSC／GA 數據可匯入文字或 CSV，未建立 Google OAuth 連線。
+起始背景放在 nora-core.mjs；儲存後台品牌資料後，以 nora_brand_state 的最新版為準。
 品牌資料為 Sammi 已提供的資訊與獨立撰寫的助理設定，沒有複製課程技能來源檔。
 
 部署順序（前端公開前先完成後端）
-1. 在 fréa Supabase 專案執行 database/nora-workspace.sql 一次。
+1. 在 fréa Supabase 專案依序執行 database/nora-workspace.sql、database/nora-team.sql，各一次。
 2. 確認 Edge Function secrets 已設定 OPENAI_API_KEY；沿用既有專案設定，不把金鑰放進 GitHub 或網頁。
    SUPABASE_URL、SUPABASE_SERVICE_ROLE_KEY 由 Supabase 環境提供。
-   模型：NORA_MODEL > SOCIAL_COPY_MODEL > gpt-4o-mini，可由伺服器設定。
-3. 部署 supabase/functions/nora-chat/index.ts，連同根目錄 nora-core.mjs。
+   對話模型：NORA_MODEL > SOCIAL_COPY_MODEL > gpt-4o-mini，沿用現有相容設定；部署時確認模型仍對該帳戶開放，亦可設為適合的現行視覺模型。
+   網頁研究：NORA_RESEARCH_MODEL，預設 gpt-5.5（Responses web_search）。
+   圖片：NORA_IMAGE_MODEL，預設 gpt-image-2.5-flare；圖片模型權限需實際呼叫驗證。
+   Meta 廣告：META_AD_ACCOUNT_ID，加上具 ads_read 授權的 META_AD_ACCESS_TOKEN 或既有 META_USER_ACCESS_TOKEN。
+3. 部署 supabase/functions/nora-chat/index.ts、workspace.ts，連同根目錄 nora-core.mjs。
    保留 JWT 驗證；函式內另向 Auth 驗證目前管理員角色。
-4. 發布前端 admin.html、admin.js、admin-nora.html、admin-nora.js、admin-nora.css。
-5. 以管理員登入，開啟 Nora，送一則短訊息並重新載入對話確認保存。
-   再確認一般會員不能使用，不同管理員不能讀取彼此對話。
+4. 發布前端 admin.html、admin.js、admin-nora.html、nora-team-ui.js、admin-nora.css、nora-team.css。
+5. 以管理員登入逐項驗證：角色分工、傳送照片、圖像分析、網頁搜尋及來源、儲存作品與核定版本、製圖、社群草稿交接、品牌更新、待辦、匯出。
+   再確認一般會員不能使用，不同管理員不能讀取彼此對話／照片／作品；修改已確認文案後要重新確認。
+6. 連線狀態的「已設定」只代表具備設定，不代表外部服務已通過實際驗證。正式模型、Meta、LINE 發布仍須以管理員實測。
 
 資料
-nora_conversations、nora_turns、nora_usage 為新增獨立資料表。
+nora_conversations、nora_turns、nora_usage、nora_assets、nora_artifacts、nora_tasks、nora_brand_state 為新增資料表。
 瀏覽器僅能讀自己的對話；所有寫入由完成管理員驗證的後端處理。
 OPENAI_API_KEY 僅在後端使用，OpenAI request 設 store:false。
 對話仍儲存在 Supabase；store:false 不代表沒有供應商依政策保留的記錄。
-每段對話的第一則訊息作為標題；清單顯示最新建立的 100 段。
+私人圖片存於 nora-media；上傳前縮小長邊到 1800 像素，保存版本最多 5 MB，支援 JPG／PNG／WebP。原始照片仍請自行保留；HEIC 須先轉換。
+CSV／文字附件上限 25000 字，作為本次模型輸入並隨該輪保存；不會當作新的系統指令。
+交接到社群草稿會複製所選圖片至既有 social-drafts 私人儲存區，建立生活素材與待審閱草稿；來源保留實拍／示意標記。
+每段對話的第一則訊息作為標題；清單顯示最新建立的 100 段。素材與作品各顯示最新 100 筆，待辦顯示 200 筆。
 若請求中斷，回到清單重新載入；超過兩分鐘仍未完成可送新訊息。
 沒有刪除介面；資料保留與刪除流程可在下一版另訂。
 
 驗證
-node --test tests/nora-chat.test.mjs
-node --check admin-nora.js
+node --test tests/nora-chat.test.mjs tests/nora-team.test.mjs
+node --check nora-team-ui.js
 node --check admin.js
 
 回退
 回退此分支的前端入口與函式即可停止使用 Nora。
 既有社群草稿、訂單、會員與商品資料不在本次修改範圍內。
 保留新增對話表可避免回退時遺失紀錄。
+
+官方實作參考（查閱日 2026-11-02）
+https://developers.openai.com/api/docs/guides/tools-web-search
+https://developers.openai.com/api/docs/guides/images-vision?api-mode=responses
+https://developers.openai.com/api/reference/resources/images/methods/generate
+https://supabase.com/docs/guides/storage/buckets/fundamentals

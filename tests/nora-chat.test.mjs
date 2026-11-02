@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import { stripTypeScriptTypes } from 'node:module';
-import { validateRequest, buildModelRequest, extractAnswer } from '../nora-core.mjs';
+import { validateRequest, buildModelRequest, extractAnswer, extractSources,routeRole } from '../nora-core.mjs';
+import {workspaceAction,ownedAssets,signedAssets,brandContext,generateVisual} from '../supabase/functions/nora-chat/workspace.ts';
 
 const owner = '00000000-0000-4000-8000-000000000001';
 const conversation = '00000000-0000-4000-8000-000000000002';
@@ -32,12 +33,12 @@ function harness({ admin = true, authenticated = true, replay = false, claim = t
    }; return builder;
   }
  };
- const context = vm.createContext({ Request, Response, AbortSignal, Set, JSON, Error, validateRequest, buildModelRequest, extractAnswer });
+ const context = vm.createContext({ Request, Response, AbortSignal, Set, JSON, Error, validateRequest, buildModelRequest, extractAnswer,extractSources,routeRole,workspaceAction,ownedAssets,signedAssets,brandContext,generateVisual });
  vm.runInContext(executable + '\nglobalThis.factory = createHandler;', context);
  let modelCalls = 0;
  const handler = context.factory({ env: key => ({ SUPABASE_URL: 'https://example.supabase.co', SUPABASE_ANON_KEY: 'public', SUPABASE_SERVICE_ROLE_KEY: 'server-only', OPENAI_API_KEY: 'test-only' })[key],
   clientFactory: (_, key) => key === 'server-only' ? db : { auth: { getUser: async () => ({ data: { user: authenticated ? { id: owner, app_metadata: { role: admin ? 'admin' : 'member' } } : null }, error: null }) } },
-  fetcher: async (_, options) => { modelCalls++; calls.push({ model: JSON.parse(options.body) }); return Response.json({ status: 'completed', output: [{ type: 'message', content: [{ type: 'output_text', text: '已整理的草稿' }] }] }, { status: upstreamOK ? 200 : 500 }); }
+  fetcher: async (_, options) => { modelCalls++; calls.push({ model: JSON.parse(options.body) }); return Response.json({ status: 'completed', output: [{ type: 'message', content: [{ type: 'output_text', text: '已整理的草稿', annotations:[{type:'url_citation',url:'https://example.com/source',title:'source'}] }] }] }, { status: upstreamOK ? 200 : 500 }); }
  });
  const invoke = (body, headers = {}) => handler(new Request('https://example.test', { method: 'POST', headers: { authorization: 'Bearer user', origin: 'https://www.thefrea.com', ...headers }, body: JSON.stringify(body) }));
  return { invoke, queries, calls, saved, modelCalls: () => modelCalls };
@@ -101,4 +102,10 @@ test('model context uses only completed last 12 turns; partial responses rejecte
  assert.equal(request.model, 'configured-model'); assert.equal(request.input.length, 25);
  assert.equal(request.input[0].content, 'u8'); assert.equal(request.input.at(-1).content, 'new');
  assert.throws(() => extractAnswer({ status: 'incomplete', output: [] }));
+});
+test('research invokes a search-capable model and persists real source annotations',async()=>{
+ const h=harness();const result=await h.invoke({...send,role:'iris',mode:'research'});
+ assert.equal(result.status,200);const payload=await result.json();assert.equal(payload.role,'iris');assert.equal(payload.sources[0].url,'https://example.com/source');
+ const request=h.calls.find(c=>c.model).model;assert.equal(request.model,'gpt-5.5');assert.equal(request.tools[0].type,'web_search');assert.equal(request.tool_choice,'required');
+ assert(h.saved.some(x=>x.status==='completed'&&x.sources.length===1));
 });
