@@ -1,0 +1,44 @@
+fréa Nora 行銷工作室 — 第一版
+
+功能
+- 後台側欄入口，沿用 Supabase 管理員登入（app_metadata.role=admin）。
+- 預載 Sammi 已確認的 fréa 品牌起始背景。
+- 文字對話、各管理員自己的歷史紀錄、複製回覆、下載文字紀錄。
+- 最近 12 輪送入模型；完整對話最多 100 輪仍可查看。
+- 每位管理員每日最多 100 次請求（日本日期），每次至少間隔 5 秒；同時只允許一個未完成請求。
+
+範圍
+網站版與 Codex 分開保存；不會取得本機技能、全部聊天或平台工具。
+此版不提供照片分析、即時網站研究、自動發布或後台資料修改。
+品牌起始背景放在 nora-core.mjs；更新該檔案後需重新部署 nora-chat。
+品牌資料為 Sammi 已提供的資訊與獨立撰寫的助理設定，沒有複製課程技能來源檔。
+
+部署順序（前端公開前先完成後端）
+1. 在 fréa Supabase 專案執行 database/nora-workspace.sql 一次。
+2. 確認 Edge Function secrets 已設定 OPENAI_API_KEY；沿用既有專案設定，不把金鑰放進 GitHub 或網頁。
+   SUPABASE_URL、SUPABASE_SERVICE_ROLE_KEY 由 Supabase 環境提供。
+   模型：NORA_MODEL > SOCIAL_COPY_MODEL > gpt-4o-mini，可由伺服器設定。
+3. 部署 supabase/functions/nora-chat/index.ts，連同根目錄 nora-core.mjs。
+   保留 JWT 驗證；函式內另向 Auth 驗證目前管理員角色。
+4. 發布前端 admin.html、admin.js、admin-nora.html、admin-nora.js、admin-nora.css。
+5. 以管理員登入，開啟 Nora，送一則短訊息並重新載入對話確認保存。
+   再確認一般會員不能使用，不同管理員不能讀取彼此對話。
+
+資料
+nora_conversations、nora_turns、nora_usage 為新增獨立資料表。
+瀏覽器僅能讀自己的對話；所有寫入由完成管理員驗證的後端處理。
+OPENAI_API_KEY 僅在後端使用，OpenAI request 設 store:false。
+對話仍儲存在 Supabase；store:false 不代表沒有供應商依政策保留的記錄。
+每段對話的第一則訊息作為標題；清單顯示最新建立的 100 段。
+若請求中斷，回到清單重新載入；超過兩分鐘仍未完成可送新訊息。
+沒有刪除介面；資料保留與刪除流程可在下一版另訂。
+
+驗證
+node --test tests/nora-chat.test.mjs
+node --check admin-nora.js
+node --check admin.js
+
+回退
+回退此分支的前端入口與函式即可停止使用 Nora。
+既有社群草稿、訂單、會員與商品資料不在本次修改範圍內。
+保留新增對話表可避免回退時遺失紀錄。

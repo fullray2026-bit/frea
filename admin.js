@@ -1123,6 +1123,7 @@
   }
 
   function switchView(view) {
+    if(view === "nora"){const frame=byId("adminNoraFrame");if(!frame.getAttribute("src"))frame.src="admin-nora.html?embedded=1&v=20261102";}
     if(view === "social"){const frame=byId("adminSocialFrame");if(!frame.getAttribute("src"))frame.src="admin-social.html?embedded=1&v=20261013-navigation1";}
     if (view === "costs" || view === "personal") refreshBankRate();
     document.querySelectorAll("[data-admin-panel]").forEach(panel => {
@@ -1131,7 +1132,7 @@
     document.querySelectorAll("[data-admin-view]").forEach(button => {
       button.classList.toggle("is-active", button.dataset.adminView === view);
     });
-    byId("adminPageTitle").textContent = (view === "social" ? "社群貼文管理" : titles[view]) || "後台管理";
+    byId("adminPageTitle").textContent = (view === "nora" ? "Nora 行銷工作室" : view === "social" ? "社群貼文管理" : titles[view]) || "後台管理";
   }
 
   loginForm.addEventListener("submit", async event => {
