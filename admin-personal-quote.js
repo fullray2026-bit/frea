@@ -8,14 +8,18 @@
     const lines=units.map((v,i)=>v*quantities[i]);const subtotal=lines.reduce((a,b)=>a+b,0);
     const rate=num('rate',false),domestic=num('domestic'),fees=num('fees'),international=num('international'),taiwan=num('taiwan'),other=num('other');
     const japan=card.dataset.serviceDirection==='tw_to_jp';
-    return {japan,currency:japan?'JPY':'TWD',sourceCurrency:japan?'TWD':'JPY',units,quantities,lines,subtotal,rate,domestic,fees,international,taiwan,other,total:Math.round((subtotal+domestic)*rate+fees+international+taiwan+other)};
+    const sourceCurrency=japan?'TWD':'JPY', currency=japan?'JPY':'TWD';
+    const unitCurrencies=[...card.querySelectorAll('[data-quote-unit]')].map(i=>{const c=i.closest('.personal-quote-row').querySelector('[data-quote-currency]')?.value;return ['TWD','JPY'].includes(c)?c:sourceCurrency;});
+    const sourceSubtotal=lines.reduce((n,v,i)=>n+(unitCurrencies[i]===sourceCurrency?v:0),0);
+    const directSubtotal=lines.reduce((n,v,i)=>n+(unitCurrencies[i]===currency?v:0),0);
+    return {japan,currency:japan?'JPY':'TWD',sourceCurrency:japan?'TWD':'JPY',units,quantities,lines,unitCurrencies,subtotal:sourceSubtotal,directSubtotal,rate,domestic,fees,international,taiwan,other,total:Math.round((sourceSubtotal+domestic)*rate+directSubtotal+fees+international+taiwan+other)};
   }
   function validate(card,allowIncomplete=false){
     for(const input of card.querySelectorAll('.personal-quote-sheet input')){
       if(!input.checkValidity()){input.reportValidity();return false;}
       if(!Number.isFinite(Number(input.value))){input.focus();return false;}
     }
-    if(!allowIncomplete && (!card.querySelector('[data-quote-unit]') || [...card.querySelectorAll('[data-quote-unit]')].some(i=>i.value==='') || read(card).rate<=0)){
+    if(!allowIncomplete && (!card.querySelector('[data-quote-unit]') || [...card.querySelectorAll('[data-quote-unit]')].some(i=>i.value==='') || ((read(card).subtotal+read(card).domestic)>0 && read(card).rate<=0))){
       window.alert('請先填寫所有商品單價及大於 0 的匯率，再產生報價單。');return false;
     }
     if(read(card).total>2147483647){window.alert('報價金額超出可儲存範圍，請確認輸入數值。');return false;}
@@ -38,7 +42,7 @@
     const newPage=()=>{canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;ctx=canvas.getContext('2d');ctx.fillStyle='#fffdf9';ctx.fillRect(0,0,W,H);ctx.font='64px Georgia, serif';ctx.fillStyle=ink;ctx.fillText('fréa',L,102);text('代購報價單',R,78,32,ink,'right');text('PERSONAL SHOPPING QUOTATION',R,110,16,muted,'right');y=140;rule();y=174;text('報價編號：'+request.request_number,L,y,21);y+=36;pages.push(canvas);};
     const ensure=h=>{if(y+h>bottom)newPage();};
     const paragraph=(str,size=22,color=ink)=>{for(const ln of wrap(str,R-L,size)){ensure(34);text(ln,L,y,size,color);y+=34;}};
-    const tableHead=()=>{ensure(60);ctx.fillStyle=ink;ctx.fillRect(L,y-24,R-L,46);text('商品名稱／規格',L+14,y+7,21,'#fff');text('數量',735,y+7,21,'#fff','right');text('單價 '+source,940,y+7,21,'#fff','right');text('小計 '+source,R-14,y+7,21,'#fff','right');y+=54;};
+    const tableHead=()=>{ensure(60);ctx.fillStyle=ink;ctx.fillRect(L,y-24,R-L,46);text('商品名稱／規格',L+14,y+7,21,'#fff');text('數量',735,y+7,21,'#fff','right');text('單價 ',940,y+7,21,'#fff','right');text('小計 ',R-14,y+7,21,'#fff','right');y+=54;};
     newPage();
     paragraph('報價日期：'+new Date().toLocaleDateString(ja?'ja-JP':'zh-TW',{timeZone:'Asia/Taipei'}));
     paragraph('報價方：fréa　｜　frea.global@gmail.com');y+=10;
@@ -52,16 +56,16 @@
       let first=true;
       while(names.length){if(y+70>bottom){newPage();tableHead();}const count=Math.max(1,Math.min(names.length,Math.floor((bottom-y-30)/32)));const chunk=names.splice(0,count);
         chunk.forEach((ln,j)=>text(ln,L+14,y+j*32,22));
-        if(first){text(q.quantities[index],735,y,22,ink,'right');text(money(q.units[index],source),940,y,22,ink,'right');text(money(q.lines[index],source),R-14,y,22,ink,'right');first=false;}
+        if(first){text(q.quantities[index],735,y,22,ink,'right');text(money(q.units[index],q.unitCurrencies[index]),940,y,22,ink,'right');text(money(q.lines[index],q.unitCurrencies[index]),R-14,y,22,ink,'right');first=false;}
         y+=chunk.length*32+22;rule();y+=28;
       }
     });
-    ensure(520);y+=8;text('費用明細',L,y,27);y+=44;
+    ensure(560);y+=8;text('費用明細',L,y,27);y+=44;
     const origin=japan?'台灣':'日本',destination=japan?'日本':'台灣';
-    const costs=[['商品小計（'+source+'）',money(q.subtotal,source)],[origin+'國內運費（'+source+'）',money(q.domestic,source)],['匯率（'+source+' → '+currency+'）',String(q.rate)],['商品與運費換算（'+currency+'）',money((q.subtotal+q.domestic)*q.rate,currency)],['關稅及手續費（'+currency+'）',money(q.fees,currency)],['國際運費（'+currency+'）',money(q.international,currency)],[destination+'國內運費（'+currency+'）',money(q.taiwan,currency)],['其他（'+currency+'）',money(q.other,currency)]];
+    const costs=[['商品小計（'+currency+'）',money(q.directSubtotal,currency)],['商品小計（'+source+'）',money(q.subtotal,source)],[origin+'國內運費（'+source+'）',money(q.domestic,source)],['匯率（'+source+' → '+currency+'）',String(q.rate)],['商品與運費換算（'+currency+'）',money((q.subtotal+q.domestic)*q.rate,currency)],['關稅及手續費（'+currency+'）',money(q.fees,currency)],['國際運費（'+currency+'）',money(q.international,currency)],[destination+'國內運費（'+currency+'）',money(q.taiwan,currency)],['其他（'+currency+'）',money(q.other,currency)]];
     for(const [label,value] of costs){text(label,L+14,y,22);text(value,R-14,y,22,ink,'right');y+=40;}
     y+=10;ctx.fillStyle=ink;ctx.fillRect(L,y-24,R-L,64);text('報價總金額（'+currency+'）',L+18,y+17,26,'#fff');text(money(q.total,q.currency),R-18,y+17,32,'#fff','right');y+=80;
-    paragraph('計算方式：（商品小計＋'+origin+'國內運費）× 匯率＋關稅及手續費＋國際運費＋'+destination+'國內運費＋其他',19,muted);
+    paragraph('計算方式：（' + source + '商品小計＋'+origin+'國內運費）× 匯率＋' + currency + '商品小計＋關稅及手續費＋國際運費＋'+destination+'國內運費＋其他',19,muted);
     paragraph(japan?'總金額以日圓計算，四捨五入至整元。':'總金額以新台幣計算，四捨五入至整元。',19,muted);
     if(japan){paragraph('付款方式：福岡銀行 ATM 日圓匯款。報價確認後提供帳戶資訊，確認入帳後安排採購。',19,muted);paragraph('請確認報價內容並同意購買後再匯款。',19,muted);}
     pages.forEach((p,i)=>{ctx=p.getContext('2d');y=1672;rule();text('fréa  |  www.thefrea.com',L,1704,18,muted);text((i+1)+' / '+pages.length,R,1704,18,muted,'right');});
