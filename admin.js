@@ -763,7 +763,7 @@
         '</p><p>' + escapeHtml(request.note || "無備註") + '</p><p>聯絡語言：' + (request.contact_language === 'ja' ? '日本語' : '繁體中文') + ' · 收件國家：' + destination + '</p><p>' + escapeHtml([address.recipient,address.postal_code,address.region,address.city,address.address_line].filter(Boolean).join(' ')) + '</p>' + (japan ? '<p>付款：福岡銀行 ATM 日圓匯款（帳戶資訊於報價確認後提供）</p>' : '') + '</div></div>' +
         '<div class="personal-quote-sheet"><h4>報價試算表</h4><div class="personal-quote-table">' +
         '<div class="personal-quote-row personal-quote-head"><span>商品</span><span>數量</span><span>商品單價／幣別</span><span>小計</span></div>' +
-        items.map((item, index) => '<div class="personal-quote-row"><span>' + escapeHtml(item.name || "未填商品名稱") +
+        items.map((item, index) => '<div class="personal-quote-row"><span>' + escapeHtml((item.specification || '').trim() ? String(item.name || "未填商品名稱").trim().replace(/[-－–—]\s*$/, '').trim() + ' - ' + item.specification.trim() : (item.name || "未填商品名稱")) +
           '</span><span>' + escapeHtml(item.quantity || 1) + '</span><div class="personal-unit-currency"><select data-quote-currency aria-label="商品報價幣別">' + ['TWD','JPY'].map(c => '<option value="' + c + '"' + ((quote.unit_currencies?.[index] || source) === c ? ' selected' : '') + '>' + (c === 'TWD' ? '台幣 TWD' : '日幣 JPY') + '</option>').join('') + '</select><input data-quote-unit data-quantity="' +
           escapeHtml(item.quantity || 1) + '" type="number" min="0" step="1" value="' +
           escapeHtml(unitPrices[index] ?? "") + '" placeholder="0"></div><strong data-quote-line>¥0</strong></div>').join("") +
