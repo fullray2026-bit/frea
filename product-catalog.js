@@ -58,7 +58,7 @@
   }
 
   function readCart() {
-    try { return JSON.parse(localStorage.getItem(cartKey) || "[]"); } catch (_) { return []; }
+    try { return JSON.parse(window.FreaCartStorage.getItem(cartKey) || "[]"); } catch (_) { return []; }
   }
 
   function notify(message) {
@@ -116,7 +116,7 @@
           spec: row.dataset.spec + (option?.dataset.label ? "｜規格/款式：" + option.dataset.label : ""),
           price: Number(row.dataset.price), currency: productCurrency, quantity: amount,
           image: option?.dataset.image || row.dataset.image });
-        localStorage.setItem(cartKey, JSON.stringify(cart));
+        window.FreaCartStorage.setItem(cartKey, JSON.stringify(cart));
         notify("已加入 " + amount + " 件商品");
       });
     });

@@ -2,6 +2,7 @@
   "use strict";
   const config=window.freaSupabaseConfig,sdk=window.supabase;
   const client=config&&sdk?sdk.createClient(config.url,config.publishableKey):null;
+  const checkoutOwner=JSON.parse(localStorage.getItem("sb-ixxatlyckbtihlnmlqnw-auth-token")||"null")?.user?.id;
   const registrationUrl="register.html?view=register&return=checkout.html";
   async function requireMember(){
     if(!client)throw new Error("auth unavailable");
@@ -38,14 +39,15 @@
     submit.disabled=true;submit.textContent="訂單送出中…";
     try{
       const user=await requireMember();if(!user)return;
-      const items=JSON.parse(localStorage.getItem("frea_demo_cart_v1")||"[]").filter(item=>item.quantity>0);
+      if(user.id!==checkoutOwner)throw new Error("帳號已切換，請重新開啟結帳頁面。");
+      const items=JSON.parse(window.FreaCartStorage.getItem("frea_demo_cart_v1")||"[]").filter(item=>item.quantity>0);
       if(!items.length)throw new Error("購物車沒有商品。");
       const choice=window.freaCheckoutAddress?.capture();
       const data=new FormData(form);
       const shipping={postalCode:String(data.get("postalCode")||"").trim(),address:String(data.get("address")||"").trim(),recipientPhone:String(data.get("recipientPhone")||"").trim(),recipientName:String(data.get("recipientName")||"").trim(),ezwayPhone:String(data.get("recipientPhone")||"").trim(),ezwayName:String(data.get("recipientName")||"").trim()};
       const {data:result,error}=await client.functions.invoke("submit-order-pending",{body:{items:items.map(item=>({id:item.productId||item.id,variantId:item.variantId||"",specification:item.spec,quantity:item.quantity})),shipping}});
       if(error||!result||!result.orderNumber)throw new Error(result&&result.error?result.error:"訂單送出失敗，請稍後再試。");
-      localStorage.removeItem("frea_demo_cart_v1");form.reset();form.hidden=true;document.getElementById("checkoutSuccess").hidden=false;document.getElementById("successOrderNumber").textContent="訂單編號："+result.orderNumber;window.scrollTo({top:0,behavior:"smooth"});
+      window.FreaCartStorage.removeItem("frea_demo_cart_v1");form.reset();form.hidden=true;document.getElementById("checkoutSuccess").hidden=false;document.getElementById("successOrderNumber").textContent="訂單編號："+result.orderNumber;window.scrollTo({top:0,behavior:"smooth"});
       let addressNotice="";
       try { if(choice) addressNotice=await window.freaCheckoutAddress.persist(choice,shipping); } catch { addressNotice="訂單已成立，會員資料回存未完成，請至會員中心更新。"; }
       const notice=document.createElement("p");notice.textContent=addressNotice;document.getElementById("checkoutSuccess").append(notice);

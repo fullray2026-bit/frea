@@ -433,10 +433,10 @@
       show(query.get("view") === "login" ? "login" : "register", false);
     } else if (returnTo === "checkout.html" && query.get("view") !== "login") {
       show("register", false);
-      message("registerMessage", "請先加入會員，或使用下方「登入」連結登入既有帳戶，即可繼續結帳。購物車商品會保留。", "success");
+      message("registerMessage", "請先加入會員，或使用下方「登入」連結登入既有帳戶，即可繼續結帳。登入後會顯示該會員的購物車，訪客商品另行保留。", "success");
     } else if (returnTo || query.get("view") === "login") {
       show("login", false);
-      if (returnTo) message("loginReturnMessage", returnTo === "checkout.html" ? "請先登入會員，即可繼續結帳。購物車商品會保留。" : "請先登入會員，再填寫自選代購需求。", "success");
+      if (returnTo) message("loginReturnMessage", returnTo === "checkout.html" ? "請先登入會員，即可繼續結帳。登入後會顯示該會員的購物車，訪客商品另行保留。" : "請先登入會員，再填寫自選代購需求。", "success");
     } else show("register", false);
   });
 })();
