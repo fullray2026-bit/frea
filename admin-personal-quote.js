@@ -66,8 +66,9 @@
     ensure(420);y+=8;text('費用明細',L,y,25);y+=36;
     const origin=japan?'台灣':'日本',destination=japan?'日本':'台灣';
     const costs=[['商品小計（'+currency+'）',money(q.directSubtotal,currency)],['商品小計（'+source+'）',money(q.subtotal,source)],[origin+'國內運費（'+source+'）',money(q.domestic,source)],['匯率（'+source+' → '+currency+'）',String(q.rate)],['商品與運費換算（'+currency+'）',money((q.subtotal+q.domestic-q.sourceDeduction)*q.rate,currency)],['關稅及手續費（'+currency+'）',money(q.fees,currency)],['國際運費（'+currency+'）',money(q.international,currency)],[destination+'國內運費（'+currency+'）',money(q.taiwan,currency)],['其他（'+currency+'）',money(q.other,currency)]];
-    if(q.deduction>0)costs.splice(q.sourceDeduction?3:costs.length,0,['減項：'+q.deductionLabel+'（'+q.deductionCurrency+'）','−'+money(q.deduction,q.deductionCurrency)]);
-    for(let i=0;i<costs.length;i+=2){const pair=costs.slice(i,i+2),labels=pair.map(c=>wrap(c[0],365,20));const h=Math.max(...labels.map(x=>x.length))*26+12;ensure(h);pair.forEach((c,j)=>{const x=L+j*570;labels[j].forEach((ln,k)=>text(ln,x+10,y+k*26,20));text(c[1],x+530,y,20,ink,'right');});y+=h;}
+    const orderedCosts=[costs[0],costs[1],costs[5],costs[2],costs[6],costs[3],costs[7],costs[4],costs[8]];
+    if(q.deduction>0)orderedCosts.push(['減項：'+q.deductionLabel+'（'+q.deductionCurrency+'）','−'+money(q.deduction,q.deductionCurrency)]);
+    for(let i=0;i<orderedCosts.length;i+=2){const pair=orderedCosts.slice(i,i+2),labels=pair.map(c=>wrap(c[0],365,20));const h=Math.max(...labels.map(x=>x.length))*26+12;ensure(h);pair.forEach((c,j)=>{const x=L+j*570;labels[j].forEach((ln,k)=>text(ln,x+10,y+k*26,20));text(c[1],x+530,y,20,ink,'right');});y+=h;}
     ensure(90);y+=10;ctx.fillStyle=ink;ctx.fillRect(L,y-24,R-L,64);text('報價總金額（'+currency+'）',L+18,y+17,26,'#fff');text(money(q.total,q.currency),R-18,y+17,32,'#fff','right');y+=80;
     paragraph('計算方式：（' + source + '商品小計＋'+origin+'國內運費－同幣別減項）× 匯率＋' + currency + '商品小計＋關稅及手續費＋國際運費＋'+destination+'國內運費＋其他－結算幣別減項',19,muted);
     paragraph(japan?'總金額以日圓計算，四捨五入至整元。':'總金額以新台幣計算，四捨五入至整元。',19,muted);
