@@ -100,3 +100,15 @@
 
 .variant-photo{min-width:0}.variant-photo input{width:100%;max-width:100%}.variant-photo small{display:block;color:var(--admin-muted);font-size:11px}.variant-photo img{display:block;width:72px;height:72px;object-fit:contain;margin-top:6px}.variant-photo img[hidden]{display:none}
 
+
+/* Personal shopping order actions, in reading order. */
+#personalCards .personal-order-controls{grid-template-columns:minmax(130px,180px) auto minmax(180px,1fr) auto auto;gap:12px;align-items:end}
+#personalCards .personal-order-controls>*{min-width:0}
+#personalCards .personal-order-controls button{min-height:44px;padding:11px 15px;border:1px solid #d8cabc;border-radius:8px;background:#fffdf9;color:#4b3d32;white-space:nowrap;cursor:pointer}
+#personalCards .personal-order-controls .danger{color:#9b4038}
+#personalCards .personal-order-controls .admin-save{background:var(--admin-accent);border-color:var(--admin-accent);color:#fff}
+#personalCards .personal-order-controls textarea{height:44px;min-height:44px;resize:vertical}
+#personalCards .personal-order-controls select{min-height:44px}
+#personalCards .personal-order-controls button:disabled{opacity:.5;cursor:wait}
+@media(max-width:1100px){#personalCards .personal-order-controls{grid-template-columns:1fr 1fr}#personalCards .personal-order-controls label:nth-child(3){grid-column:1/-1}}
+@media(max-width:480px){#personalCards .personal-order-controls{grid-template-columns:1fr}}
