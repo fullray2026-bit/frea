@@ -12,16 +12,21 @@
     const unitCurrencies=[...card.querySelectorAll('[data-quote-unit]')].map(i=>{const c=i.closest('.personal-quote-row').querySelector('[data-quote-currency]')?.value;return ['TWD','JPY'].includes(c)?c:sourceCurrency;});
     const sourceSubtotal=lines.reduce((n,v,i)=>n+(unitCurrencies[i]===sourceCurrency?v:0),0);
     const directSubtotal=lines.reduce((n,v,i)=>n+(unitCurrencies[i]===currency?v:0),0);
-    return {japan,currency:japan?'JPY':'TWD',sourceCurrency:japan?'TWD':'JPY',units,quantities,lines,unitCurrencies,subtotal:sourceSubtotal,directSubtotal,rate,domestic,fees,international,taiwan,other,total:Math.round((sourceSubtotal+domestic)*rate+directSubtotal+fees+international+taiwan+other)};
+    const deduction=num('deduction'),deductionLabel=card.querySelector('[data-quote-deduction-label]')?.value.trim()||'減項';
+    const deductionCurrency=card.querySelector('[data-quote-deduction-currency]')?.value||currency;
+    const sourceDeduction=deductionCurrency===sourceCurrency?deduction:0,directDeduction=deductionCurrency===currency?deduction:0;
+    return {deduction,deductionLabel,deductionCurrency,sourceDeduction,directDeduction,japan,currency:japan?'JPY':'TWD',sourceCurrency:japan?'TWD':'JPY',units,quantities,lines,unitCurrencies,subtotal:sourceSubtotal,directSubtotal,rate,domestic,fees,international,taiwan,other,total:Math.round((sourceSubtotal+domestic-sourceDeduction)*rate+directSubtotal+fees+international+taiwan+other-directDeduction)};
   }
   function validate(card,allowIncomplete=false){
-    for(const input of card.querySelectorAll('.personal-quote-sheet input')){
+    for(const input of card.querySelectorAll('.personal-quote-sheet input[type="number"]')){
       if(!input.checkValidity()){input.reportValidity();return false;}
       if(!Number.isFinite(Number(input.value))){input.focus();return false;}
     }
-    if(!allowIncomplete && (!card.querySelector('[data-quote-unit]') || [...card.querySelectorAll('[data-quote-unit]')].some(i=>i.value==='') || ((read(card).subtotal+read(card).domestic)>0 && read(card).rate<=0))){
+    if(!allowIncomplete && (!card.querySelector('[data-quote-unit]') || [...card.querySelectorAll('[data-quote-unit]')].some(i=>i.value==='') || ((read(card).subtotal+read(card).domestic+read(card).sourceDeduction)>0 && read(card).rate<=0))){
       window.alert('請先填寫所有商品單價及大於 0 的匯率，再產生報價單。');return false;
     }
+    if(read(card).deduction>0 && !card.querySelector('[data-quote-deduction-label]')?.value.trim()){window.alert('請填寫減項說明。');return false;}
+    if(read(card).total<0){window.alert('減項超過報價總額，請調整金額。');return false;}
     if(read(card).total>2147483647){window.alert('報價金額超出可儲存範圍，請確認輸入數值。');return false;}
     return true;
   }
@@ -62,10 +67,11 @@
     });
     ensure(560);y+=8;text('費用明細',L,y,27);y+=44;
     const origin=japan?'台灣':'日本',destination=japan?'日本':'台灣';
-    const costs=[['商品小計（'+currency+'）',money(q.directSubtotal,currency)],['商品小計（'+source+'）',money(q.subtotal,source)],[origin+'國內運費（'+source+'）',money(q.domestic,source)],['匯率（'+source+' → '+currency+'）',String(q.rate)],['商品與運費換算（'+currency+'）',money((q.subtotal+q.domestic)*q.rate,currency)],['關稅及手續費（'+currency+'）',money(q.fees,currency)],['國際運費（'+currency+'）',money(q.international,currency)],[destination+'國內運費（'+currency+'）',money(q.taiwan,currency)],['其他（'+currency+'）',money(q.other,currency)]];
-    for(const [label,value] of costs){text(label,L+14,y,22);text(value,R-14,y,22,ink,'right');y+=40;}
-    y+=10;ctx.fillStyle=ink;ctx.fillRect(L,y-24,R-L,64);text('報價總金額（'+currency+'）',L+18,y+17,26,'#fff');text(money(q.total,q.currency),R-18,y+17,32,'#fff','right');y+=80;
-    paragraph('計算方式：（' + source + '商品小計＋'+origin+'國內運費）× 匯率＋' + currency + '商品小計＋關稅及手續費＋國際運費＋'+destination+'國內運費＋其他',19,muted);
+    const costs=[['商品小計（'+currency+'）',money(q.directSubtotal,currency)],['商品小計（'+source+'）',money(q.subtotal,source)],[origin+'國內運費（'+source+'）',money(q.domestic,source)],['匯率（'+source+' → '+currency+'）',String(q.rate)],['商品與運費換算（'+currency+'）',money((q.subtotal+q.domestic-q.sourceDeduction)*q.rate,currency)],['關稅及手續費（'+currency+'）',money(q.fees,currency)],['國際運費（'+currency+'）',money(q.international,currency)],[destination+'國內運費（'+currency+'）',money(q.taiwan,currency)],['其他（'+currency+'）',money(q.other,currency)]];
+    if(q.deduction>0)costs.splice(q.sourceDeduction?3:costs.length,0,['減項：'+q.deductionLabel+'（'+q.deductionCurrency+'）','−'+money(q.deduction,q.deductionCurrency)]);
+    for(const [label,value] of costs){const labels=wrap(label,800,22);ensure(labels.length*32+12);labels.forEach((ln,i)=>text(ln,L+14,y+i*32,22));text(value,R-14,y,22,ink,'right');y+=Math.max(40,labels.length*32+12);}
+    ensure(90);y+=10;ctx.fillStyle=ink;ctx.fillRect(L,y-24,R-L,64);text('報價總金額（'+currency+'）',L+18,y+17,26,'#fff');text(money(q.total,q.currency),R-18,y+17,32,'#fff','right');y+=80;
+    paragraph('計算方式：（' + source + '商品小計＋'+origin+'國內運費－同幣別減項）× 匯率＋' + currency + '商品小計＋關稅及手續費＋國際運費＋'+destination+'國內運費＋其他－結算幣別減項',19,muted);
     paragraph(japan?'總金額以日圓計算，四捨五入至整元。':'總金額以新台幣計算，四捨五入至整元。',19,muted);
     if(japan){paragraph('付款方式：福岡銀行 ATM 日圓匯款。報價確認後提供帳戶資訊，確認入帳後安排採購。',19,muted);paragraph('請確認報價內容並同意購買後再匯款。',19,muted);}
     pages.forEach((p,i)=>{ctx=p.getContext('2d');y=1672;rule();text('fréa  |  www.thefrea.com',L,1704,18,muted);text((i+1)+' / '+pages.length,R,1704,18,muted,'right');});

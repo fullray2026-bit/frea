@@ -53,7 +53,7 @@
 .admin-main:has([data-admin-panel="social"]:not([hidden])) #adminGlobalMessage{margin:4px 0 8px;font-size:12px}
 #adminSocialFrame{height:calc(100dvh - 120px)!important;min-height:400px!important}
 @media(max-width:700px){.admin-main:has([data-admin-panel="social"]:not([hidden])){padding:14px}}
-</style><style>.personal-unit-currency{display:flex;gap:8px;align-items:center}.personal-unit-currency select{width:115px;flex:none}.personal-unit-currency input{min-width:0;width:100%}@media(max-width:600px){.personal-unit-currency{flex-wrap:wrap}}</style></head>
+</style><style>.personal-unit-currency{display:flex;gap:8px;align-items:center}.personal-unit-currency select{width:115px;flex:none}.personal-unit-currency input{min-width:0;width:100%}@media(max-width:600px){.personal-unit-currency{flex-wrap:wrap}}</style><style>.personal-quote-deduction{display:grid;grid-template-columns:minmax(0,2fr) minmax(240px,1fr);gap:12px 20px;margin-top:18px;padding-top:18px;border-top:1px solid #dfd4c8}.personal-quote-deduction label{display:grid;gap:8px;min-width:0}.personal-quote-deduction small{grid-column:1/-1;color:#8b7561}.personal-quote-deduction input{width:100%;box-sizing:border-box}@media(max-width:600px){.personal-quote-deduction{grid-template-columns:minmax(0,1fr)}.personal-quote-deduction .personal-unit-currency{flex-wrap:nowrap}}</style></head>
 <body class="admin-page">
   <main>
     <section class="admin-login" id="adminLogin">
@@ -256,11 +256,11 @@
   </main>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.112.3/dist/umd/supabase.js"></script>
   <script src="supabase-config.js"></script>
-  <script src="admin-personal-quote.js?v=20261105-mixed-currency"></script>
+  <script src="admin-personal-quote.js?v=20261106-deduction"></script>
   <script src="admin-lifestyle-gallery.js?v=all-collections-20260922"></script>
   <script src="admin-merchandising.js?v=category-filter-20261003-master"></script>
   <script src="admin-product-extract.js?v=20261003-translate"></script>
-  <script src="admin-procurement.js?v=20261010"></script><script src="admin.js?v=20261105-quote-spec"></script>
+  <script src="admin-procurement.js?v=20261010"></script><script src="admin.js?v=20261106-deduction"></script>
   <script src="admin-payment-proof.js?v=20260910-1"></script>
 </body>
 </html>
