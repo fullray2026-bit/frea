@@ -16,8 +16,6 @@
   by('personalIntro').textContent=t(japan?'把喜歡的台灣商品帶到日本。\n提供商品名稱、連結與數量，我們確認供貨與配送可行性後，以日圓提供報價。\n您確認購買並完成福岡銀行 ATM 日圓匯款後，我們再於台灣安排採購。':'提供想購買的日本商品名稱、連結與數量，我們確認供貨與費用後，以新台幣提供報價。\n您確認購買並完成匯款後，我們再於日本安排採購，寄送至台灣。',japan?'台湾で見つけたお気に入りを、日本の暮らしへ。\n商品名・URL・数量をお知らせください。在庫と配送の可否を確認し、日本円でお見積もりします。\nご承諾と福岡銀行へのATM振込を確認後、台湾で購入を手配します。':'ご希望の日本商品の商品名・URL・数量をお知らせください。\n在庫と費用を確認し、台湾ドルでお見積もりします。\nご承諾・ご入金後に日本で購入し、台湾へ発送します。');
   by('personalIntro').style.whiteSpace='pre-line';
   by('personalIntro').style.maxWidth='none';
-  by('personalRegionLabel').textContent=t(japan?'都道府縣':'縣市',japan?'都道府県':'台湾の県・市');
-  by('personalCityLabel').textContent=t(japan?'市區町村':'鄉鎮市區',japan?'市区町村':'区・郷・鎮');
   field('postal_code').pattern=japan?'[0-9]{3}-?[0-9]{4}':'[0-9]{3}([0-9]{2,3})?';
   field('postal_code').placeholder=japan?'123-4567':'111';
   by('personalLanguageLink').href=(ja?'personal-shopping.html':'personal-shopping-ja.html')+'?direction='+direction.value;
@@ -40,8 +38,8 @@
   }
   const remove=document.createElement('button');remove.type='button';remove.className='remove';remove.textContent='×';remove.setAttribute('aria-label',t('移除商品','商品を削除'));remove.onclick=()=>{row.remove();[...items.children].forEach((r,i)=>r.firstChild.textContent=i+1);};row.append(remove);items.append(row);
  }
- form.addEventListener('input',e=>{if(['recipient','postal_code','region','city','address_line'].includes(e.target.name))addressTouched=true;});
- function savedMode(active){fullSavedAddress=active;field('region').required=!active;field('city').required=!active;}
+ form.addEventListener('input',e=>{if(['recipient','recipient_phone','postal_code','address_line'].includes(e.target.name))addressTouched=true;});
+ function savedMode(active){fullSavedAddress=active;}
  async function loadAddresses(member){
   const version=++addressVersion;
   const {data:rows,error}=await client.from('member_addresses').select('id,label,recipient_name,recipient_phone,postal_code,address,is_default').eq('user_id',member.id).order('id');
@@ -51,8 +49,8 @@
   const box=document.createElement('div');box.id='personalSavedAddresses';box.style.cssText='margin-bottom:20px;display:grid;gap:8px';
   const label=document.createElement('label');label.textContent=t('常用收件資料','保存済みのお届け先');const pick=document.createElement('select');pick.setAttribute('aria-label',label.textContent);label.append(pick);box.append(label);
   pick.add(new Option(t('使用其他收件資料','別のお届け先を入力'),''));rows.forEach(r=>pick.add(new Option((r.label||t('常用地址','住所'))+'｜'+r.recipient_name+(r.is_default?t('（預設）','（既定）'):''),String(r.id))));
-  const hint=document.createElement('small');hint.textContent=t('已存地址會完整帶入下方地址欄，不需重填縣市、區域。請確認地址符合本次收件國家。','保存済み住所は住所欄にまとめて入力します。都道府県・市区町村の再入力は不要です。配送先の国をご確認ください。');box.append(hint);by('personalContact').before(box);
-  function apply(row){savedMode(!!row);for(const [key,value] of Object.entries({recipient:row?.recipient_name||'',postal_code:row?.postal_code||'',region:'',city:'',address_line:row?.address||''}))field(key).value=value;if(row?.recipient_phone&&!field('phone').value)field('phone').value=row.recipient_phone;}
+  const hint=document.createElement('small');hint.textContent=t('選擇後自動帶入收件資料，可依本次配送需要修改。','選択したお届け先を自動入力します。今回の配送先に合わせて変更できます。');box.append(hint);field('phone').closest('label').after(box);
+  function apply(row){savedMode(!!row);for(const [key,value] of Object.entries({recipient:row?.recipient_name||'',postal_code:row?.postal_code||'',recipient_phone:row?.recipient_phone||'',address_line:row?.address||''}))field(key).value=value;if(row?.recipient_phone&&!field('phone').value)field('phone').value=row.recipient_phone;}
   pick.onchange=()=>{addressTouched=true;apply(rows.find(r=>String(r.id)===pick.value));};
   if(!addressTouched){const selected=rows.find(r=>r.is_default)||rows[0];pick.value=String(selected.id);apply(selected);}
  }
@@ -62,7 +60,7 @@
    const {data,error}=await client.auth.getUser();const nextUser=error?null:data.user;
    if(addressOwner!== (nextUser?.id||null)){
     ++addressVersion;by('personalSavedAddresses')?.remove();savedMode(false);
-    if(addressOwner){for(const n of ['customer_name','phone','recipient','postal_code','region','city','address_line'])field(n).value='';addressTouched=false;}
+    if(addressOwner){for(const n of ['customer_name','phone','recipient','recipient_phone','postal_code','address_line'])field(n).value='';addressTouched=false;}
     addressOwner=nextUser?.id||null;user=nextUser;if(user)loadAddresses(user).catch(()=>show(t('無法讀取常用地址，請重新整理。','住所を読み込めません。再読み込みしてください。')));
    }else user=nextUser;
    if(by('personalAuth'))by('personalAuth').hidden=!!user;
@@ -88,8 +86,8 @@
   if(!list.length||list.some(i=>!i.name||!i.specification||!Number.isInteger(i.quantity)||i.quantity<1||i.quantity>99))return show(t('請完整填寫商品名稱、規格及數量；無規格請填 X。','商品名・仕様・数量を入力してください。仕様の指定がない場合は X と入力してください。'));
   if(list.some(i=>i.url&&!/^https?:\/\//i.test(i.url)))return show(t('商品連結請使用 http 或 https 網址。','商品URLは http または https で入力してください。'));
   const japan=direction.value==='tw_to_jp';
-  if(['customer_name','phone','recipient','address_line',...(fullSavedAddress?[]:['region','city'])].some(n=>!field(n).value.trim()))return show(t('請完整填寫聯絡與收件資料。','連絡先とお届け先を入力してください。'));
-  const payload={user_id:user.id,customer_name:field('customer_name').value.trim(),email:user.email,phone:field('phone').value.trim(),line_id:'',note:field('note').value.trim(),items:list,service_direction:direction.value,contact_language:language.value,quote_currency:japan?'JPY':'TWD',payment_method:japan?'fukuoka_bank_atm':'bank_transfer',delivery_address:{country:japan?'JP':'TW',recipient:field('recipient').value.trim(),postal_code:field('postal_code').value.trim(),region:field('region').value.trim(),city:field('city').value.trim(),address_line:field('address_line').value.trim()}};
+  if(['customer_name','phone','recipient','recipient_phone','address_line'].some(n=>!field(n).value.trim()))return show(t('請完整填寫聯絡與收件資料。','連絡先とお届け先を入力してください。'));
+  const payload={user_id:user.id,customer_name:field('customer_name').value.trim(),email:user.email,phone:field('phone').value.trim(),line_id:'',note:field('note').value.trim(),items:list,service_direction:direction.value,contact_language:language.value,quote_currency:japan?'JPY':'TWD',payment_method:japan?'fukuoka_bank_atm':'bank_transfer',delivery_address:{country:japan?'JP':'TW',recipient:field('recipient').value.trim(),postal_code:field('postal_code').value.trim(),recipient_phone:field('recipient_phone').value.trim(),region:'',city:'',address_line:field('address_line').value.trim()}};
   const fingerprint=JSON.stringify(payload);if(fingerprint!==submittedPayload){requestNumber='PS'+new Date().toISOString().slice(0,10).replaceAll('-','')+'-'+crypto.randomUUID().slice(0,12).replaceAll('-','').toUpperCase();submittedPayload=fingerprint;}
   payload.request_number=requestNumber;busy=true;submit.disabled=true;submit.textContent=t('送出中…','送信中…');const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),20000);
   try{

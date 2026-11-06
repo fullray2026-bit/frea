@@ -760,7 +760,7 @@
         (request.quote_amount == null ? "尚未報價" : escapeHtml(formatMoney(request.quote_amount, currency))) + '</strong></div>' +
         '<div class="admin-order-grid"><div><h4>代購品項</h4>' + itemHtml +
         '</div><div><h4>顧客資料與備註</h4><p>LINE ID：' + escapeHtml(request.line_id || "—") +
-        '</p><p>' + escapeHtml(request.note || "無備註") + '</p><p>聯絡語言：' + (request.contact_language === 'ja' ? '日本語' : '繁體中文') + ' · 收件國家：' + destination + '</p><p>' + escapeHtml([address.recipient,address.postal_code,address.region,address.city,address.address_line].filter(Boolean).join(' ')) + '</p>' + (japan ? '<p>付款：福岡銀行 ATM 日圓匯款（帳戶資訊於報價確認後提供）</p>' : '') + '</div></div>' +
+        '</p><p>' + escapeHtml(request.note || "無備註") + '</p><p>聯絡語言：' + (request.contact_language === 'ja' ? '日本語' : '繁體中文') + ' · 收件國家：' + destination + '</p><p>' + escapeHtml([address.recipient,address.recipient_phone,address.postal_code,address.region,address.city,address.address_line].filter(Boolean).join(' ')) + '</p>' + (japan ? '<p>付款：福岡銀行 ATM 日圓匯款（帳戶資訊於報價確認後提供）</p>' : '') + '</div></div>' +
         '<div class="personal-quote-sheet"><h4>報價試算表</h4><div class="personal-quote-table">' +
         '<div class="personal-quote-row personal-quote-head"><span>商品</span><span>數量</span><span>商品單價／幣別</span><span>小計</span></div>' +
         items.map((item, index) => '<div class="personal-quote-row"><span>' + escapeHtml((item.specification || '').trim() ? String(item.name || "未填商品名稱").trim().replace(/[-－–—]\s*$/, '').trim() + ' - ' + item.specification.trim() : (item.name || "未填商品名稱")) +

@@ -54,7 +54,7 @@
     paragraph('客戶姓名：'+(request.customer_name||'—'));
     paragraph('電話：'+(request.phone||'—'));
     paragraph('Email：'+(request.email||'—'));
-    if(request.delivery_address?.address_line)paragraph('收件地址：'+[request.delivery_address.recipient,request.delivery_address.postal_code,request.delivery_address.region,request.delivery_address.city,request.delivery_address.address_line].filter(Boolean).join(' '));y+=20;
+    if(request.delivery_address?.address_line)paragraph('收件地址：'+[request.delivery_address.recipient,request.delivery_address.recipient_phone,request.delivery_address.postal_code,request.delivery_address.region,request.delivery_address.city,request.delivery_address.address_line].filter(Boolean).join(' '));y+=20;
     tableHead();
     (request.items||[]).forEach((item,index)=>{
       const names=wrap((index+1)+'. '+(item.name||'未填商品名稱')+(item.specification?'\n規格：'+item.specification:''),570,22);
