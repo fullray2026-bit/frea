@@ -7,6 +7,7 @@
  const params=new URLSearchParams(location.search);if(['jp_to_tw','tw_to_jp'].includes(params.get('direction')))direction.value=params.get('direction');
  const config=window.freaSupabaseConfig;
  const client=config&&window.supabase?window.supabase.createClient(config.url,config.publishableKey):null;
+ let addressOwner=null,addressVersion=0,fullSavedAddress=false,addressTouched=false;
  let user=null,busy=false,signup=false,authBusy=false,requestNumber=null,submittedPayload=null;
  const show=text=>{message.hidden=false;message.textContent=text;};
  function route(){
@@ -39,10 +40,31 @@
   }
   const remove=document.createElement('button');remove.type='button';remove.className='remove';remove.textContent='×';remove.setAttribute('aria-label',t('移除商品','商品を削除'));remove.onclick=()=>{row.remove();[...items.children].forEach((r,i)=>r.firstChild.textContent=i+1);};row.append(remove);items.append(row);
  }
+ form.addEventListener('input',e=>{if(['recipient','postal_code','region','city','address_line'].includes(e.target.name))addressTouched=true;});
+ function savedMode(active){fullSavedAddress=active;field('region').required=!active;field('city').required=!active;}
+ async function loadAddresses(member){
+  const version=++addressVersion;
+  const {data:rows,error}=await client.from('member_addresses').select('id,label,recipient_name,recipient_phone,postal_code,address,is_default').eq('user_id',member.id).order('id');
+  if(version!==addressVersion||user?.id!==member.id)return;
+  if(error){show(t('常用地址暫時無法載入，可重新整理或手動填寫。','保存済み住所を読み込めません。再読み込みするか、手動で入力してください。'));return;}
+  if(!rows?.length)return;
+  const box=document.createElement('div');box.id='personalSavedAddresses';box.style.cssText='margin-bottom:20px;display:grid;gap:8px';
+  const label=document.createElement('label');label.textContent=t('常用收件資料','保存済みのお届け先');const pick=document.createElement('select');pick.setAttribute('aria-label',label.textContent);label.append(pick);box.append(label);
+  pick.add(new Option(t('使用其他收件資料','別のお届け先を入力'),''));rows.forEach(r=>pick.add(new Option((r.label||t('常用地址','住所'))+'｜'+r.recipient_name+(r.is_default?t('（預設）','（既定）'):''),String(r.id))));
+  const hint=document.createElement('small');hint.textContent=t('已存地址會完整帶入下方地址欄，不需重填縣市、區域。請確認地址符合本次收件國家。','保存済み住所は住所欄にまとめて入力します。都道府県・市区町村の再入力は不要です。配送先の国をご確認ください。');box.append(hint);by('personalContact').before(box);
+  function apply(row){savedMode(!!row);for(const [key,value] of Object.entries({recipient:row?.recipient_name||'',postal_code:row?.postal_code||'',region:'',city:'',address_line:row?.address||''}))field(key).value=value;if(row?.recipient_phone&&!field('phone').value)field('phone').value=row.recipient_phone;}
+  pick.onchange=()=>{addressTouched=true;apply(rows.find(r=>String(r.id)===pick.value));};
+  if(!addressTouched){const selected=rows.find(r=>r.is_default)||rows[0];pick.value=String(selected.id);apply(selected);}
+ }
  async function refreshUser(){
   if(!client)return show(t('系統無法連線，請稍後再試。','接続できません。しばらくしてから再度お試しください。'));
   try{
-   const {data,error}=await client.auth.getUser();user=error?null:data.user;
+   const {data,error}=await client.auth.getUser();const nextUser=error?null:data.user;
+   if(addressOwner!== (nextUser?.id||null)){
+    ++addressVersion;by('personalSavedAddresses')?.remove();savedMode(false);
+    if(addressOwner){for(const n of ['customer_name','phone','recipient','postal_code','region','city','address_line'])field(n).value='';addressTouched=false;}
+    addressOwner=nextUser?.id||null;user=nextUser;if(user)loadAddresses(user).catch(()=>show(t('無法讀取常用地址，請重新整理。','住所を読み込めません。再読み込みしてください。')));
+   }else user=nextUser;
    if(by('personalAuth'))by('personalAuth').hidden=!!user;
    if(!user&&!ja){sessionStorage.setItem('freaPersonalDirection',direction.value);location.replace('register.html?view=register&return=personal-shopping.html');return;}
    if(user){const {data:p}=await client.from('profiles').select('full_name,phone').eq('id',user.id).maybeSingle();if(p){if(!field('customer_name').value)field('customer_name').value=p.full_name||'';if(!field('phone').value)field('phone').value=p.phone||'';}}
@@ -66,7 +88,7 @@
   if(!list.length||list.some(i=>!i.name||!i.specification||!Number.isInteger(i.quantity)||i.quantity<1||i.quantity>99))return show(t('請完整填寫商品名稱、規格及數量；無規格請填 X。','商品名・仕様・数量を入力してください。仕様の指定がない場合は X と入力してください。'));
   if(list.some(i=>i.url&&!/^https?:\/\//i.test(i.url)))return show(t('商品連結請使用 http 或 https 網址。','商品URLは http または https で入力してください。'));
   const japan=direction.value==='tw_to_jp';
-  if(['customer_name','phone','recipient','region','city','address_line'].some(n=>!field(n).value.trim()))return show(t('請完整填寫聯絡與收件資料。','連絡先とお届け先を入力してください。'));
+  if(['customer_name','phone','recipient','address_line',...(fullSavedAddress?[]:['region','city'])].some(n=>!field(n).value.trim()))return show(t('請完整填寫聯絡與收件資料。','連絡先とお届け先を入力してください。'));
   const payload={user_id:user.id,customer_name:field('customer_name').value.trim(),email:user.email,phone:field('phone').value.trim(),line_id:'',note:field('note').value.trim(),items:list,service_direction:direction.value,contact_language:language.value,quote_currency:japan?'JPY':'TWD',payment_method:japan?'fukuoka_bank_atm':'bank_transfer',delivery_address:{country:japan?'JP':'TW',recipient:field('recipient').value.trim(),postal_code:field('postal_code').value.trim(),region:field('region').value.trim(),city:field('city').value.trim(),address_line:field('address_line').value.trim()}};
   const fingerprint=JSON.stringify(payload);if(fingerprint!==submittedPayload){requestNumber='PS'+new Date().toISOString().slice(0,10).replaceAll('-','')+'-'+crypto.randomUUID().slice(0,12).replaceAll('-','').toUpperCase();submittedPayload=fingerprint;}
   payload.request_number=requestNumber;busy=true;submit.disabled=true;submit.textContent=t('送出中…','送信中…');const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),20000);
