@@ -44,32 +44,30 @@
     const text=(str,x,yy,size=23,color=ink,align='left')=>{font(size);ctx.fillStyle=color;ctx.textAlign=align;ctx.fillText(tr(str),x,yy);ctx.textAlign='left';};
     const wrap=(str,width,size=23)=>{font(size);const lines=[];let current='';for(const ch of tr(str??'—')){if(ch==='\n'){lines.push(current);current='';continue;}if(ctx.measureText(current+ch).width>width&&current){lines.push(current);current='';}current+=ch;}lines.push(current);return lines;};
     const rule=()=>{ctx.strokeStyle=line;ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(R,y);ctx.stroke();};
-    const newPage=()=>{canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;ctx=canvas.getContext('2d');ctx.fillStyle='#fffdf9';ctx.fillRect(0,0,W,H);ctx.font='64px Georgia, serif';ctx.fillStyle=ink;ctx.fillText('fréa',L,102);text('代購報價單',R,78,32,ink,'right');text('PERSONAL SHOPPING QUOTATION',R,110,16,muted,'right');y=140;rule();y=174;text('報價編號：'+request.request_number,L,y,21);y+=36;pages.push(canvas);};
+    const newPage=()=>{canvas=document.createElement('canvas');canvas.width=W;canvas.height=H;ctx=canvas.getContext('2d');ctx.fillStyle='#fffdf9';ctx.fillRect(0,0,W,H);ctx.font='64px Georgia, serif';ctx.fillStyle=ink;ctx.fillText('fréa',L,102);text('代購報價單',R,78,32,ink,'right');text('PERSONAL SHOPPING QUOTATION',R,110,16,muted,'right');y=140;rule();y=174;if(pages.length){text('報價編號：'+request.request_number,L,y,20);y+=30;}pages.push(canvas);};
     const ensure=h=>{if(y+h>bottom)newPage();};
-    const paragraph=(str,size=22,color=ink)=>{for(const ln of wrap(str,R-L,size)){ensure(34);text(ln,L,y,size,color);y+=34;}};
+    const paragraph=(str,size=22,color=ink)=>{for(const ln of wrap(str,R-L,size)){ensure(26);text(ln,L,y,size,color);y+=26;}};
     const tableHead=()=>{ensure(60);ctx.fillStyle=ink;ctx.fillRect(L,y-24,R-L,46);text('商品名稱／規格',L+14,y+7,21,'#fff');text('數量',735,y+7,21,'#fff','right');text('單價 ',940,y+7,21,'#fff','right');text('小計 ',R-14,y+7,21,'#fff','right');y+=54;};
     newPage();
-    paragraph('報價日期：'+new Date().toLocaleDateString(ja?'ja-JP':'zh-TW',{timeZone:'Asia/Taipei'}));
-    paragraph('報價方：fréa　｜　frea.global@gmail.com');y+=10;
-    paragraph('客戶姓名：'+(request.customer_name||'—'));
-    paragraph('電話：'+(request.phone||'—'));
-    paragraph('Email：'+(request.email||'—'));
-    if(request.delivery_address?.address_line)paragraph('收件地址：'+[request.delivery_address.recipient,request.delivery_address.recipient_phone,request.delivery_address.postal_code,request.delivery_address.region,request.delivery_address.city,request.delivery_address.address_line].filter(Boolean).join(' '));y+=20;
+    function infoRow(cells){const lines=cells.map(c=>wrap(c[0],c[2],20));const height=Math.max(...lines.map(x=>x.length))*27;ensure(height);cells.forEach((c,i)=>lines[i].forEach((ln,j)=>text(ln,c[1],y+j*27,20)));y+=height+10;}
+    infoRow([['報價日期：'+new Date().toLocaleDateString(ja?'ja-JP':'zh-TW',{timeZone:'Asia/Taipei'}),L,460],['報價編號：'+request.request_number,L+500,612]]);
+    infoRow([['客戶姓名：'+(request.customer_name||'—'),L,270],['電話：'+(request.phone||'—'),L+290,310],['Email：'+(request.email||'—'),L+620,492]]);
+    if(request.delivery_address?.address_line)paragraph('收件地址：'+[request.delivery_address.recipient,request.delivery_address.recipient_phone,request.delivery_address.postal_code,request.delivery_address.region,request.delivery_address.city,request.delivery_address.address_line].filter(Boolean).join(' '),20);y+=18;
     tableHead();
     (request.items||[]).forEach((item,index)=>{
-      const names=wrap((index+1)+'. '+(item.name||'未填商品名稱')+(item.specification?'\n規格：'+item.specification:''),570,22);
+      const names=wrap((index+1)+'. '+(item.name||'未填商品名稱')+(item.specification?'｜'+item.specification:''),610,22);
       let first=true;
-      while(names.length){if(y+70>bottom){newPage();tableHead();}const count=Math.max(1,Math.min(names.length,Math.floor((bottom-y-30)/32)));const chunk=names.splice(0,count);
-        chunk.forEach((ln,j)=>text(ln,L+14,y+j*32,22));
+      while(names.length){if(y+70>bottom){newPage();tableHead();}const count=Math.max(1,Math.min(names.length,Math.floor((bottom-y-20)/28)));const chunk=names.splice(0,count);
+        chunk.forEach((ln,j)=>text(ln,L+14,y+j*28,22));
         if(first){text(q.quantities[index],735,y,22,ink,'right');text(money(q.units[index],q.unitCurrencies[index]),940,y,22,ink,'right');text(money(q.lines[index],q.unitCurrencies[index]),R-14,y,22,ink,'right');first=false;}
-        y+=chunk.length*32+22;rule();y+=28;
+        y+=chunk.length*28+8;rule();y+=26;
       }
     });
-    ensure(560);y+=8;text('費用明細',L,y,27);y+=44;
+    ensure(420);y+=8;text('費用明細',L,y,25);y+=36;
     const origin=japan?'台灣':'日本',destination=japan?'日本':'台灣';
     const costs=[['商品小計（'+currency+'）',money(q.directSubtotal,currency)],['商品小計（'+source+'）',money(q.subtotal,source)],[origin+'國內運費（'+source+'）',money(q.domestic,source)],['匯率（'+source+' → '+currency+'）',String(q.rate)],['商品與運費換算（'+currency+'）',money((q.subtotal+q.domestic-q.sourceDeduction)*q.rate,currency)],['關稅及手續費（'+currency+'）',money(q.fees,currency)],['國際運費（'+currency+'）',money(q.international,currency)],[destination+'國內運費（'+currency+'）',money(q.taiwan,currency)],['其他（'+currency+'）',money(q.other,currency)]];
     if(q.deduction>0)costs.splice(q.sourceDeduction?3:costs.length,0,['減項：'+q.deductionLabel+'（'+q.deductionCurrency+'）','−'+money(q.deduction,q.deductionCurrency)]);
-    for(const [label,value] of costs){const labels=wrap(label,800,22);ensure(labels.length*32+12);labels.forEach((ln,i)=>text(ln,L+14,y+i*32,22));text(value,R-14,y,22,ink,'right');y+=Math.max(40,labels.length*32+12);}
+    for(let i=0;i<costs.length;i+=2){const pair=costs.slice(i,i+2),labels=pair.map(c=>wrap(c[0],365,20));const h=Math.max(...labels.map(x=>x.length))*26+12;ensure(h);pair.forEach((c,j)=>{const x=L+j*570;labels[j].forEach((ln,k)=>text(ln,x+10,y+k*26,20));text(c[1],x+530,y,20,ink,'right');});y+=h;}
     ensure(90);y+=10;ctx.fillStyle=ink;ctx.fillRect(L,y-24,R-L,64);text('報價總金額（'+currency+'）',L+18,y+17,26,'#fff');text(money(q.total,q.currency),R-18,y+17,32,'#fff','right');y+=80;
     paragraph('計算方式：（' + source + '商品小計＋'+origin+'國內運費－同幣別減項）× 匯率＋' + currency + '商品小計＋關稅及手續費＋國際運費＋'+destination+'國內運費＋其他－結算幣別減項',19,muted);
     paragraph(japan?'總金額以日圓計算，四捨五入至整元。':'總金額以新台幣計算，四捨五入至整元。',19,muted);
@@ -108,3 +106,4 @@
   }
   window.FreaPersonalQuote={read,validate,open};
 })();
+
