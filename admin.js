@@ -723,6 +723,14 @@
     ).join("");
   }
 
+  function personalItemRow(item,index,price,currency) {
+    return '<div class="personal-quote-row" data-item-index="'+index+'"><div class="personal-item-content"><input data-item-name aria-label="商品名稱" required maxlength="500" placeholder="商品名稱" value="'+escapeHtml(item.name || '')+'"><input data-item-spec aria-label="顏色及規格" maxlength="500" placeholder="顏色及規格（選填）" value="'+escapeHtml(item.specification || '')+'"></div><input data-item-quantity aria-label="商品數量" type="number" required min="1" max="99999" step="1" value="'+escapeHtml(item.quantity ?? 1)+'"><div class="personal-unit-currency"><select data-quote-currency aria-label="商品報價幣別">'+['TWD','JPY'].map(c=>'<option value="'+c+'"'+(c===currency?' selected':'')+'>'+c+'</option>').join('')+'</select><input data-quote-unit aria-label="商品單價" type="number" min="0" step="1" placeholder="0" value="'+escapeHtml(price ?? '')+'"></div><strong data-quote-line>0</strong></div>';
+  }
+  function personalEditedItems(card) {
+    const original=personalRequests.find(r=>String(r.id)===card.dataset.personalId)?.items || [];
+    return [...card.querySelectorAll('[data-item-index]')].map(row=>({...original[Number(row.dataset.itemIndex)],name:row.querySelector('[data-item-name]').value.trim(),specification:row.querySelector('[data-item-spec]').value.trim(),quantity:Number(row.querySelector('[data-item-quantity]').value)}));
+  }
+
   function renderPersonalRequests() {
     const term = byId("personalSearch").value.trim().toLowerCase();
     const status = byId("personalStatusFilter").value;
@@ -763,19 +771,16 @@
         '</p><p>' + escapeHtml(request.note || "無備註") + '</p><p>聯絡語言：' + (request.contact_language === 'ja' ? '日本語' : '繁體中文') + ' · 收件國家：' + destination + '</p><p>' + escapeHtml([address.recipient,address.recipient_phone,address.postal_code,address.region,address.city,address.address_line].filter(Boolean).join(' ')) + '</p>' + (japan ? '<p>付款：福岡銀行 ATM 日圓匯款（帳戶資訊於報價確認後提供）</p>' : '') + '</div></div>' +
         '<div class="personal-quote-sheet"><h4>報價試算表</h4><div class="personal-quote-table">' +
         '<div class="personal-quote-row personal-quote-head"><span>商品</span><span>數量</span><span>商品單價／幣別</span><span>小計</span></div>' +
-        items.map((item, index) => '<div class="personal-quote-row"><span>' + escapeHtml((item.specification || '').trim() ? String(item.name || "未填商品名稱").trim().replace(/[-－–—]\s*$/, '').trim() + ' - ' + item.specification.trim() : (item.name || "未填商品名稱")) +
-          '</span><span>' + escapeHtml(item.quantity || 1) + '</span><div class="personal-unit-currency"><select data-quote-currency aria-label="商品報價幣別">' + ['TWD','JPY'].map(c => '<option value="' + c + '"' + ((quote.unit_currencies?.[index] || source) === c ? ' selected' : '') + '>' + (c === 'TWD' ? '台幣 TWD' : '日幣 JPY') + '</option>').join('') + '</select><input data-quote-unit data-quantity="' +
-          escapeHtml(item.quantity || 1) + '" type="number" min="0" step="1" value="' +
-          escapeHtml(unitPrices[index] ?? "") + '" placeholder="0"></div><strong data-quote-line>¥0</strong></div>').join("") +
-        '</div><div class="personal-quote-costs">' +
+        items.map((item,index)=>personalItemRow(item,index,unitPrices[index],quote.unit_currencies?.[index] || source)).join('') +
+        '</div><button type="button" class="product-cancel personal-add-item" data-add-personal-item>＋ 新增商品</button><div class="personal-quote-costs">' +
         '<label>匯率（' + source + ' → ' + currency + '）<input data-quote-rate type="number" min="0" step="0.0001" value="' + escapeHtml(quote.exchange_rate ?? "") + '" placeholder="' + (japan ? '例如 4.5' : '例如 0.22') + '"></label>' +
         '<label>' + origin + '國內運費（' + source + '）<input data-quote-domestic type="number" min="0" step="1" value="' + escapeHtml(quote[japan ? 'domestic_shipping_twd' : 'domestic_shipping_jpy'] ?? "") + '" placeholder="0"></label>' +
         '<label>關稅及手續費（' + currency + '）<input data-quote-fees type="number" min="0" step="1" value="' + escapeHtml(quote[japan ? 'duties_and_fees_jpy' : 'duties_and_fees_twd'] ?? "") + '" placeholder="0"></label>' +
         '<label>國際運費（' + currency + '）<input data-quote-international type="number" min="0" step="1" value="' + escapeHtml(quote[japan ? 'international_shipping_jpy' : 'international_shipping_twd'] ?? "") + '" placeholder="0"></label>' +
         '<label>' + destination + '國內運費（' + currency + '）<input data-quote-taiwan type="number" min="0" step="1" value="' + escapeHtml(quote[japan ? 'japan_shipping_jpy' : 'taiwan_shipping_twd'] ?? '') + '" placeholder="0"></label>' +
         '<label>其他（' + currency + '）<input data-quote-other type="number" min="0" step="1" value="' + escapeHtml(quote[japan ? 'other_fees_jpy' : 'other_fees_twd'] ?? '') + '" placeholder="0"></label>' +
+        '<label>減項說明<input data-quote-deduction-label type="text" maxlength="120" placeholder="例如：運費折抵、手續費優惠" value="' + escapeHtml(quote.deduction_label || '') + '"></label><label>減項金額<div class="personal-unit-currency"><select data-quote-deduction-currency aria-label="減項幣別">' + ['TWD','JPY'].map(c=>'<option value="'+c+'"'+((quote.deduction_currency || currency)===c?' selected':'')+'>'+c+'</option>').join('') + '</select><input data-quote-deduction type="number" min="0" step="1" placeholder="0" value="' + escapeHtml(quote.deduction_amount ?? '') + '"></div></label>' +
         '<label class="personal-quote-total">總金額（' + currency + '）<output data-quote-total>NT$0</output></label></div>' +
-        '<div class="personal-quote-deduction"><label>減項說明<input data-quote-deduction-label type="text" maxlength="120" placeholder="例如：運費折抵、手續費優惠" value="' + escapeHtml(quote.deduction_label || '') + '"></label><label>減項金額<div class="personal-unit-currency"><select data-quote-deduction-currency aria-label="減項幣別">' + ['TWD','JPY'].map(c=>'<option value="'+c+'"'+((quote.deduction_currency || currency)===c?' selected':'')+'>'+c+'</option>').join('') + '</select><input data-quote-deduction type="number" min="0" step="1" placeholder="0" value="' + escapeHtml(quote.deduction_amount ?? '') + '"></div></label><small>輸入正數即可扣除；需換匯的幣別先扣再換算。</small></div>' +
         (japan ? '<p class="admin-order-meta"><a data-bot-twd-jpy-rate href="https://rate.bot.com.tw/xrt?Lang=zh-TW" target="_blank" rel="noopener noreferrer" aria-live="polite" style="color:#8b7561">台灣銀行即時匯率：讀取中…</a></p>' : '<p class="admin-order-meta"><a data-bot-jpy-rate href="https://rate.bot.com.tw/xrt?Lang=zh-TW" target="_blank" rel="noopener noreferrer" aria-live="polite" style="color:#8b7561">台銀日幣現金賣出：讀取中…</a></p>') +
         '<p class="admin-order-meta">計算方式：（換匯商品小計＋' + origin + '國內運費－同幣別減項）× 匯率＋免換匯商品小計＋關稅及手續費＋國際運費＋' + destination + '國內運費＋其他－結算幣別減項</p></div>' +
         '<div class="admin-order-controls personal-order-controls"><label>處理狀態<select data-personal-status>' +
@@ -815,7 +820,7 @@
   async function previewPersonalQuote(card,download) {
     const request=personalRequests.find(item=>String(item.id)===card.dataset.personalId);
     if(!request || !window.FreaPersonalQuote.validate(card)) return;
-    try{await window.FreaPersonalQuote.open(request,window.FreaPersonalQuote.read(card),download);}
+    try{await window.FreaPersonalQuote.open({...request,items:personalEditedItems(card)},window.FreaPersonalQuote.read(card),download);}
     catch(error){showMessage('adminGlobalMessage','報價單產生失敗，請稍後再試。','error');}
   }
 
@@ -842,6 +847,7 @@
     };
     const updates = {
       status: card.querySelector("[data-personal-status]").value,
+      items: personalEditedItems(card),
       quote_amount: Number(card.dataset.quoteTotal),
       quote_details: quoteDetails,
       admin_note: card.querySelector("[data-personal-note]").value.trim(),
@@ -860,7 +866,7 @@
       });
       const { data, error } = await Promise.race([
         Promise.resolve(client.from("personal_shopping_requests").update(updates)
-          .eq("id", id).select("id,status,quote_amount,quote_details,admin_note,updated_at")
+          .eq("id", id).select("id,items,status,quote_amount,quote_details,admin_note,updated_at")
           .abortSignal(controller.signal).single()),
         timeout
       ]);
@@ -1263,6 +1269,11 @@
   byId("personalCards").addEventListener("click", event => {
     const card=event.target.closest('[data-personal-id]');
     if(!card)return;
+    if(event.target.closest('[data-add-personal-item]')) {
+      card.querySelector('.personal-quote-table').insertAdjacentHTML('beforeend',personalItemRow({},card.querySelectorAll('[data-item-index]').length,'',card.dataset.serviceDirection==='tw_to_jp'?'TWD':'JPY'));
+      card.querySelector('[data-item-index]:last-child [data-item-name]').focus();
+      recalculatePersonalQuote(card);return;
+    }
     if(event.target.closest('[data-delete-personal]'))return deletePersonalRequest(card);
     if(event.target.closest('[data-preview-personal]'))return previewPersonalQuote(card,false);
     if(event.target.closest('[data-download-personal]'))return previewPersonalQuote(card,true);
@@ -1270,7 +1281,7 @@
     if (button) savePersonalRequest(button.closest(".admin-order"));
   });
   byId("personalCards").addEventListener("input", event => {
-    if (!event.target.matches("[data-quote-deduction],[data-quote-deduction-currency],[data-quote-currency],[data-quote-unit],[data-quote-rate],[data-quote-domestic],[data-quote-fees],[data-quote-international],[data-quote-taiwan],[data-quote-other]")) return;
+    if (!event.target.matches("[data-item-quantity],[data-quote-deduction],[data-quote-deduction-currency],[data-quote-currency],[data-quote-unit],[data-quote-rate],[data-quote-domestic],[data-quote-fees],[data-quote-international],[data-quote-taiwan],[data-quote-other]")) return;
     recalculatePersonalQuote(event.target.closest(".admin-order"));
   });
   byId("adminLogout").addEventListener("click", async () => {

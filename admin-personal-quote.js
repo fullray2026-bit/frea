@@ -4,7 +4,7 @@
   function read(card){
     const num=(key,round=true)=>{const n=Number(card.querySelector('[data-quote-'+key+']')?.value);return Number.isFinite(n)?Math.max(0,round?Math.round(n):n):0;};
     const units=[...card.querySelectorAll('[data-quote-unit]')].map(i=>Math.max(0,Math.round(Number(i.value)||0)));
-    const quantities=[...card.querySelectorAll('[data-quote-unit]')].map(i=>Math.max(1,Math.round(Number(i.dataset.quantity)||1)));
+    const quantities=[...card.querySelectorAll('[data-quote-unit]')].map(i=>Math.max(1,Math.round(Number(i.closest(".personal-quote-row").querySelector("[data-item-quantity]")?.value ?? i.dataset.quantity)||1)));
     const lines=units.map((v,i)=>v*quantities[i]);const subtotal=lines.reduce((a,b)=>a+b,0);
     const rate=num('rate',false),domestic=num('domestic'),fees=num('fees'),international=num('international'),taiwan=num('taiwan'),other=num('other');
     const japan=card.dataset.serviceDirection==='tw_to_jp';
@@ -18,6 +18,9 @@
     return {deduction,deductionLabel,deductionCurrency,sourceDeduction,directDeduction,japan,currency:japan?'JPY':'TWD',sourceCurrency:japan?'TWD':'JPY',units,quantities,lines,unitCurrencies,subtotal:sourceSubtotal,directSubtotal,rate,domestic,fees,international,taiwan,other,total:Math.round((sourceSubtotal+domestic-sourceDeduction)*rate+directSubtotal+fees+international+taiwan+other-directDeduction)};
   }
   function validate(card,allowIncomplete=false){
+    for(const input of card.querySelectorAll('[data-item-name],[data-item-spec],[data-item-quantity]')){
+      if(!input.checkValidity() || (input.matches('[data-item-name]') && !input.value.trim())){input.reportValidity();input.focus();return false;}
+    }
     for(const input of card.querySelectorAll('.personal-quote-sheet input[type="number"]')){
       if(!input.checkValidity()){input.reportValidity();return false;}
       if(!Number.isFinite(Number(input.value))){input.focus();return false;}
