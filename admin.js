@@ -876,7 +876,7 @@
     } finally {
       clearTimeout(timer);
       button.disabled = false;
-      if (button.textContent === "儲存中…") button.textContent = "儲存變更";
+      if (button.textContent === "儲存中…") button.textContent = "變更儲存";
     }
   }
 
@@ -1036,12 +1036,13 @@
         '<label class="order-recipient-address">完整收件地址<textarea data-recipient-address rows="2" maxlength="500" required>' + escapeHtml(order.shipping_address || "") + '</textarea></label></div>' +
         '<p>匯款證明：' + escapeHtml(order.payment_proof_name || "未上傳") + "</p>" +
         (order.payment_proof_path ? '<button class="admin-save" type="button" data-view-payment-proof>查看匯款證明</button>' : "") + "</div></div>" +
-        '<label class="order-date-editor">下單日期（台灣時間）<input type="date" data-order-date min="2000-01-01" max="2099-12-31" required value="' + escapeHtml(overviewDay(order.created_at)) + '"></label>' +
-        '<div class="admin-order-controls"><label>訂單狀態<select data-order-status>' +
+        '<div class="admin-order-controls standard-order-controls"><div class="order-status-fields"><label>訂單狀態<select data-order-status>' +
         statusOptions(order.status) + '</select></label><label data-tracking-wrap' + (order.status === "shipped" ? "" : " hidden") +
         '>出貨單號<input data-tracking-number value="' + escapeHtml(order.tracking_number || "") +
-        '" placeholder="請輸入物流出貨單號"></label><label>後台備註<textarea data-order-note rows="2" placeholder="僅供管理使用">' +
-        escapeHtml(order.admin_note || "") + '</textarea></label><button class="admin-save" type="button" data-save-order>儲存變更</button></div><div style="display:flex;justify-content:flex-end;margin-top:16px"><button class="danger product-cancel" type="button" data-delete-order>刪除訂單</button></div></article>';
+        '" placeholder="請輸入物流出貨單號"></label></div><label>後台備註<textarea data-order-note rows="1" placeholder="僅供管理使用">' +
+        escapeHtml(order.admin_note || "") + '</textarea></label>' +
+        '<label>下單日期（台灣時間）<input type="date" data-order-date min="2000-01-01" max="2099-12-31" required value="' + escapeHtml(overviewDay(order.created_at)) + '"></label>' +
+        '<button class="admin-save" type="button" data-save-order>變更儲存</button><button class="danger product-cancel" type="button" data-delete-order>刪除訂單</button></div></article>';
     }).join("");
   }
 

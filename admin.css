@@ -113,5 +113,19 @@
 @media(max-width:1100px){#personalCards .personal-order-controls{grid-template-columns:1fr 1fr}#personalCards .personal-order-controls label:nth-child(3){grid-column:1/-1}}
 @media(max-width:480px){#personalCards .personal-order-controls{grid-template-columns:1fr}}
 
-.order-date-editor{display:grid;gap:6px;max-width:230px;margin-top:18px;font-size:12px;color:var(--admin-muted)}
-.order-date-editor input{width:100%;min-width:0;border:1px solid var(--admin-line);border-radius:8px;padding:11px 13px;background:#fff;color:var(--admin-ink)}
+
+/* Standard order actions: status, note, date, save, delete. */
+.standard-order-controls{grid-template-columns:minmax(130px,180px) minmax(180px,1fr) minmax(180px,220px) auto auto;gap:12px;align-items:end}
+.standard-order-controls>*{min-width:0}
+.standard-order-controls label{font-family:inherit;font-size:13px;font-weight:400;line-height:1.5}
+.standard-order-controls input,.standard-order-controls select,.standard-order-controls textarea,.standard-order-controls button{box-sizing:border-box;font-family:inherit;font-size:14px;font-weight:400;line-height:1.5;border:1px solid var(--admin-line);border-radius:8px;padding:10px 12px;height:44px;min-height:44px;color:var(--admin-ink);background:#fffdf9}
+.standard-order-controls input,.standard-order-controls select,.standard-order-controls textarea{width:100%;min-width:0}
+.standard-order-controls textarea{resize:vertical}
+.standard-order-controls button{white-space:nowrap;cursor:pointer;padding-inline:18px}
+.standard-order-controls .admin-save{background:var(--admin-accent);border-color:var(--admin-accent);color:#fff}
+.standard-order-controls .danger{color:#9b4038}
+.standard-order-controls button:disabled{opacity:.5;cursor:wait}
+.order-status-fields{display:grid;gap:10px}
+.order-status-fields [hidden]{display:none}
+@media(max-width:1200px){.standard-order-controls{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){.standard-order-controls{grid-template-columns:minmax(0,1fr)}.standard-order-controls input,.standard-order-controls select,.standard-order-controls textarea{font-size:16px}}
