@@ -1023,7 +1023,7 @@
       ).join("") + "</ul>" : "<p>沒有商品明細</p>";
       return '<article class="admin-order" data-order-id="' + escapeHtml(order.id) + '">' +
         '<div class="admin-order-head"><div><h3>' + escapeHtml(order.order_number) +
-        '</h3><p class="admin-order-meta">' + escapeHtml(formatDate(order.created_at)) + " · " +
+        '</h3><p class="admin-order-meta">' + escapeHtml(new Intl.DateTimeFormat("zh-TW",{timeZone:"Asia/Taipei",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}).format(new Date(order.created_at))) + "（台灣時間）" + " · " +
         escapeHtml(statusLabels[order.status] || order.status) + '</p></div><div><small class="admin-order-meta">所屬會員</small><br><strong>' +
         escapeHtml(member?.full_name || "未填姓名") + '</strong><p class="admin-order-meta">' +
         escapeHtml(member?.email || "") + '</p></div><strong class="admin-order-total">' +
@@ -1036,6 +1036,7 @@
         '<label class="order-recipient-address">完整收件地址<textarea data-recipient-address rows="2" maxlength="500" required>' + escapeHtml(order.shipping_address || "") + '</textarea></label></div>' +
         '<p>匯款證明：' + escapeHtml(order.payment_proof_name || "未上傳") + "</p>" +
         (order.payment_proof_path ? '<button class="admin-save" type="button" data-view-payment-proof>查看匯款證明</button>' : "") + "</div></div>" +
+        '<label class="order-date-editor">下單日期（台灣時間）<input type="date" data-order-date min="2000-01-01" max="2099-12-31" required value="' + escapeHtml(overviewDay(order.created_at)) + '"></label>' +
         '<div class="admin-order-controls"><label>訂單狀態<select data-order-status>' +
         statusOptions(order.status) + '</select></label><label data-tracking-wrap' + (order.status === "shipped" ? "" : " hidden") +
         '>出貨單號<input data-tracking-number value="' + escapeHtml(order.tracking_number || "") +
@@ -1083,10 +1084,25 @@
     } finally { button.disabled = false; }
   }
 
+  function orderDateChange(order, day) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(day) || day < '2000-01-01' || day > '2099-12-31') throw new Error('請輸入有效的下單日期（2000 至 2099 年）。');
+    const check = new Date(day + 'T00:00:00Z');
+    if (!Number.isFinite(check.getTime()) || check.toISOString().slice(0,10) !== day) throw new Error('下單日期不存在，請重新選擇。');
+    if (day === overviewDay(order.created_at)) return {};
+    if (!/^FR\d{8}-[A-Za-z0-9]+$/.test(order.order_number)) throw new Error('此訂單編號格式無法自動修改，請先確認編號。');
+    const taipei = new Date(new Date(order.created_at).getTime() + 8*60*60*1000);
+    const created_at = new Date(day + 'T' + taipei.toISOString().slice(11,23) + '+08:00').toISOString();
+    return {created_at, order_number: order.order_number.replace(/^FR\d{8}/, 'FR'+day.replaceAll('-',''))};
+  }
+
   async function saveOrder(card) {
     const id = card.dataset.orderId;
     const button = card.querySelector("[data-save-order]");
     if (button.disabled) return;
+    const currentOrder = orders.find(item => String(item.id) === String(id));
+    let dateChange;
+    try { if (!currentOrder) throw new Error("找不到此訂單，請重新整理。"); dateChange = orderDateChange(currentOrder, card.querySelector("[data-order-date]").value); }
+    catch(error) { showMessage("adminGlobalMessage",error.message,"error");return; }
     const status = card.querySelector("[data-order-status]").value;
     const trackingNumber = card.querySelector("[data-tracking-number]").value.trim();
     const note = card.querySelector("[data-order-note]").value.trim();
@@ -1109,18 +1125,22 @@
     button.textContent = "儲存中…";
     try {
     const { data, error } = await client.from("orders")
-      .update({ status, tracking_number: trackingNumber, admin_note: note, ...recipient })
+      .update({ status, tracking_number: trackingNumber, admin_note: note, ...recipient, ...dateChange, updated_at: new Date().toISOString() })
       .eq("id", id)
-      .select("id,status,tracking_number,admin_note,updated_at,recipient_name,recipient_phone,postal_code,shipping_address")
+      .eq("updated_at", currentOrder.updated_at)
+      .select("id,order_number,created_at,status,tracking_number,admin_note,updated_at,recipient_name,recipient_phone,postal_code,shipping_address")
       .single();
     button.disabled = false;
     button.textContent = error ? "儲存失敗" : "已儲存";
     if (error || !data) {
-      showMessage("adminGlobalMessage", error?.message || "訂單更新失敗。", "error");
+      showMessage("adminGlobalMessage", error?.code === "23505" ? "修改後的訂單編號已存在，請選擇其他日期。" : error?.code === "PGRST116" ? "訂單已被更新，請重新整理後再修改。" : error?.message || "訂單更新失敗。", "error");
       return;
     }
     const order = orders.find(item => String(item.id) === String(id));
+    const previousNumber = order?.order_number;
     if (order) Object.assign(order, data);
+    orders.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)||Number(b.id)-Number(a.id));
+    if (dateChange.order_number && byId("orderSearch").value.trim() === previousNumber) byId("orderSearch").value = dateChange.order_number;
     showMessage("adminGlobalMessage", "訂單 " + (order?.order_number || id) + " 已更新。", "success");
     renderAll();
     } catch (error) {showMessage("adminGlobalMessage",error.message || "訂單更新失敗，請稍後再試。","error");}
