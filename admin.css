@@ -137,3 +137,5 @@
 #personalCards .personal-quote-costs{grid-template-columns:repeat(6,minmax(105px,1fr)) minmax(130px,1.2fr) minmax(160px,1.4fr) minmax(130px,1.2fr);gap:10px;overflow-x:auto;padding-bottom:6px}
 #personalCards .personal-quote-costs label{font-size:12px;white-space:nowrap;grid-column:auto}
 #personalCards .personal-quote-costs .personal-quote-total{height:auto;align-self:stretch}
+
+.order-quantity-label{display:inline-flex;gap:6px;align-items:center;font-size:13px;margin:4px 0 4px 6px}.order-quantity-label input{box-sizing:border-box;width:76px;padding:7px 9px;border:1px solid var(--admin-line);border-radius:8px;background:#fffdf9;color:var(--admin-ink);font:inherit}

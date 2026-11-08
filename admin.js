@@ -133,7 +133,7 @@
       client.from("membership_applications").select("*").order("created_at", { ascending: false }),
       client.from("member_addresses").select("user_id,recipient_name,recipient_phone,postal_code,address,is_default").eq("is_default", true),
       client.from("ezway_profiles").select("user_id,real_name,mobile"),
-      client.from("orders").select("id,user_id,order_number,status,currency,total_amount,created_at,updated_at,recipient_name,recipient_phone,postal_code,shipping_address,payment_proof_name,payment_proof_path,admin_note,tracking_number,order_items(product_name,specification,quantity,unit_price,line_total)").order("created_at", { ascending: false }),
+      client.from("orders").select("id,user_id,order_number,status,currency,total_amount,created_at,updated_at,recipient_name,recipient_phone,postal_code,shipping_address,payment_proof_name,payment_proof_path,admin_note,tracking_number,order_items(id,product_name,specification,quantity,unit_price,line_total)").order("created_at", { ascending: false }),
       client.from("personal_shopping_requests").select("id,request_number,user_id,customer_name,email,phone,line_id,note,items,status,quote_amount,quote_details,service_direction,contact_language,quote_currency,delivery_address,payment_method,admin_note,created_at,updated_at").order("created_at", { ascending: false }),
       client.from("products").select("*,product_variants(id,option_value,sku,image_url,stock_quantity,sort_order,is_active)").order("brand_code").order("sort_order").order("created_at"),
       client.from("product_master").select("*").order("created_at", { ascending: false }),
@@ -1025,7 +1025,7 @@
       const items = Array.isArray(order.order_items) ? order.order_items : [];
       const itemHtml = items.length ? '<ul class="admin-order-items">' + items.map(item =>
         "<li>" + escapeHtml(item.product_name) + "｜" + escapeHtml(item.specification) +
-        " × " + escapeHtml(item.quantity) + "｜" + escapeHtml(formatMoney(item.line_total, order.currency)) + "</li>"
+        ' <label class="order-quantity-label">數量<input data-order-quantity data-item-id="'+escapeHtml(item.id)+'" aria-label="'+escapeHtml(item.product_name)+' 數量" type="number" min="1" max="99999" step="1" required value="'+escapeHtml(item.quantity)+'"></label>｜' + escapeHtml(formatMoney(item.line_total, order.currency)) + "</li>"
       ).join("") + "</ul>" : "<p>沒有商品明細</p>";
       return '<article class="admin-order" data-order-id="' + escapeHtml(order.id) + '">' +
         '<div class="admin-order-head"><div><h3>' + escapeHtml(order.order_number) +
@@ -1128,15 +1128,17 @@
       if (!input.value.trim() && input.required) { input.focus();showMessage("adminGlobalMessage","請填寫收件人姓名、電話及完整地址。","error");return; }
       if (!input.reportValidity()) return;
     }
+    const quantityInputs=[...card.querySelectorAll('[data-order-quantity]')];
+    for(const input of quantityInputs){if(!input.reportValidity())return;}
+    const quantities=quantityInputs.map(input=>({id:input.dataset.itemId,quantity:Number(input.value)}));
     button.disabled = true;
     button.textContent = "儲存中…";
     try {
-    const { data, error } = await client.from("orders")
-      .update({ status, tracking_number: trackingNumber, admin_note: note, ...recipient, ...dateChange, updated_at: new Date().toISOString() })
-      .eq("id", id)
-      .eq("updated_at", currentOrder.updated_at)
-      .select("id,order_number,created_at,status,tracking_number,admin_note,updated_at,recipient_name,recipient_phone,postal_code,shipping_address")
-      .single();
+    const { data, error } = await client.rpc("admin_save_order", {
+      p_id:id,p_expected_updated_at:currentOrder.updated_at,
+      p_changes:{status,tracking_number:trackingNumber,admin_note:note,...recipient,...dateChange},
+      p_items:quantities
+    });
     button.disabled = false;
     button.textContent = error ? "儲存失敗" : "已儲存";
     if (error || !data) {
