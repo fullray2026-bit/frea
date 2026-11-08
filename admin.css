@@ -130,7 +130,7 @@
 @media(max-width:1200px){.standard-order-controls{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:480px){.standard-order-controls{grid-template-columns:minmax(0,1fr)}.standard-order-controls input,.standard-order-controls select,.standard-order-controls textarea{font-size:16px}}
 
-#personalCards .personal-item-content{display:grid;gap:6px;min-width:0}
+#personalCards .personal-item-content{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:6px;min-width:0}
 #personalCards .personal-quote-sheet input,#personalCards .personal-quote-sheet select{box-sizing:border-box;font:inherit;font-size:13px;width:100%;min-width:0;border:1px solid var(--admin-line);border-radius:8px;padding:10px;background:#fffdf9;color:var(--admin-ink)}
 #personalCards .personal-unit-currency{display:grid;grid-template-columns:80px minmax(0,1fr);gap:6px}
 #personalCards .personal-add-item{margin-top:12px;font:inherit;font-size:13px}
