@@ -35,6 +35,8 @@
   }
 
   function productRow(product) {
+    const detailPages={'mina-perhonen-ilo-aea7923':'product-FR-000074.html','mina-perhonen-thermo-mug-mg0034-59':'product-FR-000075.html'};
+    const detailLink=!document.body.dataset.detailSlug && detailPages[product.slug];
     const variants = (product.product_variants || []).sort((a, b) => a.sort_order - b.sort_order);
     const stock = Math.max(0, Number(product.stock_quantity) || 0);
     const disabled = stock === 0;
@@ -42,8 +44,8 @@
       '" data-name="' + escapeHtml(product.name) + '" data-spec="' + escapeHtml(product.specification) +
       '" data-price="' + escapeHtml(product.price) + '" data-currency="' + escapeHtml(product.currency) +
       '" data-image="' + escapeHtml(product.image_url) + '" data-product-stock="' + stock + '" data-stock="' + stock + '">' +
-      '<div class="brand-product-thumb"><img src="' + escapeHtml(product.image_url) + '" alt="' + escapeHtml(product.name) + '"></div>' +
-      '<div class="brand-product-name"><h3>' + escapeHtml(product.name) + '</h3><p>' + escapeHtml(product.description || "") + '</p></div>' +
+      '<div class="brand-product-thumb"' + (detailLink ? ' data-detail-link="'+detailLink+'"' : '') + '><img src="' + escapeHtml(product.image_url) + '" alt="' + escapeHtml(product.name) + '"></div>' +
+      '<div class="brand-product-name"><h3>' + (detailLink ? '<a href="'+detailLink+'">'+escapeHtml(product.name)+'</a>' : escapeHtml(product.name)) + '</h3><p>' + escapeHtml(product.description || "") + '</p></div>' +
       '<div class="brand-product-spec">' + escapeHtml(product.specification) + (variants.length ? '<label class="product-variant-label">規格/款式<select data-product-variant required><option value="">請選擇</option>' + variants.map(item => '<option value="' + escapeHtml(item.id) + '" data-label="' + escapeHtml(item.option_value) + '" data-image="' + escapeHtml(item.image_url || product.image_url) + '" data-available="' + item.available + '">' + escapeHtml(item.option_value) + (item.available ? '' : '（售罄）') + '</option>').join("") + '</select></label>' : '') + '</div>' +
       '<p class="brand-product-use">' + escapeHtml(product.usage_flavor) + '</p>' +
       '<div class="brand-product-price"><strong>' + escapeHtml(formatPrice(product.price, product.currency)) + '</strong><span data-stock-label>' +

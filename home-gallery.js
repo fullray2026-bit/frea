@@ -22,6 +22,7 @@
  function enhance(){
   document.querySelectorAll(".brand-product-list .brand-product-row").forEach(row=>{
    const thumb=row.querySelector(".brand-product-thumb");if(!thumb)return;
+   if(thumb.dataset.detailLink){if(!thumb.dataset.linkReady){thumb.dataset.linkReady="1";thumb.setAttribute("role","link");thumb.tabIndex=0;thumb.setAttribute("aria-label","查看商品詳情");thumb.onclick=()=>location.href=thumb.dataset.detailLink;thumb.onkeydown=e=>{if(e.key==="Enter")location.href=thumb.dataset.detailLink;};}return;}
    let badge=thumb.querySelector(".lg-count");
    if(!thumb.dataset.galleryReady){
     thumb.dataset.galleryReady="1";thumb.setAttribute("role","button");thumb.tabIndex=0;thumb.setAttribute("aria-haspopup","dialog");
