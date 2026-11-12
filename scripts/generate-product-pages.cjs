@@ -28,6 +28,7 @@ for(const p of products){
  fs.writeFileSync(path.join(root,file),page(p,file));
 }
 fs.writeFileSync(path.join(root,'product.html'),page({slug:'',name:'商品詳情',description:'探索 fréa 日常選物',image_url:''},'product.html'));
+fs.writeFileSync(path.join(root,'product-page-links.js'),'window.FreaProductPages='+JSON.stringify(mapping)+';\n');
 const catalogPath=path.join(root,'home-catalog.js');
 let catalog=fs.readFileSync(catalogPath,'utf8');
 catalog=catalog.replace(/const detailPages=.*?;/,'const detailPages='+JSON.stringify(mapping)+';');

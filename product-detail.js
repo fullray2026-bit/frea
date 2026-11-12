@@ -1,7 +1,12 @@
 (async function(){
  const box=document.getElementById('detailProduct');
  const slug=document.body.dataset.detailSlug || new URLSearchParams(location.search).get('slug');
- document.getElementById('shareUrl').value=location.href.split('#')[0];
+ const shareUrl=new URL(location.href);shareUrl.searchParams.delete('from');shareUrl.hash='';
+ document.getElementById('shareUrl').value=shareUrl.href;
+ if(new URLSearchParams(location.search).get('from')==='cart'){
+  const back=document.querySelector('.detail-main > a');
+  back.href='cart.html?from=product';back.textContent='← 返回購物車';
+ }
  try{
  const client=window.supabase.createClient(window.freaSupabaseConfig.url,window.freaSupabaseConfig.publishableKey);
  const {data:p,error}=await client.from('products').select('slug,name,description,specification,usage_flavor,price,currency,stock_quantity,image_url,gallery_images,is_active').eq('slug',slug).maybeSingle();
