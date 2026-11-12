@@ -1,0 +1,611 @@
+[
+  {
+    "slug": "3coins-2524-jbsbag01-1",
+    "name": "3COINS｜耐用防潑水折疊行李套掛袋 S（黑色）",
+    "description": "採用不易濕透的 PVC 袋身，搭配長提把與行李箱套掛設計。收起後可用束帶固定，減少攜帶體積；束帶也可固定外套，方便旅途中使用。",
+    "image_url": "https://ixxatlyckbtihlnmlqnw.supabase.co/storage/v1/object/public/product-images/catalog/3coins-2524-jbsbag01-1-1791127269709.png",
+    "product_code": "FR-000077"
+  },
+  {
+    "slug": "3coins-2524-jbsbag02-1",
+    "name": "3COINS｜耐用防潑水折疊行李套掛袋 XL（黑色）",
+    "description": "採用不易濕透的 PVC 袋身，搭配長提把與行李箱套掛設計。收起後可用束帶固定，減少攜帶體積；束帶也可固定外套，方便旅途中使用。",
+    "image_url": "https://ixxatlyckbtihlnmlqnw.supabase.co/storage/v1/object/public/product-images/catalog/3coins-2524-jbsbag02-1-1791127299309.png",
+    "product_code": "FR-000076"
+  },
+  {
+    "slug": "akomeya-4562208090192",
+    "name": "AKOMEYA TOKYO 一年熟成柚子胡椒",
+    "description": "嚴選原料並熟成一年以上，柚子香氣鮮明，辛味較柔和而有深度。",
+    "image_url": "https://www.akomeya.jp/img/goods/L/4562208090192_e43b66f7b7184e41bbeeaf60f0485132.jpg",
+    "product_code": "FR-000001"
+  },
+  {
+    "slug": "akomeya-4571158953013",
+    "name": "田中醬油店 紫蘇胡椒",
+    "description": "選用大分縣紫蘇與九州青辣椒製成，香氣清新，辛味俐落。",
+    "image_url": "https://www.akomeya.jp/img/goods/L/4571158953013_417e4ba7ca8a4807bc11cb141ed1b43a.jpg",
+    "product_code": "FR-000014"
+  },
+  {
+    "slug": "akomeya-4571213190018",
+    "name": "野次馬 鹽胡椒（蒜味）",
+    "description": "加入蒜香的鹽胡椒，風味直接鮮明，是簡單料理的實用調味。",
+    "image_url": "https://www.akomeya.jp/img/goods/L/4571213190018_a7fe0f2890664b709658b684c51a19d5.jpg",
+    "product_code": "FR-000022"
+  },
+  {
+    "slug": "akomeya-4580330652460",
+    "name": "笠原將弘 我的萬用香料",
+    "description": "以粉末醬油、昆布、柴魚、香菇與山椒為基底，加入蒜與芫荽等香辛料。",
+    "image_url": "https://www.akomeya.jp/img/goods/L/4580330652460_53871d91bd374f3799004ac931613d82.jpg",
+    "product_code": "FR-000008"
+  },
+  {
+    "slug": "akomeya-4580504111106",
+    "name": "萬用香料 HORINISHI 原味",
+    "description": "融合二十多種香料與調味料，以鹽、醬油和蒜香形成平衡的和風辛香。",
+    "image_url": "https://www.akomeya.jp/img/goods/L/4580504111106_d5f409298b2f4ca38af6cac106f6e3fc.jpg",
+    "product_code": "FR-000004"
+  },
+  {
+    "slug": "akomeya-4580835071926",
+    "name": "AKOMEYA TOKYO 鹽麴",
+    "description": "以岩手縣產米、酵素與天日鹽慢慢發酵，甘味與鹹味均衡，香氣柔和圓潤。",
+    "image_url": "https://www.akomeya.jp/img/goods/L/4580835071926_8bc0bef54e21445693516d7b2ec1fa9d.jpg",
+    "product_code": "FR-000029"
+  },
+  {
+    "slug": "akomeya-4901509906731",
+    "name": "Kameya 粗磨山葵",
+    "description": "模擬粗目磨泥的香氣與辛味，帶爽脆顆粒感，風味接近現磨山葵。",
+    "image_url": "https://www.akomeya.jp/img/goods/L/4901509906731_24231a238c79456da89162c3396235e6.jpg",
+    "product_code": "FR-000024"
+  },
+  {
+    "slug": "akomeya-4949666117133",
+    "name": "六助 白鹽",
+    "description": "將昆布與香菇的鮮味濃縮進鹽中，是六助鹽最具代表性的基本款。",
+    "image_url": "https://www.akomeya.jp/img/goods/L/4949666117133_fc3b9eed35f24c21b931d7c8e127d0f1.jpg",
+    "product_code": "FR-000007"
+  },
+  {
+    "slug": "akomeya-4962968025227",
+    "name": "八幡屋礒五郎 BIRD EYE 一味唐辛子",
+    "description": "使用非洲原產小粒唐辛子焙煎研磨，辛度約為一般一味的三倍，尾韻清爽俐落。",
+    "image_url": "https://www.akomeya.jp/img/goods/L/4962968025227_9c75b3bc548d4c789d3021459d5aefae.jpg",
+    "product_code": "FR-000034"
+  },
+  {
+    "slug": "akomeya-4980520302197",
+    "name": "AKOMEYA TOKYO 木桶綜合味噌",
+    "description": "木桶釀製的柔和甘味，加入鰹魚、昆布與飛魚高湯，採方便使用的軟管包裝。",
+    "image_url": "https://www.akomeya.jp/img/goods/L/4980520302197_d71d63e2023341ec8768c0dfe7f086db.jpg",
+    "product_code": "FR-000015"
+  },
+  {
+    "slug": "akomeya-bird-eye-mszo9m2k",
+    "name": "八幡屋礒五郎 BIRD EYE 辣椒",
+    "description": "八幡屋礒五郎的 BIRD EYE 一味唐辛子。原材料為唐辛子，請避免高溫及潮濕並於常溫保存；開封後建議冷藏並儘早使用。",
+    "image_url": "https://image.raku-uru.jp/01/22113/325/waku_birdeye_can_1660012205265_1200.png",
+    "product_code": "FR-000036"
+  },
+  {
+    "slug": "akomeya-hanamidori-yuzu-kosho-30",
+    "name": "博多華味鳥 柚子胡椒",
+    "description": "以九州產柚皮、九州產生辣椒及天然鹽細心研磨調製，呈現傳統柚子胡椒的辛香。",
+    "image_url": "https://ixxatlyckbtihlnmlqnw.supabase.co/storage/v1/object/public/product-images/akomeya/akomeya-hanamidori-yuzu-kosho-30-1788850679921.jpg",
+    "product_code": "FR-000042"
+  },
+  {
+    "slug": "asahimatsu-shin-asahi-tofu-33g-b0fmxzj7b3",
+    "name": "旭松食品 新あさひ豆腐 1/6 尺寸 33g",
+    "description": "高野豆腐是日本自古以來的傳統食品之一，具有豐富的植物性蛋白質，是一種營養價值非常高的食品。",
+    "image_url": "https://m.media-amazon.com/images/I/71rFDBoyeML._AC_SY879_.jpg",
+    "product_code": "FR-000049"
+  },
+  {
+    "slug": "catalog-10g-muummcl2",
+    "name": "珈琲考具｜不鏽鋼咖啡量匙 10g",
+    "description": "簡潔的不鏽鋼量匙，平匙可量取約10g咖啡粉，方便每日沖煮。",
+    "image_url": "https://www.tonya.co.jp/img/goods/L/303708-1.jpg",
+    "product_code": "FR-000080"
+  },
+  {
+    "slug": "catalog-1l-muumkosh",
+    "name": "珈琲考具｜不鏽鋼刻度牛奶鍋 1L",
+    "description": "壺型握柄搭配不易滴漏的注口，方便倒入杯中或濾杯，內部刻度便於掌握用量。",
+    "image_url": "https://www.tonya.co.jp/img/goods/L/303700-1.jpg",
+    "product_code": "FR-000082"
+  },
+  {
+    "slug": "catalog-205g-mv0ng9h4",
+    "name": "南國製菓 鹽味地瓜脆條 205g",
+    "description": "使用日本產地瓜製作的油炸地瓜條。原料：地瓜（日本產）、植物油、砂糖、食鹽。請避開陽光直射及高溫潮濕處保存，開封後請儘早食用。同工廠亦製造含蕎麥、小麥、乳成分的產品。",
+    "image_url": "https://ixxatlyckbtihlnmlqnw.supabase.co/storage/v1/object/public/product-images/catalog/catalog-205g-mv0ng9h4-1791531252473.png",
+    "product_code": "FR-000091"
+  },
+  {
+    "slug": "catalog-22cm-mw7px8gx",
+    "name": "柳宗理 雙耳深型鍋 22cm（霧面）",
+    "description": "柳宗理雙耳深型鍋，霧面外觀，適用瓦斯爐，適合日常燉煮。",
+    "image_url": "https://ixxatlyckbtihlnmlqnw.supabase.co/storage/v1/object/public/product-images/catalog/catalog-22cm-mw7px8gx-1794135449122.jpg",
+    "product_code": "FR-000094"
+  },
+  {
+    "slug": "catalog-230ml-muumlkyi",
+    "name": "珈琲考具｜折疊握把雙層不鏽鋼馬克杯 230ml",
+    "description": "雙層中空結構有助減緩飲品溫度變化，耐用不鏽鋼杯身搭配可折握把，方便攜帶。",
+    "image_url": "https://www.tonya.co.jp/img/goods/L/304459-1.jpg",
+    "product_code": "FR-000083"
+  },
+  {
+    "slug": "catalog-250g-mv0nh0go",
+    "name": "南國製菓 原味地瓜脆條 250g",
+    "description": "使用日本產地瓜製作的油炸地瓜條。原料：地瓜（日本產）、植物油、砂糖。請避開陽光直射及高溫潮濕處保存，開封後請儘早食用。同工廠亦製造含蕎麥、小麥、乳成分的產品。",
+    "image_url": "https://ixxatlyckbtihlnmlqnw.supabase.co/storage/v1/object/public/product-images/catalog/catalog-250g-mv0nh0go-1791531287449.png",
+    "product_code": "FR-000092"
+  },
+  {
+    "slug": "catalog-30-40cm-mw7ovjum",
+    "name": "白雪 備長炭廚房擦巾 30×40cm",
+    "description": "使用揉入最高品質的「紀州備長炭」混紡的纖維製成。紀州備長炭的纖維，素雅灰色雙面布料，適合擦拭餐具與桌面。使用前請用熱水徹底沖洗，去除所有澱粉糊殘留。採用鹿兒島產地瓜澱粉糊製成。請勿使用烘乾機。",
+    "image_url": "https://ixxatlyckbtihlnmlqnw.supabase.co/storage/v1/object/public/product-images/catalog/catalog-30-40cm-mw7ovjum-1794134056247.jpg",
+    "product_code": "FR-000099"
+  },
+  {
+    "slug": "catalog-330ml-muumlbvz",
+    "name": "珈琲考具｜折疊握把雙層不鏽鋼馬克杯 330ml",
+    "description": "雙層中空結構有助減緩飲品溫度變化，杯身易清潔，可折握把讓收納更省空間。",
+    "image_url": "https://www.tonya.co.jp/img/goods/L/304460-1.jpg",
+    "product_code": "FR-000084"
+  },
+  {
+    "slug": "catalog-jo-malone-london-100ml-mus32bno",
+    "name": "Jo Malone London｜英國梨與小蒼蘭香水 100ml",
+    "description": "以秋日果園為靈感，清甜多汁的梨香與細緻小蒼蘭花香相伴，再由廣藿香、琥珀及木質氣息延伸出柔和層次。清新果香中帶著溫潤質感，適合融入日常的香氛時刻。",
+    "image_url": "https://assets.elc-tr.jp/brands/jm/wp-cms/wp-content/uploads/2026/06/08131004/L6Z5010000-1000x1000.jpg",
+    "product_code": "FR-000062"
+  },
+  {
+    "slug": "catalog-jo-malone-london-100ml-mus32kod",
+    "name": "Jo Malone London｜鼠尾草與海鹽香水 100ml",
+    "description": "以海岸風景為靈感，將海鹽的清新礦物感與鼠尾草的草本木質香融合，黃葵籽增添細膩的大地氣息。呈現自然、清爽而富有層次的香氣，為日常留下輕盈的海風印象。",
+    "image_url": "https://assets.elc-tr.jp/brands/jm/wp-cms/wp-content/uploads/2026/06/08153555/L6ZH010000-1000x1000.jpg",
+    "product_code": "FR-000061"
+  },
+  {
+    "slug": "catalog-kihara-mv113hg2",
+    "name": "KIHARA 晶系列 有田燒酒器三件組（晶金かすり／晶銀かすり）",
+    "description": "KIHARA 晶系列酒器組，每組包含一件片口酒器與兩只酒盃。提供晶金かすり、晶銀かすり兩款。材質為磁器，產地為日本有田。不可使用微波爐或洗碗機。",
+    "image_url": "https://ixxatlyckbtihlnmlqnw.supabase.co/storage/v1/object/public/product-images/catalog/catalog-kihara-mv113hg2-1791554170899.png",
+    "product_code": "FR-000093"
+  },
+  {
+    "slug": "catalog-kinto-36-28cm-mw7qb4vy",
+    "name": "KINTO 防滑托盤 36×28cm",
+    "description": "柳木層壓板搭配聚氨酯塗裝的防滑托盤，適合端送餐點與飲品。",
+    "image_url": "https://ixxatlyckbtihlnmlqnw.supabase.co/storage/v1/object/public/product-images/catalog/catalog-kinto-36-28cm-mw7qb4vy-1794136097663.jpg",
+    "product_code": "FR-000098"
+  },
+  {
+    "slug": "catalog-kinto-scs-300ml-mw7qo598",
+    "name": "KINTO SCS 手沖咖啡壺組 300ml",
+    "description": "備受好評的SCS金屬濾網玻璃壺組，俐落現代的玻璃壺身上標示各種沖泡份量，充滿簡潔而實用的清爽實驗感。附有可測量咖啡豆，亦可置放濾杯的下座容器。材質為耐熱玻璃、不鏽鋼、飽和聚酯樹脂與AS樹脂。",
+    "image_url": "https://ixxatlyckbtihlnmlqnw.supabase.co/storage/v1/object/public/product-images/catalog/catalog-kinto-scs-300ml-mw7qo598-1794136704669.jpg",
+    "product_code": "FR-000095"
+  },
+  {
+    "slug": "catalog-leaf-botanics-20g-musjljb8",
+    "name": "松山油脂 LEAF&BOTANICS｜薰衣草護手霜 20g（秋冬限定）",
+    "description": "添加夏威夷堅果籽油與甘草酸二鉀，搭配保濕成分，水潤質地容易推勻，讓雙手保持柔潤。以溫和配方與簡約設計，打造貼近日常、安心使用的生活保養品。",
+    "image_url": "https://cdn.shopify.com/s/files/1/0607/6976/3489/files/LB_LY_69dbc912-3930-4c7b-a269-08fd964e1ec4.jpg?v=1770105677",
+    "product_code": "FR-000070"
+  },
+  {
+    "slug": "catalog-leaf-botanics-20g-musjltyi",
+    "name": "松山油脂 LEAF&BOTANICS｜葡萄柚護手霜 20g（秋冬限定）",
+    "description": "添加夏威夷堅果籽油與甘草酸二鉀，搭配保濕成分，質地水潤好推勻，滋潤雙手並帶來柔滑觸感。以溫和配方與簡約設計，打造貼近日常、安心使用的生活保養品。",
+    "image_url": "https://cdn.shopify.com/s/files/1/0607/6976/3489/files/LB_GL_0007d1a5-8157-465f-b7e5-eaf7c9275ddb.jpg?v=1770106973",
+    "product_code": "FR-000071"
+  },
+  {
+    "slug": "catalog-leaf-botanics-20g-musjm195",
+    "name": "松山油脂 LEAF&BOTANICS｜佛手柑護手霜 20g（秋冬限定）",
+    "description": "秋冬限定護手霜，添加夏威夷堅果籽油、杏仁油、角鯊烷與檸檬草萃取，滋潤雙手並幫助維持肌膚水分。以溫和配方與簡約設計，打造貼近日常、安心使用的生活保養品。",
+    "image_url": "https://cdn.shopify.com/s/files/1/0607/6976/3489/files/LB_BG_3825c6dc-709a-4763-82a5-3e7d834219f6.jpg?v=1770105636",
+    "product_code": "FR-000072"
+  },
+  {
+    "slug": "catalog-m-mark-100g-musk6279",
+    "name": "松山油脂 M-mark｜香皂 100g（四款任選）",
+    "description": "以傳統釜煮製法製成的皂基為基底，提供四種日常清潔選擇。薰衣草、迷迭香與薄荷款帶有各自的天然精油香氣；米糠款添加米澱粉與米糠油，泡沫細緻，洗後保持柔潤。以溫和配方與簡約設計，打造貼近日常、安心使用的生活保養品。",
+    "image_url": "https://ixxatlyckbtihlnmlqnw.supabase.co/storage/v1/object/public/product-images/catalog/catalog-m-mark-100g-musk6279-1791043156622.png",
+    "product_code": "FR-000073"
+  },
+  {
+    "slug": "catalog-m-mark-65g-musjktep",
+    "name": "松山油脂 M-mark｜柚子護手霜 65g",
+    "description": "添加玻尿酸鈉、柚子籽萃取與乳木果脂，補充並留住水分，質地水潤，讓雙手與指尖保持柔滑。以溫和配方與簡約設計，打造貼近日常、安心使用的生活保養品。",
+    "image_url": "https://cdn.shopify.com/s/files/1/0607/6976/3489/files/M___2609.jpg?v=1787124340",
+    "product_code": "FR-000069"
+  },
+  {
+    "slug": "catalog-m-mark-65g-musjl9pu",
+    "name": "松山油脂 M-mark｜乳木果護手霜 65g",
+    "description": "以溫和配方與簡約設計，打造貼近日常、安心使用的生活保養品。添加乳木果脂與玻尿酸鈉，質地豐潤且容易推勻，滋潤乾燥手肌並減少水分流失。無香料配方。",
+    "image_url": "https://cdn.shopify.com/s/files/1/0607/6976/3489/files/M___2609_056234a9-6c79-4101-8662-e578f7a79942.jpg?v=1787124439",
+    "product_code": "FR-000068"
+  },
+  {
+    "slug": "catalog-porlex-coffee-mill-ii-mini-muuml2av",
+    "name": "PORLEX Coffee Mill II Mini 迷你手搖磨豆機",
+    "description": "由日本 PORLEX 製造，第二代迷你磨豆機提供更細緻的粗細調整；調整螺帽可支撐機身直立，方便日常使用。",
+    "image_url": "https://store.bluebottlecoffee.jp/cdn/shop/files/g089___II___01_700x.webp?v=1785742055",
+    "product_code": "FR-000085"
+  },
+  {
+    "slug": "catalog-press-butter-sand-5-mus4zliz",
+    "name": "PRESS BUTTER SAND｜原味奶油夾心餅乾 5入",
+    "description": "以夾烤方式製成酥脆餅乾，包裹濃郁奶油霜與滑順奶油焦糖雙層內餡，呈現奶油香氣與焦糖甜香交織的口感。",
+    "image_url": "https://ixxatlyckbtihlnmlqnw.supabase.co/storage/v1/object/public/product-images/master/fr-000064-1791016258394.png",
+    "product_code": "FR-000064"
+  },
+  {
+    "slug": "catalog-press-butter-sand-5-mus4zu26",
+    "name": "PRESS BUTTER SAND｜福岡甘王草莓奶油夾心餅乾 5入",
+    "description": "將福岡甘王草莓果醬融入奶油霜，搭配添加甘王草莓濃縮果汁的奶油焦糖，夾入酥脆餅乾中，帶來香甜草莓與濃郁奶油交織的滋味。",
+    "image_url": "https://ixxatlyckbtihlnmlqnw.supabase.co/storage/v1/object/public/product-images/master/fr-000063-1791016238019.png",
+    "product_code": "FR-000063"
+  },
+  {
+    "slug": "catalog-pro-300ml-muumm2dv",
+    "name": "珈琲考具｜PRO 單杯細口手沖壺 300ml",
+    "description": "小巧壺身搭配極細注水口，方便為日常一杯咖啡調整水流。",
+    "image_url": "https://www.tonya.co.jp/img/goods/L/311022-1.jpg",
+    "product_code": "FR-000078"
+  },
+  {
+    "slug": "catalog-pro-500ml-muumltlj",
+    "name": "珈琲考具｜PRO 雙杯細口手沖壺 500ml",
+    "description": "無蓋寬口設計方便清洗，外捲壺緣利於瀝水；細口方便控制手沖水流。",
+    "image_url": "https://www.tonya.co.jp/img/goods/L/303960-1.jpg",
+    "product_code": "FR-000079"
+  },
+  {
+    "slug": "catalog-product-muumfo74",
+    "name": "珈琲考具｜長柄撒粉篩匙",
+    "description": "長柄便於從袋底取粉，小篩面方便對準杯口或食材，線材握柄可吊掛收納。",
+    "image_url": "https://www.tonya.co.jp/img/goods/L/304439-1.jpg",
+    "product_code": "FR-000081"
+  },
+  {
+    "slug": "catalog-product-mwczgjnj",
+    "name": "茅乃舍 博多限定 水炊雞肉鍋湯包",
+    "description": "福岡博多限定的水炊鍋湯底。每次取一包飛魚高湯包加入 600 mL 水，煮沸後以中火煮 2–3 分鐘，取出高湯包，加入一包專用湯汁，再放入雞腿肉、高麗菜、金針菇和嫩豆腐煮熟。",
+    "image_url": "https://ixxatlyckbtihlnmlqnw.supabase.co/storage/v1/object/public/product-images/master/fr-000100-1794453607415.jpg",
+    "product_code": "FR-000100"
+  },
+  {
+    "slug": "catalog-russell-hobbs-basic-kettle-plus-0-8l-mw7mlk51",
+    "name": "Russell Hobbs Basic Kettle Plus 電熱水壺 0.8L（黑色）",
+    "description": "不鏽鋼內膽與聚丙烯雙層壺身，具沸騰自動斷電、防空燒及出水鎖定設計；廣口方便清潔。",
+    "image_url": "https://ixxatlyckbtihlnmlqnw.supabase.co/storage/v1/object/public/product-images/catalog/catalog-russell-hobbs-basic-kettle-plus-0-8l-mw7mlk51-1794129948721.webp",
+    "product_code": "FR-000097"
+  },
+  {
+    "slug": "fr-000055",
+    "name": "KINTO UNITEA 一按式濾茶壺 460ml",
+    "description": "透明耐熱玻璃壺身搭配濾網壺蓋，讓茶葉舒展並觀察茶湯色澤。壺身與壺蓋可用洗碗機；使用微波爐前須移除壺蓋。",
+    "image_url": "https://ixxatlyckbtihlnmlqnw.supabase.co/storage/v1/object/public/product-images/master/candidate-1789976594435.jpg",
+    "product_code": "FR-000055"
+  },
+  {
+    "slug": "fr-000056",
+    "name": "RIVERS MOKU COFFEE 木蓋咖啡隨行杯 350ml",
+    "description": "陶瓷塗層內膽搭配天然木杯蓋，真空雙層結構保留咖啡香氣。口徑約50mm，方便飲用及清潔；不可使用微波爐與洗碗機。",
+    "image_url": "https://ixxatlyckbtihlnmlqnw.supabase.co/storage/v1/object/public/product-images/master/candidate-1789976618181.jpg",
+    "product_code": "FR-000056"
+  },
+  {
+    "slug": "fr-000057",
+    "name": "龜之子 Do 木葉薄型海綿（2入）",
+    "description": "25mm 薄型木葉海綿，兩端收窄、柔軟好握。聚氨酯材質含銀系無機抗菌劑，耐熱120°C；每包2入。",
+    "image_url": "https://ixxatlyckbtihlnmlqnw.supabase.co/storage/v1/object/public/product-images/master/candidate-1789976659662.jpg",
+    "product_code": "FR-000057"
+  },
+  {
+    "slug": "fr-000058",
+    "name": "Russell Hobbs 迷你電動鹽胡椒研磨器組 7935JP",
+    "description": "迷你電動研磨器搭配陶瓷刀刃與專用底座，透明儲料槽方便查看餘量。每支使用4顆AAA鹼性電池（另購），不適用錳乾電池。",
+    "image_url": "https://ixxatlyckbtihlnmlqnw.supabase.co/storage/v1/object/public/product-images/master/candidate-1789976682043.jpg",
+    "product_code": "FR-000058"
+  },
+  {
+    "slug": "fukuoka-coffee-product-mus02vcq",
+    "name": "豆香洞咖啡｜三款咖啡禮盒",
+    "description": "集合豆香洞人氣配方、深焙法式配方與中焙衣索比亞咖啡，每款各150g。從甜美馥郁到深厚醇濃，透過三種烘焙風格，慢慢品味咖啡的不同表情。適合送給喜歡咖啡的人，也適合留給自己的日常咖啡時光。若您有其他想組合的豆子，可以Line私訊 fréa管理員。",
+    "image_url": "https://img11.shop-pro.jp/PA01054/701/product/150779001.png?cmsp_timestamp=20220622043659",
+    "product_code": "FR-000060"
+  },
+  {
+    "slug": "fukuoka-county-chelbesa-200",
+    "name": "COFFEE COUNTY 衣索比亞 Chelbesa 1 CWS 水洗",
+    "description": "COFFEE COUNTY｜淺煎｜200g",
+    "image_url": "https://img02.shop-pro.jp/PA01172/425/product/192968038.png?cmsp_timestamp=20260807163804",
+    "product_code": "FR-000003"
+  },
+  {
+    "slug": "fukuoka-county-kibingo-middle-200",
+    "name": "COFFEE COUNTY 蒲隆地 Kibingo CWS “The Middle”",
+    "description": "COFFEE COUNTY｜中煎｜200g",
+    "image_url": "https://img02.shop-pro.jp/PA01172/425/product/192795538.png?cmsp_timestamp=20260726163719",
+    "product_code": "FR-000013"
+  },
+  {
+    "slug": "fukuoka-rec-ffty4-100",
+    "name": "REC COFFEE Granja Paraíso 92 Red Bourbon",
+    "description": "REC COFFEE｜中煎｜100g",
+    "image_url": "https://rec-coffee.com/cdn/shop/files/FFTY_04100g.jpg?v=1786411110&width=1100",
+    "product_code": "FR-000025"
+  },
+  {
+    "slug": "fukuoka-rec-hakata-blend-100",
+    "name": "REC COFFEE 博多綜合咖啡",
+    "description": "REC COFFEE｜中煎｜100g",
+    "image_url": "https://cdn.shopify.com/s/files/1/0297/5193/5024/files/100g_a7e867e3-e031-498d-846d-75f4190ebfbd.jpg?v=1786411190",
+    "product_code": "FR-000039"
+  },
+  {
+    "slug": "fukuoka-rec-kiangai-100",
+    "name": "REC COFFEE 肯亞 Kiangai 水洗",
+    "description": "REC COFFEE｜中煎｜100g",
+    "image_url": "https://rec-coffee.com/cdn/shop/files/100g_f378f165-c15b-4358-a56d-dc754925a9d3.jpg?v=1786411960&width=1100",
+    "product_code": "FR-000028"
+  },
+  {
+    "slug": "fukuoka-rec-kissa-blend-100",
+    "name": "REC COFFEE Kissa 綜合咖啡",
+    "description": "REC COFFEE｜深煎｜100g",
+    "image_url": "https://cdn.shopify.com/s/files/1/0297/5193/5024/files/100g_dbd333d2-fc55-4f77-b2c1-326e165c2e9d.jpg?v=1786411329",
+    "product_code": "FR-000041"
+  },
+  {
+    "slug": "fukuoka-rec-lucy-blend-100",
+    "name": "REC COFFEE Lucy 綜合咖啡",
+    "description": "REC COFFEE｜中深煎｜100g",
+    "image_url": "https://cdn.shopify.com/s/files/1/0297/5193/5024/files/100g_4587e2ac-5985-4920-83cd-53595134b69a.jpg?v=1786411264",
+    "product_code": "FR-000040"
+  },
+  {
+    "slug": "fukuoka-tokado-blend-1000",
+    "name": "豆香洞招牌綜合咖啡（1kg）",
+    "description": "豆香洞咖啡｜中深煎｜1kg",
+    "image_url": "https://ixxatlyckbtihlnmlqnw.supabase.co/storage/v1/object/public/product-images/fukuoka-coffee/fukuoka-tokado-blend-1000-1789036847568.png",
+    "product_code": "FR-000027"
+  },
+  {
+    "slug": "fukuoka-tokado-haiti-mare-blanche-200",
+    "name": "豆香洞 海地 Marre Blanche",
+    "description": "豆香洞咖啡｜淺煎｜200g",
+    "image_url": "https://img11.shop-pro.jp/PA01054/701/product/133540646.png",
+    "product_code": "FR-000009"
+  },
+  {
+    "slug": "fukuoka-tokado-hakata-umaka-150",
+    "name": "豆香洞 博多うまかブレンド 咖啡豆（150g）",
+    "description": "TOKADO COFFEE 豆香洞咖啡的博多リバレインモール店限定綜合咖啡。以博多街景為靈感，帶有水果般的甜香與明亮清爽的風味。淺焙 ROAST 2/10，咖啡豆 150g。",
+    "image_url": "https://www.thefrea.com/assets/tokado-hakata-umaka-150g-draft-20260916.png",
+    "product_code": "FR-000054"
+  },
+  {
+    "slug": "fukuoka-tokado-house-blend-200",
+    "name": "豆香洞 招牌綜合咖啡（200g）",
+    "description": "豆香洞咖啡｜中深煎｜200g",
+    "image_url": "https://img11.shop-pro.jp/PA01054/701/product/133540212.png?cmsp_timestamp=20210119022425",
+    "product_code": "FR-000037"
+  },
+  {
+    "slug": "fukuoka-tokado-mandheling-200",
+    "name": "豆香洞 蘇門答臘曼特寧",
+    "description": "豆香洞咖啡｜深煎｜200g",
+    "image_url": "https://img11.shop-pro.jp/PA01054/701/product/133543666.png?cmsp_timestamp=20210119022000",
+    "product_code": "FR-000018"
+  },
+  {
+    "slug": "fukuoka-tokado-mild-blend-200",
+    "name": "豆香洞 Mild Blend（200g）",
+    "description": "豆香洞咖啡｜中煎｜200g",
+    "image_url": "https://img11.shop-pro.jp/PA01054/701/product/133539997.png?cmsp_timestamp=20210119022323",
+    "product_code": "FR-000038"
+  },
+  {
+    "slug": "hakusan-g-type-soy-sauce-pot-large",
+    "name": "白山陶器 G 型醬油壺 大款（白磁／天目黑）",
+    "description": "白山陶器自1958年推出獲獎無數的經典醬油壺，結合穩定底部、方便握持的收腰、易補充的寬口與減少滴漏的壺嘴。白磁及天目黑兩款可選，內側皆為白磁，方便觀察調味料。",
+    "image_url": "https://ixxatlyckbtihlnmlqnw.supabase.co/storage/v1/object/public/product-images/catalog/hakusan-g-type-soy-sauce-pot-large-1791516791088.png",
+    "product_code": "FR-000089"
+  },
+  {
+    "slug": "hakusan-g-type-soy-sauce-pot-small",
+    "name": "白山陶器 G 型醬油壺 小款（白磁／天目黑）",
+    "description": "白山陶器經典 G 型醬油壺的小款，結合穩定底部、好握的收腰、方便補充的寬口及減少滴漏的壺嘴。提供白磁與天目黑兩款，內側皆為白磁，方便觀察調味料。",
+    "image_url": "https://ixxatlyckbtihlnmlqnw.supabase.co/storage/v1/object/public/product-images/catalog/hakusan-g-type-soy-sauce-pot-small-1791516936412.png",
+    "product_code": "FR-000090"
+  },
+  {
+    "slug": "kayanoya-black-salt-pepper-55",
+    "name": "黑鹽胡椒",
+    "description": "將海鹽、粗磨黑胡椒與香辛料調和，鹹香俐落，簡單一撒即可帶出食材風味。",
+    "image_url": "https://www.kubara.jp/files/products/20250116125004_Bp6yEmBi.jpg?1786504293",
+    "product_code": "FR-000021"
+  },
+  {
+    "slug": "kayanoya-chicken-dashi-16",
+    "name": "茅乃舍雞高湯（16袋入）",
+    "description": "以燻製國產雞削節搭配干貝、生薑與蔥，呈現溫和而有層次的中式風味。",
+    "image_url": "https://www.kubara.jp/files/products/20250926092020_ehl9D1pB.jpg?1786504293=",
+    "product_code": "FR-000031"
+  },
+  {
+    "slug": "kayanoya-chinese-dashi-soup-10",
+    "name": "茅乃舍 一杯即享・中華湯（10袋入）",
+    "description": "結合雞肉、干貝、香菇與洋蔥鮮味，佐以生薑、蔥與芝麻油增添香氣。",
+    "image_url": "https://www.kubara.jp/files/products/20260119113409_XZxPh3Cz.jpg?1786504293",
+    "product_code": "FR-000033"
+  },
+  {
+    "slug": "kayanoya-dashi-30",
+    "name": "茅乃舍經典高湯（30袋入）",
+    "description": "以烤飛魚、鰹魚節、圓腹鯡與真昆布調和的經典和風高湯包。",
+    "image_url": "https://www.kubara.jp/files/products/20260323143411_NSkKl9tX.jpg?1786504293=",
+    "product_code": "FR-000002"
+  },
+  {
+    "slug": "kayanoya-japanese-dashi-soup-10",
+    "name": "茅乃舍 一杯即享・和風湯（10袋入）",
+    "description": "以烤飛魚、鰹魚與本枯鰹節調出鮮香，搭配青海苔與芝麻的即沖湯品。",
+    "image_url": "https://www.kubara.jp/files/products/20260119111002_VjSMbwt3.jpg?1786504293",
+    "product_code": "FR-000016"
+  },
+  {
+    "slug": "kayanoya-shiitake-dashi-20p",
+    "name": "茅乃舍椎茸高湯（20袋入）",
+    "description": "以國產原木栽培香菇搭配舞茸，呈現濃郁菇類香氣與深厚鮮味。不使用動物性原料與昆布，亦適合作為精進高湯。",
+    "image_url": "https://ixxatlyckbtihlnmlqnw.supabase.co/storage/v1/object/public/product-images/kayanoya/kayanoya-shiitake-dashi-20p-1789047238021.png",
+    "product_code": "FR-000053"
+  },
+  {
+    "slug": "kayanoya-vegetable-dashi-24",
+    "name": "茅乃舍野菜高湯（24袋入）",
+    "description": "凝縮五種國產蔬菜甘味與香氣、不使用動物性原料的清爽西式高湯。",
+    "image_url": "https://www.kubara.jp/files/products/20260323145409_71P2DeP2.jpg?1786504293=",
+    "product_code": "FR-000023"
+  },
+  {
+    "slug": "kayanoya-wafu-dashi-salt-60",
+    "name": "和風高湯鹽",
+    "description": "以海鹽加入鰹魚節、圓腹鯡、烤飛魚與真昆布，呈現溫潤鮮味的和風調味鹽。",
+    "image_url": "https://www.kubara.jp/files/products/20250116124934_WtJfk3Lg.jpg?1786504293",
+    "product_code": "FR-000010"
+  },
+  {
+    "slug": "kayanoya-western-dashi-soup-10",
+    "name": "茅乃舍 一杯即享・洋風湯（10袋入）",
+    "description": "融合蔬菜與干貝鮮味、洋蔥自然甘甜，呈現柔和洋蔥湯風味。",
+    "image_url": "https://www.kubara.jp/files/products/20260119111236_VFYJt3d1.jpg?1786504293",
+    "product_code": "FR-000011"
+  },
+  {
+    "slug": "kinto-day-off-tumbler-500",
+    "name": "KINTO DAY OFF TUMBLER 500ml",
+    "description": "圓潤瓶身搭配提環上蓋，真空雙層不鏽鋼結構可長時間保溫保冷，適合日常隨身攜帶。",
+    "image_url": "https://ixxatlyckbtihlnmlqnw.supabase.co/storage/v1/object/public/product-images/kinto/kinto-day-off-tumbler-500-1788854285829.webp",
+    "product_code": "FR-000006"
+  },
+  {
+    "slug": "kinto-travel-tumbler-350",
+    "name": "KINTO TRAVEL TUMBLER 350ml",
+    "description": "真空雙層不鏽鋼保溫杯，360度皆可順暢飲用。保溫65°C以上、保冷8°C以下各6小時；BPA Free。不可使用微波爐、烤箱或洗碗機。",
+    "image_url": "https://cdn.shopify.com/s/files/1/0093/4785/8510/products/20931_8f0d62f9-44cb-4385-a24d-3052dd11eac9.jpg?v=1582589572",
+    "product_code": "FR-000059"
+  },
+  {
+    "slug": "kinto-travel-tumbler-500",
+    "name": "KINTO TRAVEL TUMBLER 500ml",
+    "description": "真空雙層不鏽鋼保溫杯，360 度皆可順暢飲用，保留飲品原本的香氣與口感。",
+    "image_url": "https://kinto.co.jp/cdn/shop/products/20941_grande_3f0930bc-4186-4432-8db3-331153a719a4.jpg?v=1567658902&width=1024",
+    "product_code": "FR-000020"
+  },
+  {
+    "slug": "kinto-unitea-cup-m-450ml-8291",
+    "name": "KINTO UNITEA 耐熱玻璃杯 M 450ml",
+    "description": "UNITEA 系列中款玻璃杯，圓潤輪廓與好握把手融入日常桌面，透明杯身便於欣賞茶湯與飲品色澤。",
+    "image_url": "https://www.tonya.co.jp/img/goods/L/300634-1.jpg",
+    "product_code": "FR-000087"
+  },
+  {
+    "slug": "kinto-unitea-cup-s-350ml-8290",
+    "name": "KINTO UNITEA 耐熱玻璃杯 S 350ml",
+    "description": "UNITEA 系列以圓潤杯身搭配寬敞把手，透明玻璃呈現飲品色澤，適合日常茶飲時光。",
+    "image_url": "https://www.tonya.co.jp/img/goods/L/300633-1.jpg",
+    "product_code": "FR-000086"
+  },
+  {
+    "slug": "kinto-unitea-glass-teapot-s-500ml-8363",
+    "name": "KINTO UNITEA 耐熱玻璃茶壺組 S 500ml",
+    "description": "UNITEA 玻璃茶壺組以寬敞把手提供穩定握持感，搭配圓弧濾器與透明壺身，方便觀察茶葉展開及茶湯色澤。",
+    "image_url": "https://www.tonya.co.jp/img/goods/L/300630-1.jpg",
+    "product_code": "FR-000088"
+  },
+  {
+    "slug": "kinto-water-bottle-300",
+    "name": "KINTO WATER BOTTLE 300ml",
+    "description": "輕巧透明的 300ml 水瓶，寬口方便飲用、加冰與清洗，提環上蓋適合日常隨身攜帶。",
+    "image_url": "https://ixxatlyckbtihlnmlqnw.supabase.co/storage/v1/object/public/product-images/kinto/kinto-water-bottle-300-1788853058546.webp",
+    "product_code": "FR-000043"
+  },
+  {
+    "slug": "kinto-water-bottle-500",
+    "name": "KINTO WATER BOTTLE 500ml",
+    "description": "輕巧透明的 500ml 水瓶，寬口方便飲用、加冰與清洗，提環上蓋適合日常攜帶。",
+    "image_url": "https://ixxatlyckbtihlnmlqnw.supabase.co/storage/v1/object/public/product-images/kinto/kinto-water-bottle-500-1788853100665.jpg",
+    "product_code": "FR-000044"
+  },
+  {
+    "slug": "kinto-water-bottle-950",
+    "name": "KINTO WATER BOTTLE 950ml",
+    "description": "大容量且輕巧透明的 950ml 水瓶，寬口方便飲用、加冰與清洗，適合運動及長時間外出。",
+    "image_url": "https://ixxatlyckbtihlnmlqnw.supabase.co/storage/v1/object/public/product-images/kinto/kinto-water-bottle-950-1788853113862.webp",
+    "product_code": "FR-000045"
+  },
+  {
+    "slug": "lifestyle-picks-clever-mttwv0fb",
+    "name": "CLEVER 蛋白棒",
+    "description": "CLEVER 蛋白棒，酥脆巧克力的滿足口感，美味補充蛋白質，健康也能很好吃。提供牛奶巧克力、苦巧克力與鹽味巧克力三種口味。",
+    "image_url": "https://ixxatlyckbtihlnmlqnw.supabase.co/storage/v1/object/public/product-images/lifestyle-picks/lifestyle-picks-clever-mttwv0fb-1788948505355.png",
+    "product_code": "FR-000047"
+  },
+  {
+    "slug": "lifestyle-picks-miwabi-mttwufzw",
+    "name": "長崎五島手延烏龍麵",
+    "description": "使用日本國產小麥粉與五島產椿油製成，保有五島手延烏龍麵的彈性與滑順口感。原料：小麥粉、食鹽、椿油。含小麥。",
+    "image_url": "https://ixxatlyckbtihlnmlqnw.supabase.co/storage/v1/object/public/product-images/lifestyle-picks/lifestyle-picks-miwabi-mttwufzw-1788947882602.jpg",
+    "product_code": "FR-000046"
+  },
+  {
+    "slug": "mina-perhonen-ilo-aea7923",
+    "name": "minä perhonen｜ilo 花鳥圖案襪",
+    "description": "將 ilo 的花鳥圖案以編織方式呈現在腳背，細緻線條為日常穿搭增添輕巧亮點。四種配色可選，棉混紡材質適合日常搭配。",
+    "image_url": "https://ixxatlyckbtihlnmlqnw.supabase.co/storage/v1/object/public/product-images/catalog/mina-perhonen-ilo-aea7923-1791044449601.png",
+    "product_code": "FR-000074"
+  },
+  {
+    "slug": "mina-perhonen-thermo-mug-mg0034-59",
+    "name": "minä perhonen × thermo mug｜tambourine 保溫保冷瓶 300ml",
+    "description": "將 minä perhonen 經典 tambourine 圓點圖案呈現在 thermo mug Umbrella Bottle 上，細長瓶身方便握持與隨身攜帶，兼具保溫與保冷功能。提供白色與深藍色兩款。",
+    "image_url": "https://ixxatlyckbtihlnmlqnw.supabase.co/storage/v1/object/public/product-images/catalog/mina-perhonen-thermo-mug-mg0034-59-1791045503751.png",
+    "product_code": "FR-000075"
+  },
+  {
+    "slug": "tokado-brazil-bahas-pn-1kg",
+    "name": "豆香洞 巴西 Bahas 農園 PN（1kg）",
+    "description": "來自巴西 Carmo de Minas 的 Yellow Bourbon，以 Pulped Natural 處理，呈現堅果調性、柔和苦味與自然甜感。",
+    "image_url": "https://ixxatlyckbtihlnmlqnw.supabase.co/storage/v1/object/public/product-images/fukuoka-coffee/tokado-brazil-bahas-pn-1kg-1789046199957.png",
+    "product_code": "FR-000051"
+  },
+  {
+    "slug": "tokado-ethiopia-haile-selassie-1kg",
+    "name": "豆香洞 Ethiopia Haile Selassie（1kg）",
+    "description": "以衣索比亞咖啡調和而成，帶有明亮果香與甜感，整體口感較輕盈。",
+    "image_url": "https://ixxatlyckbtihlnmlqnw.supabase.co/storage/v1/object/public/product-images/fukuoka-coffee/tokado-ethiopia-haile-selassie-1kg-1789046218437.png",
+    "product_code": "FR-000052"
+  },
+  {
+    "slug": "tokado-mild-blend-1kg",
+    "name": "豆香洞 Mild Blend（1kg）",
+    "description": "豆香洞的柔和綜合咖啡，以清爽平衡的風味呈現，適合作為日常咖啡與晨間咖啡。",
+    "image_url": "https://ixxatlyckbtihlnmlqnw.supabase.co/storage/v1/object/public/product-images/fukuoka-coffee/tokado-mild-blend-1kg-1789045865671.png",
+    "product_code": "FR-000050"
+  }
+]
