@@ -361,6 +361,12 @@
   function exportCosts(){const header=["商品","實際進貨單價 JPY","商品進貨成本／件","國際運費／件","單件進貨成本","完整成本／件","團購主抽成／件","實際銷售價 TWD","扣除抽成後實收","單件毛利"];const rows=costScenarios.map(s=>{const p=masterProducts.find(x=>x.id===s.product_master_id),v=scenarioValues(s);return [p?.name||"未知商品",s.purchase_price_jpy,Math.round(v.productUnit),Math.round(v.intlUnit),Math.round(v.landed),Math.round(v.full),Math.round(v.groupFee),s.actual_sale_price_twd,Math.round(v.netReceipt),Math.round(v.profit)];});const csv="\uFEFF"+[header,...rows].map(row=>row.map(value=>'"'+String(value??"").replaceAll('"','""')+'"').join(",")).join("\r\n");const link=document.createElement("a");link.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));link.download="frea-cost-scenarios-"+new Date().toISOString().slice(0,10)+".csv";link.click();URL.revokeObjectURL(link.href);}
 
   let supplierRequestId = null, purchaseRequestId = null, purchaseEditing = null;
+  const purchaseCurrencyLabel=document.createElement("label");
+  purchaseCurrencyLabel.innerHTML='進貨幣別<select id="purchaseCurrency"><option value="JPY">日幣（JPY）</option><option value="TWD">台幣（TWD）</option></select><small>整張進貨單使用同一幣別；切換不換算金額，請輸入該幣別的單價。</small>';
+  byId("purchaseDate").closest("label").after(purchaseCurrencyLabel);
+  byId("purchaseCurrency").addEventListener("change",()=>{
+    document.querySelectorAll("[data-purchase-price-label]").forEach(el=>el.textContent="進貨單價（"+byId("purchaseCurrency").value+"／件）");
+  });
   function renderPurchases() {
     const previous = byId("purchaseSupplier").value;
     byId("purchaseSupplier").innerHTML = '<option value="">請選擇供應商</option>' + suppliers.map(s => '<option value="'+escapeHtml(s.id)+'">'+escapeHtml(s.supplier_code+'｜'+s.name)+'</option>').join("");
@@ -455,6 +461,7 @@
     form.querySelector('[type="submit"]').textContent="儲存修改";
     byId("purchaseCancelEdit").hidden=false;
     byId("purchaseSupplier").value=o.supplier_id||"";byId("purchaseDate").value=o.ordered_at||"";byId("purchaseNotes").value=o.notes||"";
+    byId("purchaseCurrency").value=o.currency||"JPY";
     (o.purchase_order_items||[]).forEach(addPurchaseItem);
     form.scrollIntoView({behavior:"smooth",block:"start"});byId("purchaseSupplier").focus({preventScroll:true});
   });
@@ -464,7 +471,7 @@
     const row=document.createElement("div");
     row.dataset.purchaseItem="";row.dataset.purchaseItemId=item?.id||crypto.randomUUID();
     row.style.cssText="min-width:0;border:1px solid #e5d9cc;border-radius:12px;padding:16px;margin-bottom:12px";
-    row.innerHTML='<div class="stack-form"><label>商品<select data-purchase-product required style="width:100%;min-width:0;max-width:100%"><option value="">請選擇商品</option>'+masterProducts.filter(p=>p.status!=="archived"||p.id===item?.product_master_id).map(p=>'<option value="'+escapeHtml(p.id)+'">'+escapeHtml(p.product_code+'｜'+p.name)+'</option>').join("")+'</select></label><label>套用成本方案<select data-purchase-cost style="width:100%;min-width:0;max-width:100%"><option value="">手動填寫</option></select></label><label>數量<input data-purchase-quantity type="number" min="1" step="1" value="1" required></label><label>進貨單價（'+escapeHtml(purchaseEditing?.currency||"JPY")+'／件）<input data-purchase-price type="number" min="0" step="0.01" value="0" required></label><button type="button" class="product-cancel" data-remove-purchase-item>移除商品</button></div>';
+    row.innerHTML='<div class="stack-form"><label>商品<select data-purchase-product required style="width:100%;min-width:0;max-width:100%"><option value="">請選擇商品</option>'+masterProducts.filter(p=>p.status!=="archived"||p.id===item?.product_master_id).map(p=>'<option value="'+escapeHtml(p.id)+'">'+escapeHtml(p.product_code+'｜'+p.name)+'</option>').join("")+'</select></label><label>套用成本方案<select data-purchase-cost style="width:100%;min-width:0;max-width:100%"><option value="">手動填寫</option></select></label><label>數量<input data-purchase-quantity type="number" min="1" step="1" value="1" required></label><label><span data-purchase-price-label>進貨單價（'+escapeHtml(byId("purchaseCurrency").value)+'／件）</span><input data-purchase-price type="number" min="0" step="0.01" value="0" required></label><button type="button" class="product-cancel" data-remove-purchase-item>移除商品</button></div>';
     byId("purchaseItemRows").appendChild(row);
     if(item){
       row.querySelector("[data-purchase-product]").value=item.product_master_id;
@@ -486,7 +493,8 @@
     }
     if(event.target.matches("[data-purchase-cost]")){
       const c=costScenarios.find(c=>c.id===event.target.value&&c.product_master_id===row.querySelector("[data-purchase-product]").value);
-      if(c){row.querySelector("[data-purchase-quantity]").value=c.quantity;row.querySelector("[data-purchase-price]").value=c.purchase_price_jpy;}
+      if(c){row.querySelector("[data-purchase-quantity]").value=c.quantity;if(byId("purchaseCurrency").value==="JPY")row.querySelector("[data-purchase-price]").value=c.purchase_price_jpy;
+        else showMessage("adminGlobalMessage","已連結成本方案；方案為日幣價格，請手動輸入台幣進貨單價。","success");}
     }
   });
   async function procurementRpc(name,payload) {
@@ -494,7 +502,7 @@
     try {
       const result=await Promise.race([
         Promise.resolve(client.rpc(name,payload).abortSignal(controller.signal)),
-        new Promise((_,reject)=>{timer=setTimeout(()=>{controller.abort();reject(new Error(name==="update_purchase_order"?"儲存確認逾時，請重新載入確認這張進貨單的最新內容。":"確認逾時，請保留原內容再次送出；系統會核對同一筆操作，避免重複建立。"));},20000);})
+        new Promise((_,reject)=>{timer=setTimeout(()=>{controller.abort();reject(new Error(name.startsWith("update_purchase_order")?"儲存確認逾時，請重新載入確認這張進貨單的最新內容。":"確認逾時，請保留原內容再次送出；系統會核對同一筆操作，避免重複建立。"));},20000);})
       ]);
       if(result.error)throw result.error;
       return result.data;
@@ -524,12 +532,12 @@
     }));
     if(!items.length)return showMessage("adminGlobalMessage","請至少加入一筆商品明細。","error");
     if(!purchaseEditing)purchaseRequestId ||= crypto.randomUUID();
-    const payload={p_id:purchaseEditing?.id||purchaseRequestId,...(purchaseEditing?{p_expected:purchaseEditing.expected}:{}),p_supplier_id:byId("purchaseSupplier").value,p_ordered_at:byId("purchaseDate").value,p_notes:byId("purchaseNotes").value.trim(),p_items:items};
+    const payload={p_id:purchaseEditing?.id||purchaseRequestId,...(purchaseEditing?{p_expected:purchaseEditing.expected}:{}),p_supplier_id:byId("purchaseSupplier").value,p_ordered_at:byId("purchaseDate").value,p_notes:byId("purchaseNotes").value.trim(),p_items:items,p_currency:byId("purchaseCurrency").value};
     const controls=[...form.querySelectorAll("input,select,textarea,button")];
     form.dataset.saving="true";controls.forEach(el=>el.disabled=true);
     try{
       const editing=Boolean(purchaseEditing);
-      const data=await procurementRpc(editing?"update_purchase_order":"create_purchase_order",payload);
+      const data=await procurementRpc(editing?"update_purchase_order_currency":"create_purchase_order_currency",payload);
       resetPurchaseEditor();await loadData();
       showMessage("adminGlobalMessage","進貨單 "+data.order_number+(editing?" 已儲存修改。":" 已建立。"),"success");
     }catch(error){showMessage("adminGlobalMessage",error.message||"儲存進貨單失敗。","error");}
