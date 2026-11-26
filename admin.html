@@ -53,7 +53,62 @@
 .admin-main:has([data-admin-panel="social"]:not([hidden])) #adminGlobalMessage{margin:4px 0 8px;font-size:12px}
 #adminSocialFrame{height:calc(100dvh - 120px)!important;min-height:400px!important}
 @media(max-width:700px){.admin-main:has([data-admin-panel="social"]:not([hidden])){padding:14px}}
-</style><style>.personal-unit-currency{display:flex;gap:8px;align-items:center}.personal-unit-currency select{width:115px;flex:none}.personal-unit-currency input{min-width:0;width:100%}@media(max-width:600px){.personal-unit-currency{flex-wrap:wrap}}</style><style>.personal-quote-deduction{display:grid;grid-template-columns:minmax(0,2fr) minmax(240px,1fr);gap:12px 20px;margin-top:18px;padding-top:18px;border-top:1px solid #dfd4c8}.personal-quote-deduction label{display:grid;gap:8px;min-width:0}.personal-quote-deduction small{grid-column:1/-1;color:#8b7561}.personal-quote-deduction input{width:100%;box-sizing:border-box}@media(max-width:600px){.personal-quote-deduction{grid-template-columns:minmax(0,1fr)}.personal-quote-deduction .personal-unit-currency{flex-wrap:nowrap}}</style></head>
+</style><style>.personal-unit-currency{display:flex;gap:8px;align-items:center}.personal-unit-currency select{width:115px;flex:none}.personal-unit-currency input{min-width:0;width:100%}@media(max-width:600px){.personal-unit-currency{flex-wrap:wrap}}</style><style>.personal-quote-deduction{display:grid;grid-template-columns:minmax(0,2fr) minmax(240px,1fr);gap:12px 20px;margin-top:18px;padding-top:18px;border-top:1px solid #dfd4c8}.personal-quote-deduction label{display:grid;gap:8px;min-width:0}.personal-quote-deduction small{grid-column:1/-1;color:#8b7561}.personal-quote-deduction input{width:100%;box-sizing:border-box}@media(max-width:600px){.personal-quote-deduction{grid-template-columns:minmax(0,1fr)}.personal-quote-deduction .personal-unit-currency{flex-wrap:nowrap}}</style><style id="purchase-page-compact-20261126">
+/* Layout only; restricted to the purchase management panel. */
+.admin-main:has([data-admin-panel="purchases"]:not([hidden])){padding-top:20px}
+.admin-main:has([data-admin-panel="purchases"]:not([hidden])) .admin-topbar{align-items:center;margin-bottom:8px}
+.admin-main:has([data-admin-panel="purchases"]:not([hidden])) .admin-topbar .admin-eyebrow{display:none}
+.admin-main:has([data-admin-panel="purchases"]:not([hidden])) #adminPageTitle{font-size:28px}
+.admin-main:has([data-admin-panel="purchases"]:not([hidden])) #adminGlobalMessage{margin:4px 0 10px}
+[data-admin-panel="purchases"]>.admin-card{margin-top:16px!important}
+[data-admin-panel="purchases"]>div{gap:14px!important}
+[data-admin-panel="purchases"] .admin-card{padding:16px;border-radius:10px}
+[data-admin-panel="purchases"] .admin-eyebrow{display:none}
+[data-admin-panel="purchases"] h2{margin:0 0 12px;font-size:17px}
+[data-admin-panel="purchases"] h3{margin:0 0 8px;font-size:15px}
+[data-admin-panel="purchases"] label{font-size:13px;gap:4px}
+[data-admin-panel="purchases"] input,[data-admin-panel="purchases"] select,[data-admin-panel="purchases"] textarea{padding:8px 10px!important;min-height:38px;line-height:1.4}
+[data-admin-panel="purchases"] button{width:auto;min-height:38px;padding:8px 14px;justify-self:start}
+#supplierForm .supplier-compact-heading{margin-bottom:10px;gap:10px}
+#supplierForm .supplier-compact-heading h2{margin:0}
+#supplierForm>.stack-form{grid-template-columns:150px minmax(180px,1fr) minmax(180px,1fr) minmax(180px,1fr) auto;gap:10px;align-items:start}
+#supplierForm>.stack-form>label:nth-of-type(4){grid-column:auto}
+#supplierForm>.stack-form>button{align-self:start;margin-top:22px;height:38px;min-height:38px;padding:8px 14px}
+#supplierForm textarea{height:38px;min-height:38px}
+#purchaseForm>.stack-form{grid-template-columns:minmax(200px,1.2fr) minmax(145px,.65fr) minmax(180px,.85fr) minmax(200px,1.3fr);gap:12px;align-items:start}
+#purchaseForm>.stack-form>button{grid-column:auto;width:max-content}
+#purchaseForm #purchaseNotes{height:38px;min-height:38px}
+#purchaseForm small{font-size:11px;line-height:1.4}
+#purchaseItemRows [data-purchase-item]{padding:12px!important;margin-bottom:10px!important}
+#purchaseItemRows [data-purchase-item]>.stack-form{grid-template-columns:minmax(220px,2fr) minmax(180px,1.4fr) minmax(75px,.5fr) minmax(120px,.8fr) auto;gap:10px;align-items:end}
+#purchaseItemRows [data-purchase-item]>.stack-form>label:nth-of-type(4){grid-column:auto}
+#purchaseItemRows [data-remove-purchase-item]{grid-column:auto;height:38px;white-space:nowrap}
+#purchaseListToolbar{grid-template-columns:180px 180px auto auto;justify-content:start;gap:10px;margin-bottom:8px}
+#purchaseListToolbar input,#purchaseListToolbar>button{height:38px;min-height:38px;width:auto}
+#purchaseFilterMessage{margin:6px 0;font-size:12px}
+#purchaseRows{display:grid;gap:10px}
+#purchaseRows .admin-order{padding:14px}
+#purchaseRows .admin-order-head{grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center}
+#purchaseRows .admin-order-head button{justify-self:end}
+#purchaseRows .admin-order-items{margin:8px 0;line-height:1.6}
+#purchaseRows .admin-order-meta{overflow-wrap:anywhere}
+@media(max-width:1200px){
+ #supplierForm>.stack-form{grid-template-columns:140px minmax(0,1fr) minmax(0,1fr)}
+ #supplierForm>.stack-form>label:nth-of-type(4){grid-column:1/3}
+ #supplierForm>.stack-form>button{align-self:end;margin-top:0}
+ #purchaseForm>.stack-form{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #purchaseItemRows [data-purchase-item]>.stack-form{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:700px){
+ [data-admin-panel="purchases"] .admin-card{padding:12px}
+ #supplierForm>.stack-form,#purchaseForm>.stack-form,#purchaseItemRows [data-purchase-item]>.stack-form{grid-template-columns:minmax(0,1fr)}
+ #supplierForm>.stack-form>label:nth-of-type(4){grid-column:auto}
+ #purchaseListToolbar{grid-template-columns:repeat(2,minmax(0,1fr));width:100%}
+ #purchaseListToolbar input{width:100%}
+ #purchaseListToolbar>button{white-space:normal;height:auto;min-height:40px}
+ [data-admin-panel="purchases"] button{min-height:40px}
+}
+</style></head>
 <body class="admin-page">
   <main>
     <section class="admin-login" id="adminLogin">
