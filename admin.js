@@ -384,7 +384,7 @@
   function filteredPurchaseOrders() {
     const from=byId("purchaseFilterFrom").value,to=byId("purchaseFilterTo").value;
     if(from && to && from>to) return null;
-    return purchaseOrders.filter(o=>(!from&&!to)||Boolean(o.ordered_at && (!from||o.ordered_at>=from)&&(!to||o.ordered_at<=to)));
+    return purchaseOrders.filter(o=>(!from&&!to)||Boolean(o.ordered_at && (!from||o.ordered_at>=from)&&(!to||o.ordered_at<=to))).sort((a,b)=>String(a.ordered_at||"9999-12-31").localeCompare(String(b.ordered_at||"9999-12-31"))||String(a.order_number||"").localeCompare(String(b.order_number||"")));
   }
   function renderSupplierList() {
     byId("supplierListRows").innerHTML=suppliers.map(s=>"<tr>"+[s.supplier_code,s.name,s.contact_name,s.email,s.phone,s.website,s.notes].map(v=>"<td>"+escapeHtml(v||"—")+"</td>").join("")+"</tr>").join("");
