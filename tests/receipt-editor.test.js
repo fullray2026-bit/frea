@@ -2,7 +2,7 @@ const test=require('node:test'),assert=require('node:assert/strict');
 const E=require('../admin-receipt-editor.js'),C=require('../admin-inventory-core.js');
 function row(){
  const controls=new Map();
- const r={dataset:{purchaseItemId:'line'},events:{},set innerHTML(html){this.html=html;for(const m of html.matchAll(/<[^>]*\b(data-purchase-[a-z-]+)(?:\s|>)[^>]*>/g)){const el={value:m[0].match(/\bvalue="([^"]*)"/)?.[1]||'',hidden:false,disabled:false,required:false,innerHTML:'',textContent:'',matches(q){return q==='['+m[1]+']'}};controls.set('['+m[1]+']',el)}},querySelector(q){if(!controls.has(q))throw Error('missing '+q);return controls.get(q)},addEventListener(e,fn){this.events[e]=fn}};
+ const r={dataset:{purchaseItemId:'line'},events:{},set innerHTML(html){this.html=html;for(const tag of html.matchAll(/<[^>]+>/g)){for(const m of tag[0].matchAll(/\b(data-purchase-[a-z-]+)(?=\s|>)/g)){const el={value:tag[0].match(/\bvalue="([^"]*)"/)?.[1]||'',hidden:false,disabled:false,required:false,innerHTML:'',textContent:'',matches(q){return q==='['+m[1]+']'}};controls.set('['+m[1]+']',el)}}},querySelector(q){if(!controls.has(q))throw Error('missing '+q);return controls.get(q)},addEventListener(e,fn){this.events[e]=fn}};
  return r;
 }
 const data={currency:'JPY',masterProducts:[{id:'m',name:'�M',product_code:'FR1'}],costScenarios:[],inventory:{skus:[{id:'s',product_master_id:'m',specification:'�ա�355ml',unit:'��'}],bindings:[]},personalRequests:[{id:7,request_number:'PS1',status:'confirmed',items:[{name:'�I�]',specification:'NV��S',quantity:2}]},{id:9,request_number:'CANCEL',status:'cancelled',items:[{name:'�����~',quantity:1}]}]};

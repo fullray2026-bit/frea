@@ -12,7 +12,7 @@
   const login = document.getElementById("adminLogin");
   const shell = document.getElementById("adminShell");
   const loginForm = document.getElementById("adminLoginForm");
-  const titles = { merchCategories:"分類管理",merchActivities:"活動管理", overview: "管理總覽", members: "會員管理", orders: "訂單管理", personal: "代購訂單管理", master: "商品主檔", costs: "商品成本試算", purchases: "進貨管理", inventory: "庫存管理", products: "商品管理" };
+  const titles = { merchCategories:"分類管理",merchActivities:"活動管理", overview: "管理總覽", members: "會員管理", orders: "訂單管理", personal: "代購訂單管理", master: "商品主檔", costs: "商品成本試算", purchases: "進貨管理", inventory: "常態商品庫存", products: "商品管理" };
   const brandLabels = { catalog: "依商品主檔分類", kayanoya: "茅乃舍", kinto: "KINTO", kajidonya: "家事問屋", akomeya: "AKOMEYA TOKYO", "fukuoka-coffee": "福岡咖啡精選", "lifestyle-picks": "生活雜貨精選" };
   const statusLabels = {
     pending_payment: "待匯款",
@@ -140,7 +140,7 @@
       client.from("product_master").select("*").order("created_at", { ascending: false }),
       client.from("cost_scenarios").select("*").order("created_at", { ascending: false }),
       client.from("suppliers").select("*").order("name"),
-      client.from("purchase_orders").select("*,suppliers(name),purchase_order_items(*,product_master(name,product_code))").order("created_at", { ascending: false }),
+      client.from("purchase_orders").select("*,suppliers(name),purchase_order_items(*,product_master(name,product_code,catalog_type,specification))").order("created_at", { ascending: false }),
       client.from("storefront_categories").select("*").order("sort_order"),
       client.from("storefront_product_categories").select("master_id,category_id,is_primary")
     ]), new Promise((_, reject) => {
@@ -229,14 +229,14 @@
   function renderMasterProducts() {
     byId("masterBrandSuggestions").innerHTML=[...new Set(masterProducts.map(p=>p.brand_name).filter(Boolean))].sort().map(n=>'<option value="'+escapeHtml(n)+'"></option>').join("");
     const term = byId("masterSearch").value.trim().toLowerCase();
-    const rows = masterProducts.filter(item => [item.product_code,item.name,item.brand_name,item.source_url].join(" ").toLowerCase().includes(term));
+    const rows = masterProducts.filter(item => (!byId("masterTypeFilter").value||(item.catalog_type||"regular")===byId("masterTypeFilter").value)&&[item.product_code,item.name,item.brand_name,item.source_url].join(" ").toLowerCase().includes(term));
     byId("masterCount").textContent = "共 " + rows.length + " 項";
     byId("masterRows").innerHTML = rows.length ? rows.map(item => {
       const related = Boolean(item.published_product_id || products.some(p => p.product_master_id === item.id) || costScenarios.some(s => s.product_master_id === item.id) || purchaseOrders.some(o => (o.purchase_order_items || []).some(i => i.product_master_id === item.id)));
       const action = related ? "封存" : "刪除";
-      return '<article class="product-item" data-master-id="'+escapeHtml(item.id)+'"><img src="'+escapeHtml(item.image_url||"assets/logo_round.png")+'" alt=""><div><h3>'+escapeHtml(item.name)+'</h3><small>'+escapeHtml(item.product_code)+' · '+escapeHtml(item.brand_name)+'</small><span class="product-status">'+escapeHtml(masterStatusLabels[item.status]||item.status)+'</span></div><div class="product-meta"><p>'+escapeHtml(item.specification||"—")+'</p><small class="master-source">'+escapeHtml(item.source_url||"無來源網址")+'</small></div><strong>'+escapeHtml(formatMoney(item.reference_price_jpy,"JPY"))+'</strong><div class="product-actions"><button type="button" data-edit-master>編輯</button><button class="danger" type="button" data-delete-master>'+action+'</button></div></article>';
+      return '<article class="product-item" data-master-id="'+escapeHtml(item.id)+'"><img src="'+escapeHtml(item.image_url||"assets/logo_round.png")+'" alt=""><div><h3>'+escapeHtml(item.name)+'</h3><small>'+escapeHtml(item.product_code||"代購歷史")+' · '+escapeHtml(item.brand_name)+'</small><span class="product-status">'+escapeHtml(masterStatusLabels[item.status]||item.status)+'</span></div><div class="product-meta"><p>'+escapeHtml(item.specification||"—")+'</p><small class="master-source">'+escapeHtml(item.source_url||"無來源網址")+'</small></div><strong>'+escapeHtml(formatMoney(item.reference_price_jpy,"JPY"))+'</strong><div class="product-actions"><button type="button" data-edit-master>編輯</button><button class="danger" type="button" data-delete-master>'+action+'</button></div></article>';
     }).join("") : '<div class="admin-empty">目前尚無商品主檔。</div>';
-    const ready=masterProducts.filter(item=>item.status==="ready_to_publish"&&!item.published_product_id&&!linkedProduct(item.id)&&adoptedCost(item.id));
+    const ready=masterProducts.filter(item=>item.catalog_type!=="personal"&&item.status==="ready_to_publish"&&!item.published_product_id&&!linkedProduct(item.id)&&adoptedCost(item.id));
     byId("productCandidate").innerHTML='<option value="">從待上架主檔選擇（'+ready.length+'）</option>'+ready.map(item=>'<option value="'+item.id+'">'+escapeHtml(item.product_code+'｜'+item.name)+'</option>').join("");
   }
 
@@ -331,7 +331,7 @@
   function returnCostList(){const row=[...byId('costRows').querySelectorAll('[data-cost-id]')].find(x=>x.dataset.costId===costReturnId);window.scrollTo({top:costReturnY,behavior:'instant'});if(row){const rect=row.getBoundingClientRect();if(rect.top<0||rect.bottom>innerHeight)row.scrollIntoView({block:'center',behavior:'smooth'});row.classList.add('cost-recent');setTimeout(()=>row.classList.remove('cost-recent'),2500)}else document.querySelector('.cost-saved').scrollIntoView({block:'start',behavior:'smooth'});}
   function renderCosts() {
     const selected = byId("costProduct").value;
-    const options=masterProducts.filter(x=>x.status!=="archived").map(x=>'<option value="'+x.id+'">'+escapeHtml(x.product_code+'｜'+x.name)+'</option>').join("");
+    const options=masterProducts.filter(x=>x.status!=="archived"&&x.catalog_type!=="personal").map(x=>'<option value="'+x.id+'">'+escapeHtml(x.product_code+'｜'+x.name)+'</option>').join("");
     byId("costProduct").innerHTML='<option value="">請選擇商品</option>'+options; if (selected && masterProducts.some(x => x.id === selected)) byId("costProduct").value = selected;
     if (byId("purchaseProduct")) byId("purchaseProduct").innerHTML='<option value="">請選擇商品</option>'+options;
     renderCostRows();
@@ -384,9 +384,7 @@
     renderPurchaseList();
   }
   function filteredPurchaseOrders() {
-    const from=byId("purchaseFilterFrom").value,to=byId("purchaseFilterTo").value;
-    if(from && to && from>to) return null;
-    return purchaseOrders.filter(o=>(!from&&!to)||Boolean(o.ordered_at && (!from||o.ordered_at>=from)&&(!to||o.ordered_at<=to))).sort((a,b)=>String(a.ordered_at||"9999-12-31").localeCompare(String(b.ordered_at||"9999-12-31"))||String(a.order_number||"").localeCompare(String(b.order_number||"")));
+    return window.FreaPurchaseView.filter(purchaseOrders,masterProducts,{from:byId("purchaseFilterFrom").value,to:byId("purchaseFilterTo").value,type:byId("purchaseTypeFilter").value,search:byId("purchaseSearch").value});
   }
   function renderSupplierList() {
     byId("supplierListRows").innerHTML=suppliers.map(s=>"<tr>"+[s.supplier_code,s.name,s.contact_name,s.email,s.phone,s.website,s.notes].map(v=>"<td>"+escapeHtml(v||"—")+"</td>").join("")+"</tr>").join("");
@@ -413,36 +411,68 @@
     ["供應商編號","供應商名稱","聯絡人","Email","電話","網站","備註"],
     ...suppliers.map(s=>[s.supplier_code,s.name,s.contact_name,s.email,s.phone,s.website,s.notes])
   ]));
-  ["purchaseFilterFrom","purchaseFilterTo"].forEach(id=>byId(id).addEventListener("change",renderPurchaseList));
+  ["purchaseFilterFrom","purchaseFilterTo","purchaseTypeFilter"].forEach(id=>byId(id).addEventListener("change",renderPurchaseList));
   byId("purchaseFilterReset").addEventListener("click",()=>{
-    byId("purchaseFilterFrom").value="";byId("purchaseFilterTo").value="";renderPurchaseList();
+    byId("purchaseFilterFrom").value="";byId("purchaseFilterTo").value="";byId("purchaseTypeFilter").value="";byId("purchaseSearch").value="";renderPurchaseList();
   });
   byId("purchaseListDownload").addEventListener("click",()=>{
     const rows=filteredPurchaseOrders();if(!rows?.length)return;
     downloadProcurementCsv("fréa-進貨單清單-"+(byId("purchaseFilterFrom").value||"全部")+"-"+(byId("purchaseFilterTo").value||"全部")+".csv",[
-      ["進貨單編號","進貨日","供應商編號","供應商名稱","狀態","幣別","商品編號","商品名稱","數量","進貨單價","商品小計","成本方案","備註"],
+      ["進貨單編號","進貨日","供應商編號","供應商名稱","狀態","幣別","商品類型","商品編號","商品名稱","數量","進貨單價","商品小計","成本方案","備註"],
       ...rows.flatMap(o=>(o.purchase_order_items?.length?o.purchase_order_items:[{}]).map(i=>[
         o.order_number,o.ordered_at,suppliers.find(s=>s.id===o.supplier_id)?.supplier_code,o.suppliers?.name,
-        ({draft:"待確認購買",ordered:"已購買／尚未到貨",received:"已收貨",cancelled:"已取消"}[o.status]||o.status),o.currency,i.product_master?.product_code||"單次代購",i.personal_snapshot?.name||i.product_master?.name,
+        ({draft:"待確認購買",ordered:"已購買／尚未到貨",received:"已收貨",cancelled:"已取消"}[o.status]||o.status),o.currency,window.FreaPurchaseView.kind(i,masterProducts)==="personal"?"代購":"常態",i.product_master?.product_code||"代購",i.personal_snapshot?.name||i.product_master?.name,
         i.quantity,i.unit_cost,i.quantity==null?"":Number(i.quantity)*Number(i.unit_cost),
         costScenarios.find(c=>c.id===i.cost_scenario_id)?.scenario_name||"",o.notes
       ]))
     ]);
   });
   function renderPurchaseList() {
-    const rows=filteredPurchaseOrders();
+    const rows=filteredPurchaseOrders(),state=window.FreaInventory.editorData();
     byId("purchaseListDownload").disabled=!rows?.length;
-    byId("purchaseFilterMessage").textContent=rows?"共 "+rows.length+" 筆進貨單":"起日不可晚於迄日，請調整日期。";
-    if(!rows){byId("purchaseRows").innerHTML="";return;}
-    byId("purchaseRows").innerHTML=rows.length?rows.map(o=>'<article class="admin-order"><div class="admin-order-head"><div><h3>'+escapeHtml(o.order_number)+'</h3><p class="admin-order-meta">'+escapeHtml(o.suppliers?.name||"未指定供應商")+' · '+escapeHtml(({draft:'待確認購買',ordered:'已購買／尚未到貨',received:'已收貨',cancelled:'已取消'}[o.status]||o.status))+' · 進貨日：'+escapeHtml(o.ordered_at||"未填")+'</p></div><button type="button" class="product-cancel" data-edit-purchase="'+escapeHtml(o.id)+'">編輯</button><button type="button" class="product-cancel" data-inventory-purchase="'+escapeHtml(o.order_number)+'">規格／到貨</button></div><ul class="admin-order-items">'+(o.purchase_order_items||[]).map(i=>'<li>'+escapeHtml(i.product_master?.product_code||"單次代購")+'｜'+escapeHtml(i.personal_snapshot?.name||i.product_master?.name||"")+(i.personal_snapshot?'｜'+escapeHtml(i.personal_snapshot.specification||"標準規格"):'')+' × '+escapeHtml(i.quantity)+'｜單價 '+escapeHtml(formatMoney(i.unit_cost,o.currency))+(i.cost_scenario_id?'｜來源：'+escapeHtml(costScenarios.find(c=>c.id===i.cost_scenario_id)?.scenario_name||"已連結成本方案"):'')+'</li>').join("")+'</ul><p class="admin-order-meta">'+escapeHtml(o.notes||"")+'</p></article>').join(""):'<div class="admin-empty">此區間沒有進貨單。</div>';
+    byId("purchaseFilterMessage").textContent=rows?"共 "+rows.length+" 張進貨單／"+rows.reduce((n,o)=>n+o.purchase_order_items.length,0)+" 筆明細"+(byId("purchaseTypeFilter").value?"（金額僅計篩選明細）":""):"起日不可晚於迄日";
+    if(!rows?.length){byId("purchaseRows").innerHTML='<p class="admin-empty">'+(rows?"沒有符合的進貨單":"請調整日期")+'</p>';return;}
+    const labels={draft:"待確認",ordered:"待到貨",received:"已到貨",cancelled:"已取消"};
+    const lineName=i=>i.personal_snapshot?.name||i.product_master?.name||"未命名商品";
+    const lineSpec=i=>{
+      const b=state.bindings.find(b=>b.source_type==="purchase"&&b.source_key===i.id),s=state.skus.find(s=>s.id===(i.inventory_sku_id||b?.sku_id));
+      return i.personal_snapshot?.specification||s?.specification||i.product_master?.specification||"待確認";
+    };
+    byId("purchaseRows").innerHTML='<div class="receipt-table-wrap"><table class="receipt-table"><thead><tr><th>進貨單號</th><th>日期</th><th>供應商</th><th>類型</th><th>到貨</th><th>金額</th><th>操作</th></tr></thead><tbody>'+rows.map(o=>{
+      const types=[...new Set(o.purchase_order_items.map(i=>window.FreaPurchaseView.kind(i,masterProducts)))];
+      const detail=o.purchase_order_items.map(i=>'<tr><td>'+escapeHtml(window.FreaPurchaseView.kind(i,masterProducts)==="personal"?"代購":i.product_master?.product_code||"常態")+'</td><td>'+escapeHtml(lineName(i))+'</td><td>'+escapeHtml(lineSpec(i))+'</td><td>'+escapeHtml(i.quantity)+'</td><td>'+escapeHtml(formatMoney(i.unit_cost,o.currency))+'</td><td>'+escapeHtml(formatMoney(Number(i.quantity)*Number(i.unit_cost),o.currency))+'</td></tr>').join("");
+      return '<tr><td><strong>'+escapeHtml(o.order_number)+'</strong></td><td>'+escapeHtml(o.ordered_at||"—")+'</td><td>'+escapeHtml(o.suppliers?.name||"—")+'</td><td>'+(types.length>1?"混合":types[0]==="personal"?"代購":"常態")+'</td><td>'+escapeHtml(labels[o.status]||o.status)+'</td><td class="receipt-number">'+escapeHtml(formatMoney(window.FreaPurchaseView.amount(o.purchase_order_items),o.currency))+'</td><td><div class="receipt-row-actions"><button type="button" data-purchase-detail="'+o.id+'" aria-expanded="false">明細</button><button type="button" data-edit-purchase="'+o.id+'">編輯</button></div></td></tr>'+
+      '<tr data-purchase-detail-row="'+o.id+'" hidden><td colspan="7"><table class="receipt-detail-table"><thead><tr><th>類型／編號</th><th>商品</th><th>規格</th><th>數量</th><th>單價</th><th>小計</th></tr></thead><tbody>'+detail+'</tbody></table><details><summary>收據備註</summary><p>'+escapeHtml(o.notes||"無")+'</p></details></td></tr>';
+    }).join("")+'</tbody></table></div>';
   }
+  byId("purchaseSearch").addEventListener("input",renderPurchaseList);
+  byId("masterTypeFilter").addEventListener("change",renderMasterProducts);
+  byId("purchaseRows").addEventListener("click",event=>{
+    const b=event.target.closest("[data-purchase-detail]");if(!b)return;
+    const row=byId("purchaseRows").querySelector('[data-purchase-detail-row="'+b.dataset.purchaseDetail+'"]');
+    row.hidden=!row.hidden;b.setAttribute("aria-expanded",String(!row.hidden));
+  });
+  byId("purchaseNew").addEventListener("click",()=>{
+    if(purchaseEditing&&!confirm("放棄目前未儲存內容並建立新單？"))return;
+    resetPurchaseEditor();renderPurchases();byId("purchaseEditorPanel").hidden=false;byId("purchaseCancelEdit").hidden=false;
+    byId("purchaseForm").scrollIntoView({behavior:"smooth",block:"start"});
+  });
+  byId("supplierManage").addEventListener("click",()=>byId("supplierDialog").showModal());
+  byId("supplierClose").addEventListener("click",()=>byId("supplierDialog").close());
+  function renderReceiptFormTotal(){
+    const total=[...byId("purchaseItemRows").querySelectorAll("[data-purchase-item]")].reduce((n,row)=>{const i=window.FreaReceiptEditor.serialize(row);return n+i.quantity*i.unit_cost;},0);
+    byId("purchaseFormTotal").textContent="合計 "+formatMoney(total,byId("purchaseCurrency").value);
+  }
+  byId("purchaseItemRows").addEventListener("input",renderReceiptFormTotal);
+  byId("purchaseItemRows").addEventListener("change",renderReceiptFormTotal);
+  byId("purchaseCurrency").addEventListener("change",renderReceiptFormTotal);
   byId("purchaseRows").addEventListener("click",event=>{
     const button=event.target.closest("[data-inventory-purchase]");
     if(button){byId("inventorySearch").value=button.dataset.inventoryPurchase;byId("inventorySourceFilter").value="purchase";switchView("inventory");window.FreaInventory?.setData({orders,personalRequests,masterProducts,products,purchaseOrders},loadData);}
   });
   function purchaseSnapshot(o) {return window.FreaReceiptEditor.snapshotPurchase(o);}
   function resetPurchaseEditor() {
-    purchaseEditing=null;purchaseRequestId=null;purchaseOperationId=null;
+    purchaseEditing=null;purchaseRequestId=null;purchaseOperationId=null;byId("purchaseEditorPanel").hidden=true;
     const form=byId("purchaseForm");form.reset();byId("purchaseItemRows").replaceChildren();
     form.querySelector("h2").textContent="建立進貨單";
     form.querySelector('[type="submit"]').textContent="建立進貨單";
@@ -450,14 +480,15 @@
   }
   const purchaseCancel=document.createElement("button");
   purchaseCancel.id="purchaseCancelEdit";purchaseCancel.type="button";purchaseCancel.className="product-cancel";
-  purchaseCancel.textContent="取消修改";purchaseCancel.hidden=true;
-  byId("purchaseForm").querySelector(".stack-form").appendChild(purchaseCancel);
+  purchaseCancel.textContent="關閉表單";purchaseCancel.hidden=true;
+  byId("purchaseForm").querySelector(".receipt-actions").appendChild(purchaseCancel);
   purchaseCancel.addEventListener("click",()=>{resetPurchaseEditor();renderPurchases();});
   byId("purchaseRows").addEventListener("click",event=>{
     const button=event.target.closest("[data-edit-purchase]");if(!button)return;
     const form=byId("purchaseForm");if(form.dataset.saving==="true")return;
     if(purchaseEditing&&!confirm("放棄目前尚未儲存的修改，改編輯另一張進貨單？"))return;
     const o=purchaseOrders.find(o=>o.id===button.dataset.editPurchase);if(!o)return;
+    byId("purchaseEditorPanel").hidden=false;
     purchaseEditing={id:o.id,expected:purchaseSnapshot(o),currency:o.currency,pending:o.status!=="received"};
     purchaseRequestId=null;purchaseOperationId=null;form.reset();byId("purchasePending").checked=o.status!=="received";byId("purchaseItemRows").replaceChildren();
     form.querySelector("h2").textContent="編輯進貨單 "+o.order_number;
@@ -465,19 +496,19 @@
     byId("purchaseCancelEdit").hidden=false;
     byId("purchaseSupplier").value=o.supplier_id||"";byId("purchaseDate").value=o.ordered_at||"";byId("purchaseNotes").value=o.notes||"";
     byId("purchaseCurrency").value=o.currency||"JPY";
-    (o.purchase_order_items||[]).forEach(addPurchaseItem);
+    (o.purchase_order_items||[]).forEach(addPurchaseItem);renderReceiptFormTotal();
     form.scrollIntoView({behavior:"smooth",block:"start"});byId("purchaseSupplier").focus({preventScroll:true});
   });
   function addPurchaseItem(item) {
     if(!item?.id)item=null;
     const row=document.createElement("div");row.dataset.purchaseItem="";row.dataset.purchaseItemId=item?.id||crypto.randomUUID();
-    row.style.cssText="min-width:0;border:1px solid #e5d9cc;border-radius:12px;padding:16px;margin-bottom:12px";
+    row.className="receipt-line-row";
     window.FreaReceiptEditor.populate(row,item,{masterProducts,personalRequests,costScenarios,currency:byId("purchaseCurrency").value,inventory:window.FreaInventory.editorData()});
-    byId("purchaseItemRows").appendChild(row);
+    byId("purchaseItemRows").appendChild(row);renderReceiptFormTotal();
   }
   byId("purchaseAddItem").addEventListener("click",()=>addPurchaseItem());
   byId("purchaseItemRows").addEventListener("click",event=>{
-    if(event.target.closest("[data-remove-purchase-item]"))event.target.closest("[data-purchase-item]").remove();
+    if(event.target.closest("[data-remove-purchase-item]")){event.target.closest("[data-purchase-item]").remove();renderReceiptFormTotal();}
   });
   async function procurementRpc(name,payload) {
     const controller=new AbortController();let timer;
@@ -498,7 +529,7 @@
     form.dataset.saving="true";controls.forEach(el=>el.disabled=true);
     try{
       const data=await procurementRpc("create_supplier",payload);
-      supplierRequestId=null;form.reset();await loadData();
+      supplierRequestId=null;form.reset();byId("supplierDialog").close();await loadData();
       showMessage("adminGlobalMessage","供應商 "+data.supplier_code+" 已新增。","success");
     }catch(error){showMessage("adminGlobalMessage",error.message||"新增供應商失敗。","error");}
     finally{form.dataset.saving="false";controls.forEach(el=>el.disabled=false);}

@@ -1,0 +1,86 @@
+/* Compact procurement and regular stock views. */
+.receipt-view [hidden],.inventory-view [hidden]{display:none!important}
+.receipt-view{font-size:14px;line-height:1.45}
+.receipt-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:end;padding:0 0 10px}
+.receipt-toolbar>input{flex:1 1 190px;max-width:320px}
+.receipt-toolbar label{display:grid;gap:3px;font-size:12px;margin:0}
+.receipt-view input,.receipt-view select,.receipt-view textarea,.receipt-view button{box-sizing:border-box;font:inherit;font-size:14px;min-width:0;border:1px solid #d9ccbc;background:#fffdf9;color:#493c32;border-radius:6px}
+.receipt-view input,.receipt-view select,.receipt-view textarea{width:100%;padding:6px 8px!important;min-height:34px!important}
+.receipt-view button{padding:6px 10px!important;min-height:34px!important;cursor:pointer;white-space:nowrap}
+.receipt-view button.admin-primary{background:#514236;color:#fff;border-color:#514236}
+.receipt-view #purchaseFilterMessage{font-size:12px;margin:0 0 8px;color:#847466}
+.receipt-view #purchaseForm{padding:14px;margin:0 0 12px;border-radius:8px}
+.receipt-view #purchaseForm h2{font-size:17px;margin:0 0 10px}
+#purchaseForm>.receipt-form-body{display:block!important}
+.receipt-meta{display:grid;grid-template-columns:minmax(180px,2fr) minmax(145px,1fr) minmax(120px,.8fr) minmax(120px,.8fr);gap:10px;align-items:end}
+.receipt-meta label{min-width:0}.receipt-meta small{display:none}
+.receipt-pending-label{padding-bottom:6px}
+.receipt-pending-label input{width:auto!important;min-height:0!important;margin-right:6px}
+.receipt-notes{font-size:12px;margin:8px 0}.receipt-notes textarea{margin-top:5px;max-width:800px}
+#purchaseItemRows .receipt-line-row{padding:0!important;border:0!important;border-bottom:1px solid #e6dbce!important;border-radius:0!important;margin:0!important}
+.receipt-line{display:grid;grid-template-columns:125px minmax(240px,2.3fr) minmax(150px,1.4fr) 70px 110px 95px 52px;gap:8px;align-items:start;padding:9px 0}
+.receipt-line>label{margin:0!important;display:grid;gap:3px;font-size:12px}
+.receipt-line label{font-size:12px}
+.receipt-line select,.receipt-line input{height:34px}
+.receipt-line [data-remove-purchase-item]{margin-top:20px;align-self:start}
+.receipt-line output{display:block;line-height:34px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.receipt-line .receipt-product-cell{min-width:0}
+.receipt-line .receipt-product-cell label{display:grid;gap:3px}
+.receipt-cost{margin:3px 0 0;font-size:11px}.receipt-cost select{margin-top:5px}
+.receipt-sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+.receipt-actions{display:flex;gap:8px;align-items:center;padding-top:12px}
+.receipt-actions strong{margin-left:auto;font-size:16px}
+.receipt-table-wrap{overflow:auto;border:1px solid #ddcfbe;border-radius:8px;background:#fffdf9}
+#purchaseRows{display:block!important}
+.receipt-table,.receipt-detail-table{border-collapse:collapse;width:100%;font-size:14px}
+.receipt-table th,.receipt-table td{padding:9px 10px;text-align:left;border-bottom:1px solid #e8ded2;vertical-align:middle}
+.receipt-table th{background:#f3ede5;font-size:12px;font-weight:600;white-space:nowrap}
+.receipt-table td:nth-child(1),.receipt-table td:nth-child(2){white-space:nowrap}
+.receipt-table td.receipt-number{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.receipt-row-actions{display:flex;gap:5px}
+.receipt-detail-table th,.receipt-detail-table td{padding:6px 8px;font-size:13px}
+.receipt-detail-table td:nth-child(n+4){text-align:right;white-space:nowrap}
+.receipt-table details{font-size:12px;margin-top:7px}.receipt-table details p{white-space:pre-wrap;overflow-wrap:anywhere;margin:6px}
+.receipt-dialog{width:min(1000px,94vw);max-height:90vh;overflow:auto;padding:16px;border:1px solid #d8c9b7;border-radius:10px;background:#faf7f2}
+.receipt-dialog::backdrop{background:#0005}
+.receipt-dialog-head,.supplier-compact-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.receipt-dialog-head h2{margin:0;font-size:18px}
+.receipt-dialog #supplierForm{margin-top:12px}
+.receipt-dialog #supplierForm>.stack-form{grid-template-columns:110px minmax(180px,1fr) minmax(180px,1fr) minmax(150px,1fr) auto;gap:8px}
+.inventory-view{font-size:14px!important;line-height:1.5}
+.inventory-view h2{font-size:18px;margin:0 0 8px}
+.inventory-view .inventory-tools{margin:8px 0;gap:8px}
+.inventory-view input,.inventory-view select,.inventory-view button{padding:6px 8px!important;font-size:14px!important;min-height:34px}
+.inventory-view table td,.inventory-view table th{padding:8px!important;font-size:13px}
+.inventory-view table td:first-child,.inventory-view table th:first-child{min-width:100px;white-space:nowrap}
+.inventory-view table td:nth-child(2){min-width:220px;text-align:left}
+.inventory-view table td:nth-child(3){text-align:left;white-space:normal;min-width:120px}
+.inventory-view #inventorySummary,.inventory-view #inventoryMessage{font-size:12px;margin:5px 0}
+.inventory-view .inventory-warning{font-size:12px;padding:7px 10px;margin:6px 0}
+.inventory-help{font-size:12px;margin:0 0 8px}
+.inventory-mapping>summary{font-weight:600}
+#inventorySources{grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:8px}
+#inventorySources article{padding:10px;font-size:13px}
+@media(max-width:1300px){.receipt-line{grid-template-columns:110px minmax(190px,2fr) minmax(130px,1.3fr) 65px 90px 75px 48px;gap:6px}}
+@media(max-width:1000px){.receipt-line{grid-template-columns:120px minmax(0,2fr) minmax(0,1fr)}.receipt-line [data-remove-purchase-item]{margin-top:0}.receipt-meta{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.receipt-toolbar>input{max-width:none;flex-basis:100%}.receipt-toolbar label{flex:1 1 40%}.receipt-toolbar button{flex:1 1 auto}.receipt-line{grid-template-columns:repeat(2,minmax(0,1fr))}.receipt-product-cell{grid-column:1/-1}.receipt-line>label:first-child{grid-column:1/-1}.receipt-line [data-remove-purchase-item]{grid-column:2;justify-self:end}.receipt-meta{grid-template-columns:1fr 1fr}.receipt-meta>label:first-child{grid-column:1/-1}.receipt-actions{flex-wrap:wrap}.receipt-actions strong{font-size:14px}.receipt-dialog #supplierForm>.stack-form{grid-template-columns:1fr}.receipt-table{min-width:720px}.inventory-view table{min-width:760px}}
+
+@media(max-width:980px){
+ .admin-shell:has([data-admin-panel="purchases"]:not([hidden])),.admin-shell:has([data-admin-panel="inventory"]:not([hidden])){grid-template-columns:minmax(0,1fr)}
+ .admin-shell:has(.receipt-view:not([hidden])) .admin-sidebar,.admin-shell:has(.inventory-view:not([hidden])) .admin-sidebar{padding:12px 16px;min-width:0}
+ .admin-shell:has(.receipt-view:not([hidden])) .admin-sidebar .admin-wordmark,.admin-shell:has(.inventory-view:not([hidden])) .admin-sidebar .admin-wordmark{font-size:26px}
+ .admin-shell:has(.receipt-view:not([hidden])) .admin-sidebar .admin-eyebrow,.admin-shell:has(.inventory-view:not([hidden])) .admin-sidebar .admin-eyebrow{display:none}
+ .admin-shell:has(.receipt-view:not([hidden])) .admin-sidebar nav,.admin-shell:has(.inventory-view:not([hidden])) .admin-sidebar nav{margin-top:8px;gap:4px;max-width:100%;min-width:0;overflow-x:auto}
+ .admin-shell:has(.receipt-view:not([hidden])) .admin-nav,.admin-shell:has(.inventory-view:not([hidden])) .admin-nav{flex:0 0 auto;white-space:nowrap;padding:8px 10px;font-size:13px}
+ .admin-shell:has(.receipt-view:not([hidden])) .admin-sidebar-foot,.admin-shell:has(.inventory-view:not([hidden])) .admin-sidebar-foot{display:flex;justify-content:flex-end;border:0;padding:0;margin-top:8px}
+ .receipt-view,.receipt-table-wrap,.inventory-scroll{min-width:0;max-width:100%}
+ .receipt-toolbar label{min-width:0;max-width:100%}
+}
+
+.admin-main:has(.inventory-view:not([hidden])){padding-top:20px}
+.admin-main:has(.inventory-view:not([hidden])) .admin-topbar{margin-bottom:8px;align-items:center}
+.admin-main:has(.inventory-view:not([hidden])) .admin-topbar .admin-eyebrow{display:none}
+.admin-main:has(.inventory-view:not([hidden])) #adminPageTitle{font-size:28px}
+.admin-main:has(.inventory-view:not([hidden])) #adminGlobalMessage{font-size:12px;margin:4px 0 10px}
+.inventory-view #inventoryRefresh{display:none}
+.inventory-view table th:nth-child(2),.inventory-view table th:nth-child(3){text-align:left}

@@ -23,13 +23,32 @@ function sources(data){
  }));
  return rows;
 }
-function calculate(data,skus,bindings,adjustments){
+function potentialRegular(source,master){
+ if(master.catalog_type==="personal")return false;
+ const name=x=>String(x||"").normalize("NFKC").toLowerCase().replace(/\d+(?:\.\d+)?\s*(?:kg|g|ml|l)\b/gi,"").replace(/[^\p{L}\p{N}]/gu,"");
+ if(name(source.name)!==name(master.name))return false;
+ const capacity=x=>{const a=String(x||"").match(/(\d+(?:\.\d+)?)\s*(kg|ml|g|l)\b/i);return a?Number(a[1])*(/^(kg|l)$/i.test(a[2])?1000:1)+(/^(kg|g)$/i.test(a[2])?"g":"ml"):null;};
+ const a=capacity(source.name+" "+source.spec),b=capacity(master.name+" "+master.specification);
+ return !a||!b||a===b;
+}
+function calculate(data,skus,bindings,adjustments,options={}){
  const all=sources(data), index=new Map(bindings.map(b=>[b.source_type+":"+b.source_key,b]));
- const rows=new Map(skus.map(s=>[s.id,{...s,purchased:0,received:0,demand:0,shipped:0,adjusted:0,sources:[]}]));
+ const masterById=new Map((data.masterProducts||[]).map(m=>[m.id,m]));
+ const regular=s=>!!s.product_master_id&&masterById.get(s.product_master_id)?.catalog_type!=="personal";
+ const visibleSkus=options.scope==="regular"?skus.filter(regular):skus;
+ const rows=new Map(visibleSkus.map(s=>[s.id,{...s,purchased:0,received:0,demand:0,shipped:0,adjusted:0,sources:[]}]));
  let unresolved=0,excluded=0;
+ const visibleSources=[];
  for(const source of all){
   if(source.status==="cancelled"){source.cancelled=true;continue;}
   const b=index.get(source.type+":"+source.key);
+  if(options.scope==="regular"){
+   const target=skus.find(s=>s.id===b?.sku_id);
+   if(source.type==="purchase"&&(source.personalId!=null||masterById.get(source.master)?.catalog_type==="personal"))continue;
+   if(target&&!regular(target))continue;
+   if(source.type==="personal"&&!target&&!(data.masterProducts||[]).some(m=>potentialRegular(source,m)))continue;
+  }
+  visibleSources.push(source);
   source.binding=b;source.valid=!!b&&stable(b.source_snapshot)===stable(source.snapshot);
   if(!source.valid){unresolved++;continue;}
   if(b.purpose!=="sale"){excluded++;continue;}
@@ -49,8 +68,8 @@ function calculate(data,skus,bindings,adjustments){
   r.balance=r.purchased+r.adjusted-r.demand;r.shortage=Math.max(0,-r.balance);
  }
  const keys=new Set(all.map(s=>s.type+":"+s.key));
- const orphaned=bindings.filter(b=>!keys.has(b.source_type+":"+b.source_key));
- return {rows:[...rows.values()],sources:all,unresolved,excluded,orphaned};
+ const orphaned=bindings.filter(b=>!keys.has(b.source_type+":"+b.source_key)&&(options.scope!=="regular"||rows.has(b.sku_id)));
+ return {rows:[...rows.values()],sources:visibleSources,unresolved,excluded,orphaned};
 }
 const api={sources,calculate,stable};root.FreaInventoryCore=api;
 if(typeof module!=="undefined")module.exports=api;
