@@ -23,7 +23,7 @@
 .order-list-table [data-order-expanded]>td{padding:7px 10px}
 .order-item-table{table-layout:fixed;width:100%;border-collapse:collapse;font-size:12px}
 .order-item-table th,.order-item-table td{padding:5px 7px;line-height:1.4}
-.order-item-table:not(.order-edit-items) th:nth-child(n+4):nth-child(-n+6),.order-item-table:not(.order-edit-items) td:nth-child(n+4):nth-child(-n+6){text-align:right;white-space:nowrap}
+.order-item-table:not(.order-edit-items) th:nth-child(n+5):nth-child(-n+7),.order-item-table:not(.order-edit-items) td:nth-child(n+4):nth-child(-n+6){text-align:right;white-space:nowrap}
 .order-read-sections{display:flex;flex-wrap:wrap;align-items:flex-start;gap:8px 24px;margin-top:6px;font-size:12px}
 .order-read-sections details{min-width:160px;max-width:100%}
 .order-read-sections details p,.order-edit-payment p{white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0}
@@ -32,8 +32,8 @@
 .order-list-table [data-order-editor]{background:#faf7f2;padding:12px;border:1px solid var(--admin-line,#ddcfbe);border-radius:6px;margin-top:6px}
 .order-list-table [data-order-editor] h3{font-size:15px;margin:0 0 8px}
 .order-list-table input,.order-list-table select,.order-list-table textarea{box-sizing:border-box;font:inherit;width:100%;min-width:0;border:1px solid var(--admin-line,#d9ccbc);padding:6px 8px;border-radius:5px;background:#fff;min-height:32px}
-.order-edit-items th:nth-child(3),.order-edit-items td:nth-child(3){width:90px}
-.order-edit-items th:nth-child(4),.order-edit-items td:nth-child(4){width:110px;text-align:right}
+
+
 .order-list-table .order-recipient-editor{grid-template-columns:1fr 1fr 120px 2fr;gap:9px;margin-top:10px}
 .order-list-table .order-recipient-editor .order-recipient-address{grid-column:auto}
 .order-list-table label{display:grid;gap:4px;font-size:12px}
@@ -44,3 +44,5 @@
 .order-edit-actions .danger{margin-left:auto}
 .order-list-table .admin-proof-upload{margin-top:7px;padding:8px;gap:6px 9px}
 @media(max-width:800px){.order-list-table .order-recipient-editor{grid-template-columns:1fr 1fr}.order-list-table .order-recipient-editor .order-recipient-address{grid-column:1/-1}.order-edit-meta{grid-template-columns:1fr 1fr}}
+
+.order-edit-items td:nth-child(4),.order-edit-items td:nth-child(5){text-align:right}.order-list-table input[readonly]{background:#f3efe9;color:#7c7064}.order-edit-items+button{margin-top:7px}

@@ -39,7 +39,7 @@ function renderLine(){
  $("purchaseLinkStock").disabled=isPersonal||!!s.expense||(s.remaining<0.00001&&i.allocation_purpose!=="stock");
  $("purchaseLinkStock").textContent=i.allocation_purpose==="stock"?"取消補庫存標記":"未分配部分標為補庫存";
  $("purchaseLinkTarget").innerHTML='<option value="">選擇訂單商品明細</option>'+[...all.values()].filter(d=>{
-  if(d.status==="cancelled")return false;
+  if(d.status==="cancelled"||d.itemType==="expense")return false;
   if(i.personal_request_id!=null&&(d.type!=="personal"||d.parentId!==i.personal_request_id||d.index!==i.personal_item_index))return false;
   const db=binding(d.type,d.key);return !(pb?.sku_id&&db?.sku_id&&pb.sku_id!==db.sku_id);
  }).sort((a,b)=>a.number.localeCompare(b.number)).map(d=>'<option value="'+esc(d.type+":"+d.key)+'">'+esc(d.number+"｜"+d.name+"｜"+d.specification)+'</option>').join("");

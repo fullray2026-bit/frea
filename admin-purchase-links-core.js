@@ -3,7 +3,7 @@
 const stable=x=>JSON.stringify(x&&typeof x==="object"?Object.fromEntries(Object.keys(x).sort().map(k=>[k,x[k]])):x);
 function sources(data){
  const map=new Map();
- for(const o of data.orders||[])for(const i of o.order_items||[])map.set("order:"+i.id,{type:"order",key:String(i.id),parentId:o.id,number:o.order_number,status:o.status,name:i.product_name,specification:i.specification||"",quantity:Number(i.quantity),snapshot:{name:i.product_name,specification:i.specification,quantity:i.quantity}});
+ for(const o of data.orders||[])for(const i of o.order_items||[])map.set("order:"+i.id,{type:"order",key:String(i.id),parentId:o.id,number:o.order_number,status:o.status,itemType:i.item_type||"product",name:i.product_name,specification:i.specification||"",quantity:Number(i.quantity),snapshot:{name:i.product_name,specification:i.specification,quantity:i.quantity}});
  for(const o of data.personalRequests||[])(o.items||[]).forEach((i,n)=>map.set("personal:"+o.id+":"+n,{type:"personal",key:o.id+":"+n,parentId:o.id,index:n,number:o.request_number,status:o.status,name:i.name,specification:i.specification||"",quantity:Number(i.quantity||1),snapshot:{name:i.name??null,specification:i.specification??null,quantity:i.quantity??null}}));
  return map;
 }
@@ -17,7 +17,7 @@ function inspect(order,data,allocations,bindings=[],loaded=true){
   const pb=bindingIndex.get("purchase:"+i.id),list=allocations.filter(a=>a.purchase_item_id===i.id);let assigned=0;const links=[];
   for(const a of list){
    const key=destinationKey(a),d=dest.get(key),db=bindingIndex.get(key);
-   const valid=!!d&&d.status!=="cancelled"&&stable(a.purchase_snapshot)===stable(purchaseSnapshot(i))&&stable(a.order_snapshot)===stable(d.snapshot)&&(!a.sku_id||pb?.sku_id===a.sku_id&&db?.sku_id===a.sku_id);
+   const valid=!!d&&d.status!=="cancelled"&&d.itemType!=="expense"&&stable(a.purchase_snapshot)===stable(purchaseSnapshot(i))&&stable(a.order_snapshot)===stable(d.snapshot)&&(!a.sku_id||pb?.sku_id===a.sku_id&&db?.sku_id===a.sku_id);
    if(!valid){stale++;continue;}
    assigned+=Number(a.quantity);links.push({...a,destination:d});numbers.set(d.type+":"+d.parentId,d);
   }

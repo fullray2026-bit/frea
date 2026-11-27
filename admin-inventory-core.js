@@ -14,7 +14,7 @@ function sources(data){
  });
  for(const o of data.orders||[]) for(const i of o.order_items||[]) rows.push({
  type:"order",key:String(i.id),number:o.order_number,date:o.created_at?.slice(0,10),status:o.status,
- name:i.product_name,spec:i.specification||"",quantity:Number(i.quantity),
+ name:i.product_name,spec:i.specification||"",quantity:Number(i.quantity),itemType:i.item_type||"product",
  snapshot:{name:i.product_name,specification:i.specification,quantity:i.quantity},notes:o.admin_note||""
  });
  for(const o of data.personalRequests||[]) (Array.isArray(o.items)?o.items:[]).forEach((i,n)=>rows.push({
@@ -50,6 +50,7 @@ function calculate(data,skus,bindings,adjustments,options={}){
    if(source.type==="personal"&&!target&&!(data.masterProducts||[]).some(m=>potentialRegular(source,m)))continue;
   }
   visibleSources.push(source);
+  if(source.itemType==="expense"){source.binding={...b,purpose:"expense"};source.valid=true;excluded++;continue;}
   source.binding=b;source.valid=!!b&&stable(b.source_snapshot)===stable(source.snapshot);
   if(!source.valid){unresolved++;continue;}
   if(b.purpose!=="sale"){excluded++;continue;}

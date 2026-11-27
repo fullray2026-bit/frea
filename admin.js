@@ -135,7 +135,7 @@
       client.from("membership_applications").select("*").order("created_at", { ascending: false }),
       client.from("member_addresses").select("user_id,recipient_name,recipient_phone,postal_code,address,is_default").eq("is_default", true),
       client.from("ezway_profiles").select("user_id,real_name,mobile"),
-      client.from("orders").select("id,user_id,order_number,status,currency,total_amount,created_at,updated_at,recipient_name,recipient_phone,postal_code,shipping_address,payment_proof_name,payment_proof_path,admin_note,tracking_number,order_items(id,product_name,specification,quantity,unit_price,line_total)").order("created_at", { ascending: false }),
+      client.from("orders").select("id,user_id,order_number,status,currency,total_amount,created_at,updated_at,recipient_name,recipient_phone,postal_code,shipping_address,payment_proof_name,payment_proof_path,admin_note,tracking_number,order_items(id,product_name,specification,quantity,unit_price,line_total,item_type)").order("created_at", { ascending: false }),
       client.from("personal_shopping_requests").select("id,request_number,user_id,customer_name,email,phone,line_id,note,items,status,quote_amount,quote_details,service_direction,contact_language,quote_currency,delivery_address,payment_method,admin_note,created_at,updated_at").order("created_at", { ascending: false }),
       client.from("products").select("*,product_variants(id,option_value,sku,image_url,stock_quantity,sort_order,is_active)").order("brand_code").order("sort_order").order("created_at"),
       client.from("product_master").select("*").order("created_at", { ascending: false }),
@@ -1169,7 +1169,8 @@
     }
     const quantityInputs=[...card.querySelectorAll('[data-order-quantity]')];
     for(const input of quantityInputs){if(!input.reportValidity())return;}
-    const quantities=quantityInputs.map(input=>({id:input.dataset.itemId,quantity:Number(input.value)}));
+    for(const input of card.querySelectorAll('[data-order-item-name],[data-order-item-price]')){if(!input.reportValidity())return;}
+    const quantities=quantityInputs.map(input=>{const row=input.closest('[data-order-edit-line]');return {id:input.dataset.itemId||null,quantity:Number(input.value),item_type:row.querySelector('[data-order-item-type]').value,product_name:row.querySelector('[data-order-item-name]').value.trim(),specification:row.querySelector('[data-order-item-spec]').value.trim(),unit_price:Number(row.querySelector('[data-order-item-price]').value)};});
     button.disabled = true;
     button.textContent = "儲存中…";
     try {
@@ -1296,6 +1297,9 @@
     const detail=event.target.closest("[data-order-detail]"),edit=event.target.closest("[data-order-edit]"),cancel=event.target.closest("[data-order-cancel]");
     if(detail||edit)return window.FreaOrderView.toggle((detail||edit).closest(".admin-order"),detail?"detail":"edit");
     if(cancel)return window.FreaOrderView.cancel(cancel.closest(".admin-order"));
+    const add=event.target.closest("[data-add-order-line]"),remove=event.target.closest("[data-remove-order-line]");
+    if(add){add.closest(".admin-order").querySelector(".order-edit-items tbody").insertAdjacentHTML("beforeend",window.FreaOrderView.editRow({},true));return;}
+    if(remove){remove.closest("[data-new-order-line]").remove();return;}
     const deletion = event.target.closest("[data-delete-order]");
     if (deletion) return deleteOrder(deletion.closest(".admin-order"));
     const proof = event.target.closest("[data-view-payment-proof]");
@@ -1304,6 +1308,7 @@
     if (button) saveOrder(button.closest(".admin-order"));
   });
   byId("orderCards").addEventListener("change", event => {
+    if(event.target.matches("[data-order-item-type]")){window.FreaOrderView.syncLine(event.target.closest("[data-order-edit-line]"));return;}
     if (!event.target.matches("[data-order-status]")) return;
     const card = event.target.closest(".admin-order");
     const trackingWrap = card.querySelector("[data-tracking-wrap]");
