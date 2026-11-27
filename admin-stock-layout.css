@@ -116,3 +116,21 @@
 .purchase-link-quantities{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end}
 .purchase-link-dialog .receipt-detail-table td{padding:8px;vertical-align:top}
 @media(max-width:700px){.purchase-link-quantities{grid-template-columns:1fr 1fr}.purchase-link-quantities button{grid-column:1/-1}}
+
+/* Identical detail columns across receipts, with compact aligned headings. */
+.receipt-table>thead>tr>th,.receipt-table>tbody>tr>td{padding:5px 10px}
+.receipt-table>thead>tr>th:nth-child(7){text-align:right}
+.receipt-view .receipt-row-actions button,.receipt-view .receipt-line-order-actions button{min-height:28px!important;padding:3px 8px!important;font-size:13px}
+.receipt-table>tbody>tr[data-purchase-detail-row]>td{padding:4px 10px}
+.receipt-table .receipt-detail-table{table-layout:fixed;width:100%;margin:0}
+.receipt-detail-code{width:110px}.receipt-detail-product{width:27%}
+.receipt-detail-quantity{width:56px}.receipt-detail-price{width:90px}
+.receipt-detail-subtotal{width:100px}.receipt-detail-order{width:310px}
+.receipt-table .receipt-detail-table th,.receipt-table .receipt-detail-table td{padding:4px 8px;line-height:1.35;vertical-align:middle}
+.receipt-table .receipt-detail-table th:nth-child(n+4):nth-child(-n+6),.receipt-table .receipt-detail-table td:nth-child(n+4):nth-child(-n+6){text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.receipt-table .receipt-detail-table th:last-child,.receipt-table .receipt-detail-table td:last-child{text-align:left}
+.receipt-table .receipt-detail-table td:nth-child(2),.receipt-table .receipt-detail-table td:nth-child(3){white-space:normal;overflow-wrap:anywhere}
+.receipt-line-order-actions{display:flex;align-items:center;gap:8px;min-width:0}
+.receipt-line-order-actions .receipt-line-order-text{flex:0 1 auto;min-width:0;line-height:20px}
+.receipt-line-order-actions button{flex:0 0 auto}
+.receipt-table>tbody>tr[data-purchase-detail-row]>td>details{margin:4px 0 0}
