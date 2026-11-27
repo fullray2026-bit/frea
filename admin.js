@@ -7,11 +7,12 @@
 
   const client = sdk.createClient(config.url, config.publishableKey);
   window.FreaMerchandising?.init(client);
+  window.FreaInventory?.init(client);
   window.FreaProductExtract?.init(client);
   const login = document.getElementById("adminLogin");
   const shell = document.getElementById("adminShell");
   const loginForm = document.getElementById("adminLoginForm");
-  const titles = { merchCategories:"分類管理",merchActivities:"活動管理", overview: "管理總覽", members: "會員管理", orders: "訂單管理", personal: "代購訂單管理", master: "商品主檔", costs: "商品成本試算", purchases: "進貨管理", products: "商品管理" };
+  const titles = { merchCategories:"分類管理",merchActivities:"活動管理", overview: "管理總覽", members: "會員管理", orders: "訂單管理", personal: "代購訂單管理", master: "商品主檔", costs: "商品成本試算", purchases: "進貨管理", inventory: "庫存管理", products: "商品管理" };
   const brandLabels = { catalog: "依商品主檔分類", kayanoya: "茅乃舍", kinto: "KINTO", kajidonya: "家事問屋", akomeya: "AKOMEYA TOKYO", "fukuoka-coffee": "福岡咖啡精選", "lifestyle-picks": "生活雜貨精選" };
   const statusLabels = {
     pending_payment: "待匯款",
@@ -192,6 +193,7 @@
     renderMasterProducts();
     renderCosts();
     renderPurchases();
+    window.FreaInventory?.setData({orders,personalRequests,masterProducts,products,purchaseOrders},loadData);
   }
 
   function productSlug(brand, name) {
@@ -421,7 +423,7 @@
       ["進貨單編號","進貨日","供應商編號","供應商名稱","狀態","幣別","商品編號","商品名稱","數量","進貨單價","商品小計","成本方案","備註"],
       ...rows.flatMap(o=>(o.purchase_order_items?.length?o.purchase_order_items:[{}]).map(i=>[
         o.order_number,o.ordered_at,suppliers.find(s=>s.id===o.supplier_id)?.supplier_code,o.suppliers?.name,
-        o.status==="draft"?"草稿":o.status,o.currency,i.product_master?.product_code,i.product_master?.name,
+        ({draft:"待確認購買",ordered:"已購買（到貨另記）",received:"已收貨",cancelled:"已取消"}[o.status]||o.status),o.currency,i.product_master?.product_code,i.product_master?.name,
         i.quantity,i.unit_cost,i.quantity==null?"":Number(i.quantity)*Number(i.unit_cost),
         costScenarios.find(c=>c.id===i.cost_scenario_id)?.scenario_name||"",o.notes
       ]))
@@ -432,8 +434,12 @@
     byId("purchaseListDownload").disabled=!rows?.length;
     byId("purchaseFilterMessage").textContent=rows?"共 "+rows.length+" 筆進貨單":"起日不可晚於迄日，請調整日期。";
     if(!rows){byId("purchaseRows").innerHTML="";return;}
-    byId("purchaseRows").innerHTML=rows.length?rows.map(o=>'<article class="admin-order"><div class="admin-order-head"><div><h3>'+escapeHtml(o.order_number)+'</h3><p class="admin-order-meta">'+escapeHtml(o.suppliers?.name||"未指定供應商")+' · '+escapeHtml(o.status==='draft'?'草稿':o.status)+' · 進貨日：'+escapeHtml(o.ordered_at||"未填")+'</p></div><button type="button" class="product-cancel" data-edit-purchase="'+escapeHtml(o.id)+'">編輯</button></div><ul class="admin-order-items">'+(o.purchase_order_items||[]).map(i=>'<li>'+escapeHtml(i.product_master?.product_code||"")+'｜'+escapeHtml(i.product_master?.name||"")+' × '+escapeHtml(i.quantity)+'｜單價 '+escapeHtml(formatMoney(i.unit_cost,o.currency))+(i.cost_scenario_id?'｜來源：'+escapeHtml(costScenarios.find(c=>c.id===i.cost_scenario_id)?.scenario_name||"已連結成本方案"):'')+'</li>').join("")+'</ul><p class="admin-order-meta">'+escapeHtml(o.notes||"")+'</p></article>').join(""):'<div class="admin-empty">此區間沒有進貨單。</div>';
+    byId("purchaseRows").innerHTML=rows.length?rows.map(o=>'<article class="admin-order"><div class="admin-order-head"><div><h3>'+escapeHtml(o.order_number)+'</h3><p class="admin-order-meta">'+escapeHtml(o.suppliers?.name||"未指定供應商")+' · '+escapeHtml(({draft:'待確認購買',ordered:'已購買（到貨另記）',received:'已收貨',cancelled:'已取消'}[o.status]||o.status))+' · 進貨日：'+escapeHtml(o.ordered_at||"未填")+'</p></div><button type="button" class="product-cancel" data-edit-purchase="'+escapeHtml(o.id)+'">編輯</button><button type="button" class="product-cancel" data-inventory-purchase="'+escapeHtml(o.order_number)+'">規格／到貨</button></div><ul class="admin-order-items">'+(o.purchase_order_items||[]).map(i=>'<li>'+escapeHtml(i.product_master?.product_code||"")+'｜'+escapeHtml(i.product_master?.name||"")+' × '+escapeHtml(i.quantity)+'｜單價 '+escapeHtml(formatMoney(i.unit_cost,o.currency))+(i.cost_scenario_id?'｜來源：'+escapeHtml(costScenarios.find(c=>c.id===i.cost_scenario_id)?.scenario_name||"已連結成本方案"):'')+'</li>').join("")+'</ul><p class="admin-order-meta">'+escapeHtml(o.notes||"")+'</p></article>').join(""):'<div class="admin-empty">此區間沒有進貨單。</div>';
   }
+  byId("purchaseRows").addEventListener("click",event=>{
+    const button=event.target.closest("[data-inventory-purchase]");
+    if(button){byId("inventorySearch").value=button.dataset.inventoryPurchase;byId("inventorySourceFilter").value="purchase";switchView("inventory");window.FreaInventory?.setData({orders,personalRequests,masterProducts,products,purchaseOrders},loadData);}
+  });
   function purchaseSnapshot(o) {
     return {supplier_id:o.supplier_id,ordered_at:o.ordered_at,notes:o.notes,currency:o.currency,status:o.status,received_at:o.received_at,
       items:(o.purchase_order_items||[]).map(i=>({id:i.id,product_master_id:i.product_master_id,cost_scenario_id:i.cost_scenario_id,quantity:Number(i.quantity),unit_cost:Number(i.unit_cost)})).sort((a,b)=>a.id.localeCompare(b.id))};

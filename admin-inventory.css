@@ -1,0 +1,16 @@
+
+.inventory-view{font-size:15px;line-height:1.7}
+.inventory-tools{display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin:18px 0}
+.inventory-view label{display:flex;flex-direction:column;gap:5px}
+.inventory-view input,.inventory-view select,.inventory-view textarea,.inventory-view button{font:inherit;padding:9px 12px;border:1px solid #dccbb9;border-radius:8px;background:#fff;color:#493b30}
+.inventory-view button{cursor:pointer;background:#f5eee7}.inventory-view button:disabled{opacity:.5;cursor:wait}
+.inventory-view table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+.inventory-view td,.inventory-view th{padding:12px;border-bottom:1px solid #e5dbcf;text-align:right;white-space:nowrap}
+.inventory-view th:first-child,.inventory-view td:first-child{text-align:left;min-width:270px;white-space:normal}
+.inventory-scroll{overflow:auto}.inventory-negative,#inventoryMapError{color:#ac3131;font-weight:600}
+.inventory-warning{background:#fff4dd;border-left:4px solid #b68742;padding:12px}
+#inventorySources{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin:16px 0}
+#inventorySources article{border:1px solid #ddcdbb;border-radius:12px;padding:16px;overflow-wrap:anywhere}
+.inventory-view details{margin:10px 0}.inventory-view summary{cursor:pointer}.inventory-view pre{white-space:pre-wrap;overflow-wrap:anywhere;max-width:640px;max-height:350px;overflow:auto;font-size:12px}
+#inventoryMapDialog{width:min(650px,95vw);max-height:90vh;overflow:auto;border:1px solid #ddcdbb;border-radius:14px;padding:24px;color:#493b30}
+#inventoryMapDialog::backdrop{background:#0006}#inventoryMapDialog label{margin:12px 0}#inventoryMapDialog textarea{min-height:80px}
