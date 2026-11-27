@@ -81,7 +81,7 @@ async function saveMap(e){
 }
 function exportCsv(){
  if(!result)return;
- const cell=x=>'"'+String(x??"").replace(/^[=+@-]/,"'$&").replace(/"/g,'""')+'"';
+ const cell=x=>'"'+(typeof x==="number"?String(x):String(x??"").replace(/^[\s\uFEFF]*[=+@-]/,"'const cell=x=>'"'+String(x??"").replace(/^[=+@-]/,"'$&").replace(/"/g,'""')+'"';")).replace(/"/g,'""')+'"';
  const content=[["商品／規格","已購買","已到貨","已出貨","在手","未出貨需求","可用","待到貨","尚缺採購","採購減需求"],...result.rows.map(r=>[skuText(r),r.purchased,r.received,r.shipped,r.onhand,r.reserved,r.available,r.pending,r.shortage,r.balance])].map(row=>row.map(cell).join(",")).join("\r\n");
  const url=URL.createObjectURL(new Blob(["\uFEFF"+content],{type:"text/csv;charset=utf-8"}));const a=document.createElement("a");a.href=url;a.download="庫存查詢-"+today()+".csv";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
@@ -98,7 +98,7 @@ window.FreaInventory={
   $("inventoryAdjustmentDate").value=today();
   $("inventoryAdjustmentForm").addEventListener("submit",async e=>{
    e.preventDefault();const b=$("inventoryAdjustmentSave");if(b.disabled)return;b.disabled=true;
-   try{const q=await client.from("inventory_adjustments").insert({id:crypto.randomUUID(),sku_id:$("inventoryAdjustmentSku").value,quantity:Number($("inventoryAdjustmentQuantity").value),occurred_on:$("inventoryAdjustmentDate").value,reason:$("inventoryAdjustmentReason").value.trim()});if(q.error)throw q.error;e.target.reset();$("inventoryAdjustmentDate").value=today();await refresh();}
+   try{const q=await client.from("inventory_adjustments").insert({id:($("inventoryAdjustmentForm").dataset.requestId ||= crypto.randomUUID()),sku_id:$("inventoryAdjustmentSku").value,quantity:Number($("inventoryAdjustmentQuantity").value),occurred_on:$("inventoryAdjustmentDate").value,reason:$("inventoryAdjustmentReason").value.trim()});if(q.error){if(q.error.code==="23505"){await refresh();throw Error("此調整已登記，請先核對操作紀錄，避免重複調整。");}throw q.error;}delete e.target.dataset.requestId;e.target.reset();$("inventoryAdjustmentDate").value=today();await refresh();}
    catch(e){msg(e.message,true);}finally{b.disabled=false;}
   });
  },
