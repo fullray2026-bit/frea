@@ -6,8 +6,10 @@ function sources(data){
  const rows=[];
  for(const p of data.purchaseOrders||[]) for(const i of p.purchase_order_items||[]) rows.push({
  type:"purchase",key:String(i.id),number:p.order_number,date:p.ordered_at,status:p.status,
- name:i.product_master?.name||"",master:i.product_master_id,quantity:Number(i.quantity),
- snapshot:{master:i.product_master_id,quantity:i.quantity},notes:p.notes||""
+ name:i.personal_snapshot?.name||i.product_master?.name||"",spec:i.personal_snapshot?.specification||"",master:i.product_master_id,quantity:Number(i.quantity),
+ personalId:i.personal_request_id,personalIndex:i.personal_item_index,personalSnapshot:i.personal_snapshot,directSku:i.inventory_sku_id,
+ receivedQuantity:i.received_quantity,receivedOn:i.received_on,
+ snapshot:i.personal_request_id==null?{master:i.product_master_id,quantity:i.quantity}:{master:null,quantity:i.quantity,personal_id:i.personal_request_id,personal_index:i.personal_item_index,personal_snapshot:i.personal_snapshot,sku:i.inventory_sku_id},notes:p.notes||""
  });
  for(const o of data.orders||[]) for(const i of o.order_items||[]) rows.push({
  type:"order",key:String(i.id),number:o.order_number,date:o.created_at?.slice(0,10),status:o.status,
@@ -37,7 +39,7 @@ function calculate(data,skus,bindings,adjustments){
   if(!Number.isFinite(q)||q<=0){source.valid=false;unresolved++;continue;}
   r.sources.push({...source,stockQuantity:q});
   if(source.type==="purchase"){
-   r.purchased+=q;r.received+=Math.min(source.quantity,Number(b.received_quantity))*Number(b.quantity_factor);
+   r.purchased+=q;r.received+=Math.min(source.quantity,Number(source.receivedQuantity??b.received_quantity))*Number(b.quantity_factor);
   } else {r.demand+=q;if(["shipped","completed"].includes(source.status))r.shipped+=q;}
  }
  for(const a of adjustments){const r=rows.get(a.sku_id);if(r)r.adjusted+=Number(a.quantity);}

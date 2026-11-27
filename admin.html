@@ -226,8 +226,8 @@
         </section>
 
         <section class="admin-view" data-admin-panel="purchases" hidden>
-          <div style="display:grid;grid-template-columns:minmax(0,1fr);gap:24px"><form class="admin-card" id="supplierForm"><div class="supplier-compact-heading"><div><p class="admin-eyebrow">SUPPLIERS</p><h2>供應商</h2></div><button id="supplierListToggle" type="button" class="product-cancel" aria-expanded="false" aria-controls="supplierListPreview">供應商清單</button></div><div id="supplierListPreview" hidden><p><button id="supplierListDownload" type="button" class="product-cancel">下載供應商清單 CSV</button></p><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>供應商編號</th><th>供應商名稱</th><th>聯絡人</th><th>Email</th><th>電話</th><th>網站</th><th>備註</th></tr></thead><tbody id="supplierListRows"></tbody></table></div><p id="supplierListCount"></p></div><div class="stack-form"><label>供應商編號<input id="supplierCode" readonly aria-label="供應商編號，自動編號"><small>自動流水號，實際編號以儲存結果為準。</small></label><label>供應商名稱<input id="supplierName" required></label><label>網站<input id="supplierWebsite" type="url"></label><label>備註<textarea id="supplierNotes" rows="2"></textarea></label><button class="admin-primary" type="submit">新增供應商</button></div></form><form class="admin-card" id="purchaseForm" style="min-width:0"><p class="admin-eyebrow">PURCHASE ORDER</p><h2>建立進貨單</h2><div class="stack-form"><label>供應商<select id="purchaseSupplier" required></select></label><label>進貨日<input id="purchaseDate" type="date" required></label><label>備註<textarea id="purchaseNotes" rows="3"></textarea></label><div><h3>商品明細</h3><div id="purchaseItemRows"></div><button id="purchaseAddItem" class="product-cancel" type="button">＋ 新增商品</button></div><button class="admin-primary" type="submit">建立進貨單</button></div></form></div>
-          <section class="admin-card" style="margin-top:24px;min-width:0"><h2>實際購買收據／進貨單清單</h2><p>已購買與實際到貨分開記錄。請使用各單「規格／到貨」按鈕確認商品規格及到貨數量。</p><div class="admin-toolbar" id="purchaseListToolbar"><label>進貨日起日<input id="purchaseFilterFrom" type="date"></label><label>進貨日迄日<input id="purchaseFilterTo" type="date"></label><button id="purchaseFilterReset" type="button" class="product-cancel">清除篩選</button><button id="purchaseListDownload" type="button" class="product-cancel">下載進貨單清單 CSV</button></div><p id="purchaseFilterMessage" role="status"></p><div id="purchaseRows"></div></section>
+          <div style="display:grid;grid-template-columns:minmax(0,1fr);gap:24px"><form class="admin-card" id="supplierForm"><div class="supplier-compact-heading"><div><p class="admin-eyebrow">SUPPLIERS</p><h2>供應商</h2></div><button id="supplierListToggle" type="button" class="product-cancel" aria-expanded="false" aria-controls="supplierListPreview">供應商清單</button></div><div id="supplierListPreview" hidden><p><button id="supplierListDownload" type="button" class="product-cancel">下載供應商清單 CSV</button></p><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>供應商編號</th><th>供應商名稱</th><th>聯絡人</th><th>Email</th><th>電話</th><th>網站</th><th>備註</th></tr></thead><tbody id="supplierListRows"></tbody></table></div><p id="supplierListCount"></p></div><div class="stack-form"><label>供應商編號<input id="supplierCode" readonly aria-label="供應商編號，自動編號"><small>自動流水號，實際編號以儲存結果為準。</small></label><label>供應商名稱<input id="supplierName" required></label><label>網站<input id="supplierWebsite" type="url"></label><label>備註<textarea id="supplierNotes" rows="2"></textarea></label><button class="admin-primary" type="submit">新增供應商</button></div></form><form class="admin-card" id="purchaseForm" style="min-width:0"><p class="admin-eyebrow">PURCHASE ORDER</p><h2>建立進貨單</h2><div class="stack-form"><label>供應商<select id="purchaseSupplier" required></select></label><label>進貨日<input id="purchaseDate" type="date" required></label><label class="receipt-pending-label"><span><input id="purchasePending" type="checkbox" style="width:auto;min-width:0;margin-right:8px"> 尚未到貨（網購待收才勾選）</span><small>未勾選＝已購買並已到貨；編輯時未變更此選項會保留既有到貨數量。</small></label><label>備註<textarea id="purchaseNotes" rows="3"></textarea></label><div><h3>商品明細</h3><div id="purchaseItemRows"></div><button id="purchaseAddItem" class="product-cancel" type="button">＋ 新增商品</button></div><button class="admin-primary" type="submit">建立進貨單</button></div></form></div>
+          <section class="admin-card" style="margin-top:24px;min-width:0"><h2>實際購買收據／進貨單清單</h2><p>已購買預設視為已到貨；網購未收到時勾選「尚未到貨」。單次代購可直接選代購單明細，不需建立 FR 商品編號。</p><div class="admin-toolbar" id="purchaseListToolbar"><label>進貨日起日<input id="purchaseFilterFrom" type="date"></label><label>進貨日迄日<input id="purchaseFilterTo" type="date"></label><button id="purchaseFilterReset" type="button" class="product-cancel">清除篩選</button><button id="purchaseListDownload" type="button" class="product-cancel">下載進貨單清單 CSV</button></div><p id="purchaseFilterMessage" role="status"></p><div id="purchaseRows"></div></section>
         </section>
 
         <section class="admin-view" data-admin-panel="members" hidden>
@@ -311,7 +311,7 @@
 
 <section class="admin-view inventory-view" data-admin-panel="inventory" hidden>
  <h2>庫存管理</h2>
- <p>按商品主檔與明確規格核對。已購買不等於已到貨；取消訂單不計需求，已出貨／已完成只扣貨一次。未出貨需求包含未付款訂單。</p>
+ <p>按商品主檔與明確規格核對。已購買預設已到貨，網購未收可另勾選；取消訂單不計需求，已出貨／已完成只扣貨一次。未出貨需求包含未付款訂單。</p>
  <div class="inventory-tools"><button id="inventoryRefresh" type="button">重新載入</button><button id="inventoryExport" type="button">匯出已對應庫存 CSV</button>
  <label>搜尋商品／單號<input id="inventorySearch" type="search"></label>
  <label>庫存篩選<select id="inventoryFilter"><option value="">全部規格</option><option value="shortage">尚缺採購</option><option value="surplus">採購多於需求</option><option value="pending">待到貨</option></select></label></div>
@@ -319,7 +319,7 @@
  <p>在手＝已到貨＋調整－已出貨；可用＝在手－未出貨需求。採購減需求包含未到貨商品，負值代表尚缺採購。此處不會直接改動前台上架庫存。</p>
  <div class="inventory-scroll"><table><thead><tr><th>商品／規格（展開來源）</th><th>已購買</th><th>已到貨</th><th>已出貨</th><th>在手</th><th>未出貨需求</th><th>可用</th><th>待到貨</th><th>尚缺採購</th><th>採購減需求</th></tr></thead><tbody id="inventoryRows"></tbody></table></div>
  <h3>來源商品規格與到貨</h3><label>來源篩選<select id="inventorySourceFilter"><option value="unmapped">待對應／來源變更</option><option value="">全部來源</option><option value="purchase">進貨單</option><option value="order">一般訂單</option><option value="personal">代購訂單</option></select></label>
- <p>每筆進貨規格需選相同商品主檔。請依收據與商品規格對應；試喝、運費及包材請選排除用途。對應完成後可逐筆登記實際到貨數量。</p>
+ <p>一般商品需對應相同商品主檔；單次代購直接沿用代購明細規格，不新增 FR 編號。請依收據核對；試喝、運費及包材請選排除用途。對應完成後可逐筆登記實際到貨數量。</p>
  <div id="inventorySources"></div>
  <details><summary>庫存調整（盤點、損耗、期初補登）</summary><p>只用於真實庫存差異，請填原因。輸入正數增加、負數減少；更正錯誤請新增反向調整，保留紀錄。</p>
  <form id="inventoryAdjustmentForm" class="inventory-tools"><label>規格<select id="inventoryAdjustmentSku" required></select></label><label>數量<input id="inventoryAdjustmentQuantity" type="number" step="0.000001" required></label><label>日期<input id="inventoryAdjustmentDate" type="date" required></label><label>原因<input id="inventoryAdjustmentReason" minlength="2" required></label><button id="inventoryAdjustmentSave">登記調整</button></form></details>
@@ -331,7 +331,7 @@
  <label>或新增規格（顏色／容量／尺寸）<input id="inventoryNewSpec" placeholder="例如：深灰綠／500ml；NV 深藍／S"></label>
  <label>庫存單位<input id="inventoryNewUnit" value="個" placeholder="個、包、組"></label>
  <label>每個來源單位換算庫存數量<input id="inventoryFactor" type="number" min="0.000001" step="0.000001" required value="1"></label><p>例：一組 6 件若以組管理，訂單每件換算 0.166667 組。一般商品填 1。</p>
- <fieldset id="inventoryReceiptFields"><legend>實際到貨</legend><label>累計已到貨數量（來源單位）<input id="inventoryReceived" type="number" min="0" step="0.000001" value="0"></label><label>到貨日期<input id="inventoryReceivedOn" type="date"></label><p>未到貨填 0；再次儲存是更正累計量，不會重複加貨。</p></fieldset>
+ <fieldset id="inventoryReceiptFields"><legend>實際到貨</legend><label>累計已到貨數量（來源單位）<input id="inventoryReceived" type="number" min="0" step="0.000001" value="0"></label><label>到貨日期<input id="inventoryReceivedOn" type="date"></label><p>預設已購買即已到貨；網購未收到填 0。再次儲存是更正累計量，不會重複加貨。</p></fieldset>
  <label>對應依據／備註<textarea id="inventoryMapNote"></textarea></label><p id="inventoryMapError" role="alert"></p>
  <div class="inventory-tools"><button type="button" id="inventoryMapClose">取消</button><button id="inventoryMapSave">儲存對應與到貨</button></div>
  </form></dialog>
@@ -345,7 +345,7 @@
   <script src="admin-lifestyle-gallery.js?v=20261108-all-products"></script>
   <script src="admin-merchandising.js?v=category-filter-20261003-master"></script>
   <script src="admin-product-extract.js?v=20261003-translate"></script>
-  <script src="admin-procurement.js?v=20261010"></script><script src="admin-inventory-core.js?v=20261127-1"></script><script src="admin-inventory.js?v=20261127-4"></script><script src="admin.js?v=inventory-20261127-1"></script>
+  <script src="admin-procurement.js?v=20261010"></script><script src="admin-receipt-editor.js?v=20261127-1"></script><script src="admin-inventory-core.js?v=20261127-2"></script><script src="admin-inventory.js?v=20261127-5"></script><script src="admin.js?v=receipts-20261127-1"></script>
   <script src="admin-payment-proof.js?v=20260910-1"></script>
 </body>
 </html>
