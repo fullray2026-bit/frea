@@ -202,7 +202,7 @@
       document.querySelector('[data-admin-panel="'+(type==="order"?"orders":"personal")+'"]').scrollIntoView({behavior:"smooth",block:"start"});
     }});
     renderPurchases();
-    window.FreaInventory?.setData({orders,personalRequests,masterProducts,products,purchaseOrders},loadData);
+    window.FreaInventory?.setData({orders,personalRequests,masterProducts,products,purchaseOrders},loadData)?.then(renderOrders);
   }
 
   function productSlug(brand, name) {
