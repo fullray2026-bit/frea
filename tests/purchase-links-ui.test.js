@@ -1,0 +1,12 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),C=require('../admin-purchase-links-core.js');
+test('column renders complete numbers and navigates to the selected order',async()=>{
+ const nodes=new Map(),node=id=>{if(!nodes.has(id))nodes.set(id,{events:{},value:'',dataset:{},textContent:'',addEventListener(e,fn){this.events[e]=fn}});return nodes.get(id)};
+ const p={id:'p',purchase_order_items:[{id:'i',product_master_id:'m',quantity:2}]},data={orders:[{id:10,order_number:'FR20261128-1234ABCD',status:'completed',order_items:[{id:11,product_name:'Cup',specification:'white',quantity:1}]}],personalRequests:[{id:20,request_number:'PS20261128-ABCDEFGHIJKL',status:'confirmed',items:[{name:'Cup',specification:'white',quantity:1}]}],purchaseOrders:[p]};
+ const dest=C.sources(data),allocations=[{id:'a',purchase_item_id:'i',order_item_id:11,quantity:1,purchase_snapshot:C.purchaseSnapshot(p.purchase_order_items[0]),order_snapshot:dest.get('order:11').snapshot},{id:'b',purchase_item_id:'i',personal_request_id:20,personal_item_index:0,quantity:1,purchase_snapshot:C.purchaseSnapshot(p.purchase_order_items[0]),order_snapshot:dest.get('personal:20:0').snapshot}];
+ const client={from(table){return {select(){return this},order(){return this},async range(){return {data:table==='purchase_order_allocations'?allocations:[],error:null}}}}};
+ const context={window:{FreaPurchaseLinks:C},document:{getElementById:node},Map,Number,String,JSON,crypto:require('node:crypto').webcrypto};vm.createContext(context);vm.runInContext(fs.readFileSync(__dirname+'/../admin-purchase-links.js','utf8'),context);
+ const api=context.window.FreaPurchaseRelations;let opened;api.init(client);await api.setData(data,{onChange(){},openOrder(...args){opened=args}});
+ const cell=api.cell(p);assert.ok(cell.includes('FR20261128-1234ABCD'));assert.ok(cell.includes('PS20261128-ABCDEFGHIJKL'));assert.ok(/<summary>[^<]*1[^<]*<\/summary>/.test(cell));assert.ok(!cell.includes('<br'));assert.equal(api.ready(),true);
+ node('purchaseRows').events.click({target:{closest(q){return q==='[data-open-linked-order]'?{dataset:{openLinkedOrder:'personal:20'}}:null}}});
+ assert.deepEqual(opened,['personal',20]);
+});

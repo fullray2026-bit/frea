@@ -109,7 +109,7 @@
  [data-admin-panel="purchases"] button{min-height:40px}
 }
 </style><link rel="stylesheet" href="admin-inventory.css?v=20261127-3">
-<link rel="stylesheet" href="admin-stock-layout.css?v=20261127-1">
+<link rel="stylesheet" href="admin-stock-layout.css?v=20261128-1">
 </head>
 <body class="admin-page">
   <main>
@@ -227,7 +227,7 @@
         </section>
 
         <section class="admin-view receipt-view" data-admin-panel="purchases" hidden>
- <div class="receipt-toolbar"><input id="purchaseSearch" type="search" placeholder="搜尋進貨單、商家或商品" aria-label="搜尋進貨單">
+ <div class="receipt-toolbar"><input id="purchaseSearch" type="search" placeholder="搜尋進貨單、訂單或商品" aria-label="搜尋進貨單">
  <label>商品類型<select id="purchaseTypeFilter"><option value="">全部商品</option><option value="regular">常態商品</option><option value="personal">代購商品</option></select></label>
  <label>起日<input id="purchaseFilterFrom" type="date"></label><label>迄日<input id="purchaseFilterTo" type="date"></label>
  <button id="purchaseFilterReset" type="button">清除</button><button id="purchaseListDownload" type="button">匯出 CSV</button>
@@ -242,6 +242,17 @@
  <div class="receipt-actions"><button id="purchaseAddItem" type="button">＋ 商品</button><strong id="purchaseFormTotal">合計 ¥0</strong><button class="admin-primary" type="submit">建立進貨單</button></div>
  </div></form></section>
  <div id="purchaseRows" class="receipt-list"></div>
+ 
+<dialog id="purchaseLinkDialog" class="receipt-dialog purchase-link-dialog">
+ <div class="receipt-dialog-head"><h2 id="purchaseLinkTitle">對應訂單</h2><button id="purchaseLinkClose" type="button">關閉</button></div>
+ <label>進貨商品<select id="purchaseLinkLine"></select></label><p id="purchaseLinkInfo"></p>
+ <div class="receipt-table-wrap"><table class="receipt-detail-table"><thead><tr><th>對應訂單／商品規格</th><th>分配進貨量</th><th>對應訂購量</th><th>狀態</th><th>操作</th></tr></thead><tbody id="purchaseLinkRows"></tbody></table></div>
+ <form id="purchaseLinkForm"><label>訂單商品明細<select id="purchaseLinkTarget" required></select></label><p id="purchaseLinkTargetInfo"></p>
+ <div class="purchase-link-quantities"><label>本張進貨分配量<input id="purchaseLinkQuantity" type="number" min="0.000001" step="0.000001" required></label><label>對應訂購量<input id="purchaseLinkOrderQuantity" type="number" min="0.000001" step="0.000001" required></label><button id="purchaseLinkSave" type="submit" class="admin-primary">儲存對應</button></div>
+ </form>
+ <p id="purchaseLinkMessage" role="status"></p><button id="purchaseLinkStock" type="button">未分配部分標為補庫存</button>
+</dialog>
+
  <dialog id="supplierDialog" class="receipt-dialog"><div class="receipt-dialog-head"><h2>供應商管理</h2><button id="supplierClose" type="button" aria-label="關閉供應商管理">關閉</button></div>
  <form class="admin-card" id="supplierForm"><div class="supplier-compact-heading"><h3>新增供應商</h3><button id="supplierListToggle" type="button" aria-expanded="false" aria-controls="supplierListPreview">供應商清單</button></div>
  <div id="supplierListPreview" hidden><button id="supplierListDownload" type="button">匯出 CSV</button><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>編號</th><th>名稱</th><th>聯絡人</th><th>Email</th><th>電話</th><th>網站</th><th>備註</th></tr></thead><tbody id="supplierListRows"></tbody></table></div><p id="supplierListCount"></p></div>
@@ -364,7 +375,7 @@
   <script src="admin-lifestyle-gallery.js?v=20261108-all-products"></script>
   <script src="admin-merchandising.js?v=category-filter-20261003-master"></script>
   <script src="admin-product-extract.js?v=20261003-translate"></script>
-  <script src="admin-procurement.js?v=20261010"></script><script src="admin-purchase-view.js?v=20261127-1"></script><script src="admin-receipt-editor.js?v=20261127-2"></script><script src="admin-inventory-core.js?v=20261127-3"></script><script src="admin-inventory.js?v=20261127-6"></script><script src="admin.js?v=compact-stock-20261127-1"></script>
+  <script src="admin-procurement.js?v=20261010"></script><script src="admin-purchase-view.js?v=20261128-1"></script><script src="admin-purchase-links-core.js?v=20261128-1"></script><script src="admin-purchase-links.js?v=20261128-1"></script><script src="admin-receipt-editor.js?v=20261127-2"></script><script src="admin-inventory-core.js?v=20261127-3"></script><script src="admin-inventory.js?v=20261128-7"></script><script src="admin.js?v=order-links-20261128-1"></script>
   <script src="admin-payment-proof.js?v=20260910-1"></script>
 </body>
 </html>

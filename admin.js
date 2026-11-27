@@ -8,6 +8,7 @@
   const client = sdk.createClient(config.url, config.publishableKey);
   window.FreaMerchandising?.init(client);
   window.FreaInventory?.init(client);
+  window.FreaPurchaseRelations.init(client);
   window.FreaProductExtract?.init(client);
   const login = document.getElementById("adminLogin");
   const shell = document.getElementById("adminShell");
@@ -192,6 +193,14 @@
     renderProducts();
     renderMasterProducts();
     renderCosts();
+    window.FreaPurchaseRelations.setData({orders,personalRequests,purchaseOrders,masterProducts},{onChange:renderPurchaseList,refresh:loadData,openOrder(type,id){
+      switchView(type==="order"?"orders":"personal");
+      const o=(type==="order"?orders:personalRequests).find(o=>o.id===id);
+      if(!o)return;byId(type==="order"?"orderSearch":"personalSearch").value=type==="order"?o.order_number:o.request_number;
+      byId(type==="order"?"orderStatusFilter":"personalStatusFilter").value="";
+      if(type==="order")renderOrders();else renderPersonalRequests();
+      document.querySelector('[data-admin-panel="'+(type==="order"?"orders":"personal")+'"]').scrollIntoView({behavior:"smooth",block:"start"});
+    }});
     renderPurchases();
     window.FreaInventory?.setData({orders,personalRequests,masterProducts,products,purchaseOrders},loadData);
   }
@@ -384,7 +393,7 @@
     renderPurchaseList();
   }
   function filteredPurchaseOrders() {
-    return window.FreaPurchaseView.filter(purchaseOrders,masterProducts,{from:byId("purchaseFilterFrom").value,to:byId("purchaseFilterTo").value,type:byId("purchaseTypeFilter").value,search:byId("purchaseSearch").value});
+    return window.FreaPurchaseView.filter(purchaseOrders,masterProducts,{from:byId("purchaseFilterFrom").value,to:byId("purchaseFilterTo").value,type:byId("purchaseTypeFilter").value,search:byId("purchaseSearch").value,getOrderText:(i,o)=>window.FreaPurchaseRelations.lineText(i,o)});
   }
   function renderSupplierList() {
     byId("supplierListRows").innerHTML=suppliers.map(s=>"<tr>"+[s.supplier_code,s.name,s.contact_name,s.email,s.phone,s.website,s.notes].map(v=>"<td>"+escapeHtml(v||"—")+"</td>").join("")+"</tr>").join("");
@@ -418,9 +427,9 @@
   byId("purchaseListDownload").addEventListener("click",()=>{
     const rows=filteredPurchaseOrders();if(!rows?.length)return;
     downloadProcurementCsv("fréa-進貨單清單-"+(byId("purchaseFilterFrom").value||"全部")+"-"+(byId("purchaseFilterTo").value||"全部")+".csv",[
-      ["進貨單編號","進貨日","供應商編號","供應商名稱","狀態","幣別","商品類型","商品編號","商品名稱","數量","進貨單價","商品小計","成本方案","備註"],
+      ["進貨單編號","進貨日","供應商編號","供應商名稱","對應訂單號碼","狀態","幣別","商品類型","商品編號","商品名稱","數量","進貨單價","商品小計","成本方案","備註"],
       ...rows.flatMap(o=>(o.purchase_order_items?.length?o.purchase_order_items:[{}]).map(i=>[
-        o.order_number,o.ordered_at,suppliers.find(s=>s.id===o.supplier_id)?.supplier_code,o.suppliers?.name,
+        o.order_number,o.ordered_at,suppliers.find(s=>s.id===o.supplier_id)?.supplier_code,o.suppliers?.name,window.FreaPurchaseRelations.lineText(i,o),
         ({draft:"待確認購買",ordered:"已購買／尚未到貨",received:"已收貨",cancelled:"已取消"}[o.status]||o.status),o.currency,window.FreaPurchaseView.kind(i,masterProducts)==="personal"?"代購":"常態",i.product_master?.product_code||"代購",i.personal_snapshot?.name||i.product_master?.name,
         i.quantity,i.unit_cost,i.quantity==null?"":Number(i.quantity)*Number(i.unit_cost),
         costScenarios.find(c=>c.id===i.cost_scenario_id)?.scenario_name||"",o.notes
@@ -429,7 +438,7 @@
   });
   function renderPurchaseList() {
     const rows=filteredPurchaseOrders(),state=window.FreaInventory.editorData();
-    byId("purchaseListDownload").disabled=!rows?.length;
+    byId("purchaseListDownload").disabled=!rows?.length||!window.FreaPurchaseRelations.ready();
     byId("purchaseFilterMessage").textContent=rows?"共 "+rows.length+" 張進貨單／"+rows.reduce((n,o)=>n+o.purchase_order_items.length,0)+" 筆明細"+(byId("purchaseTypeFilter").value?"（金額僅計篩選明細）":""):"起日不可晚於迄日";
     if(!rows?.length){byId("purchaseRows").innerHTML='<p class="admin-empty">'+(rows?"沒有符合的進貨單":"請調整日期")+'</p>';return;}
     const labels={draft:"待確認",ordered:"待到貨",received:"已到貨",cancelled:"已取消"};
@@ -438,11 +447,11 @@
       const b=state.bindings.find(b=>b.source_type==="purchase"&&b.source_key===i.id),s=state.skus.find(s=>s.id===(i.inventory_sku_id||b?.sku_id));
       return i.personal_snapshot?.specification||s?.specification||i.product_master?.specification||"待確認";
     };
-    byId("purchaseRows").innerHTML='<div class="receipt-table-wrap"><table class="receipt-table"><thead><tr><th>進貨單號</th><th>日期</th><th>供應商</th><th>類型</th><th>到貨</th><th>金額</th><th>操作</th></tr></thead><tbody>'+rows.map(o=>{
+    byId("purchaseRows").innerHTML='<div class="receipt-table-wrap"><table class="receipt-table"><colgroup><col class="receipt-col-number"><col class="receipt-col-date"><col class="receipt-col-supplier"><col class="receipt-col-orders"><col class="receipt-col-type"><col class="receipt-col-status"><col class="receipt-col-amount"><col class="receipt-col-actions"></colgroup><thead><tr><th>進貨單號</th><th>日期</th><th>供應商</th><th>對應訂單號碼</th><th>類型</th><th>到貨</th><th>金額</th><th>操作</th></tr></thead><tbody>'+rows.map(o=>{
       const types=[...new Set(o.purchase_order_items.map(i=>window.FreaPurchaseView.kind(i,masterProducts)))];
-      const detail=o.purchase_order_items.map(i=>'<tr><td>'+escapeHtml(window.FreaPurchaseView.kind(i,masterProducts)==="personal"?"代購":i.product_master?.product_code||"常態")+'</td><td>'+escapeHtml(lineName(i))+'</td><td>'+escapeHtml(lineSpec(i))+'</td><td>'+escapeHtml(i.quantity)+'</td><td>'+escapeHtml(formatMoney(i.unit_cost,o.currency))+'</td><td>'+escapeHtml(formatMoney(Number(i.quantity)*Number(i.unit_cost),o.currency))+'</td></tr>').join("");
-      return '<tr><td><strong>'+escapeHtml(o.order_number)+'</strong></td><td>'+escapeHtml(o.ordered_at||"—")+'</td><td>'+escapeHtml(o.suppliers?.name||"—")+'</td><td>'+(types.length>1?"混合":types[0]==="personal"?"代購":"常態")+'</td><td>'+escapeHtml(labels[o.status]||o.status)+'</td><td class="receipt-number">'+escapeHtml(formatMoney(window.FreaPurchaseView.amount(o.purchase_order_items),o.currency))+'</td><td><div class="receipt-row-actions"><button type="button" data-purchase-detail="'+o.id+'" aria-expanded="false">明細</button><button type="button" data-edit-purchase="'+o.id+'">編輯</button></div></td></tr>'+
-      '<tr data-purchase-detail-row="'+o.id+'" hidden><td colspan="7"><table class="receipt-detail-table"><thead><tr><th>類型／編號</th><th>商品</th><th>規格</th><th>數量</th><th>單價</th><th>小計</th></tr></thead><tbody>'+detail+'</tbody></table><details><summary>收據備註</summary><p>'+escapeHtml(o.notes||"無")+'</p></details></td></tr>';
+      const detail=o.purchase_order_items.map(i=>'<tr><td>'+escapeHtml(window.FreaPurchaseView.kind(i,masterProducts)==="personal"?"代購":i.product_master?.product_code||"常態")+'</td><td>'+escapeHtml(lineName(i))+'</td><td>'+escapeHtml(lineSpec(i))+'</td><td>'+escapeHtml(i.quantity)+'</td><td>'+escapeHtml(formatMoney(i.unit_cost,o.currency))+'</td><td>'+escapeHtml(formatMoney(Number(i.quantity)*Number(i.unit_cost),o.currency))+'</td><td><span class="receipt-line-order-text">'+escapeHtml(window.FreaPurchaseRelations.lineText(i,o))+'</span><button type="button" data-allocate-item="'+i.id+'">設定</button></td></tr>').join("");
+      return '<tr><td><strong>'+escapeHtml(o.order_number)+'</strong></td><td>'+escapeHtml(o.ordered_at||"—")+'</td><td>'+escapeHtml(o.suppliers?.name||"—")+'</td><td class="receipt-corresponding-orders">'+window.FreaPurchaseRelations.cell(o)+'</td><td>'+(types.length>1?"混合":types[0]==="personal"?"代購":"常態")+'</td><td>'+escapeHtml(labels[o.status]||o.status)+'</td><td class="receipt-number">'+escapeHtml(formatMoney(window.FreaPurchaseView.amount(o.purchase_order_items),o.currency))+'</td><td><div class="receipt-row-actions"><button type="button" data-purchase-detail="'+o.id+'" aria-expanded="false">明細</button><button type="button" data-edit-purchase="'+o.id+'">編輯</button><button type="button" data-allocate-purchase="'+o.id+'">對應</button></div></td></tr>'+
+      '<tr data-purchase-detail-row="'+o.id+'" hidden><td colspan="8"><table class="receipt-detail-table"><thead><tr><th>類型／編號</th><th>商品</th><th>規格</th><th>數量</th><th>單價</th><th>小計</th><th>對應訂單</th></tr></thead><tbody>'+detail+'</tbody></table><details><summary>收據備註</summary><p>'+escapeHtml(o.notes||"無")+'</p></details></td></tr>';
     }).join("")+'</tbody></table></div>';
   }
   byId("purchaseSearch").addEventListener("input",renderPurchaseList);

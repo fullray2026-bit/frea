@@ -1,0 +1,15 @@
+const test=require('node:test'),assert=require('node:assert/strict'),C=require('../admin-purchase-links-core.js');
+function fixture(){
+ const p={id:'p',order_number:'PO1',notes:'PS-MENTION-ONLY',purchase_order_items:[{id:'i',product_master_id:'m',quantity:2,allocation_purpose:'review'}]};
+ const data={orders:[{id:10,order_number:'FR20261128-1234ABCD',status:'completed',order_items:[{id:11,product_name:'Cup',specification:'white/500ml',quantity:1}]}],personalRequests:[{id:20,request_number:'PS20261128-ABCDEFGHIJKL',status:'confirmed',items:[{name:'Cup',specification:'white/500ml',quantity:1}]}]};
+ const dest=C.sources(data),a=[{id:'a',purchase_item_id:'i',order_item_id:11,quantity:1,order_quantity:1,purchase_snapshot:C.purchaseSnapshot(p.purchase_order_items[0]),order_snapshot:dest.get('order:11').snapshot,sku_id:'s'},{id:'b',purchase_item_id:'i',personal_request_id:20,personal_item_index:0,quantity:1,order_quantity:1,purchase_snapshot:C.purchaseSnapshot(p.purchase_order_items[0]),order_snapshot:dest.get('personal:20:0').snapshot,sku_id:'s'}];
+ const b=[{source_type:'purchase',source_key:'i',source_snapshot:C.purchaseSnapshot(p.purchase_order_items[0]),sku_id:'s',purpose:'sale'},...Array.from(dest.values()).map(d=>({source_type:d.type,source_key:d.key,sku_id:'s',purpose:'sale'}))];
+ return {p,data,a,b};
+}
+test('multiple confirmed destinations retain full identifiers',()=>{const {p,data,a,b}=fixture(),r=C.inspect(p,data,a,b);assert.equal(r.numbers.length,2);assert.equal(r.numbers[1].number,'PS20261128-ABCDEFGHIJKL');assert.equal(r.pending,0);});
+test('notes alone never confirm an allocation or restock',()=>{const {p,data,b}=fixture(),r=C.inspect(p,data,[],b);assert.equal(r.numbers.length,0);assert.equal(r.pending,1);assert.equal(r.stock,0);});
+test('restock label requires explicit purpose',()=>{const {p,data,b}=fixture();p.purchase_order_items[0].allocation_purpose='stock';const r=C.inspect(p,data,[],b);assert.equal(r.stock,1);assert.equal(r.pending,0);});
+test('changed specifications invalidate prior allocations',()=>{const {p,data,a,b}=fixture();data.orders[0].order_items[0].specification='black/500ml';const r=C.inspect(p,data,a,b);assert.equal(r.stale,1);assert.equal(r.numbers.length,1);assert.equal(r.pending,1);});
+test('variant reassignment is detected',()=>{const {p,data,a,b}=fixture();b[1].sku_id='other';assert.equal(C.inspect(p,data,a,b).stale,1);});
+test('filtered receipt aggregates visible line allocations only',()=>{const {p,data,a,b}=fixture();p.purchase_order_items.push({id:'other',product_master_id:'m',quantity:1});const r=C.inspect({...p,purchase_order_items:[p.purchase_order_items[1]]},data,a,b);assert.equal(r.numbers.length,0);assert.equal(r.pending,1);});
+test('expense lines do not invent assignments',()=>{const {p,data,b}=fixture();b[0].purpose='expense';const r=C.inspect(p,data,[],b);assert.equal(r.pending,0);assert.equal(r.stock,0);});

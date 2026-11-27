@@ -84,3 +84,35 @@
 .admin-main:has(.inventory-view:not([hidden])) #adminGlobalMessage{font-size:12px;margin:4px 0 10px}
 .inventory-view #inventoryRefresh{display:none}
 .inventory-view table th:nth-child(2),.inventory-view table th:nth-child(3){text-align:left}
+
+/* Explicit widths keep complete order identifiers on one line. */
+.receipt-table{table-layout:fixed;min-width:1100px}
+.receipt-col-number{width:11%}.receipt-col-date{width:10%}.receipt-col-supplier{width:14%}.receipt-col-orders{width:27%}
+.receipt-col-type{width:5%}.receipt-col-status{width:6%}.receipt-col-amount{width:10%}.receipt-col-actions{width:17%}
+.receipt-table>thead>tr>th,.receipt-table>tbody>tr>td{padding:9px 10px;overflow-wrap:normal;word-break:normal}
+.receipt-table>tbody>tr>td:nth-child(1),.receipt-table>tbody>tr>td:nth-child(2),.receipt-table>tbody>tr>td:nth-child(5),.receipt-table>tbody>tr>td:nth-child(6){white-space:nowrap}
+.receipt-table .receipt-number{font-variant-numeric:tabular-nums}
+.receipt-view button.receipt-order-link{display:inline-block;border:0;background:transparent;color:#795735;text-decoration:underline;text-underline-offset:3px;padding:0!important;min-height:24px!important;font:13px ui-monospace,SFMono-Regular,Consolas,monospace;white-space:nowrap;word-break:normal;overflow-wrap:normal;text-align:left}
+.receipt-order-numbers{display:flex;align-items:flex-start;gap:7px;flex-wrap:wrap}
+.receipt-more-orders{display:inline-block;margin:0!important;font-size:12px;white-space:nowrap}
+.receipt-more-orders summary{line-height:24px;cursor:pointer}
+.receipt-more-orders>div{display:grid;gap:2px}
+.receipt-link-muted,.receipt-link-pending{display:block;font-size:11px;line-height:1.5}
+.receipt-link-muted{color:#89796a}.receipt-link-pending{color:#9b5b23}
+.receipt-full-order,.receipt-line-order-text{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;white-space:nowrap;word-break:normal;overflow-wrap:normal}
+.receipt-line-order-text{display:block;max-width:100%;overflow-x:auto}
+.receipt-detail-table td:last-child{text-align:left}
+.purchase-link-dialog{width:min(1080px,96vw);font-size:14px}
+.purchase-link-dialog label{display:grid;gap:5px;margin:12px 0 0}
+.purchase-link-dialog select,.purchase-link-dialog input{box-sizing:border-box;width:100%;padding:8px;border:1px solid #dacdbd;background:#fff;border-radius:6px;min-width:0}
+.purchase-link-dialog button{font:inherit;padding:7px 10px;border:1px solid #dacdbd;border-radius:6px;background:#fff;cursor:pointer}
+.purchase-link-dialog button:disabled{opacity:.5;cursor:wait}
+.purchase-link-dialog button.admin-primary{background:#514236;color:#fff}
+.purchase-link-dialog p{font-size:12px;line-height:1.6;margin:8px 0;color:#7b6d61}
+.purchase-link-dialog p.error{color:#a22}
+.purchase-link-dialog small{display:block;font-size:12px;white-space:normal;max-width:480px}
+.purchase-link-dialog .receipt-table-wrap{margin:10px 0}
+.purchase-link-dialog .receipt-detail-table{min-width:720px}
+.purchase-link-quantities{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end}
+.purchase-link-dialog .receipt-detail-table td{padding:8px;vertical-align:top}
+@media(max-width:700px){.purchase-link-quantities{grid-template-columns:1fr 1fr}.purchase-link-quantities button{grid-column:1/-1}}
