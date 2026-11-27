@@ -193,7 +193,7 @@
     renderProducts();
     renderMasterProducts();
     renderCosts();
-    window.FreaPurchaseRelations.setData({orders,personalRequests,purchaseOrders,masterProducts},{onChange(){renderPurchaseList();renderOrders();},refresh:loadData,openOrder(type,id){
+    window.FreaPurchaseRelations.setData({orders,personalRequests,purchaseOrders,masterProducts},{onChange(){renderPurchaseList();renderOrders();renderPersonalRequests();},refresh:loadData,openOrder(type,id){
       switchView(type==="order"?"orders":"personal");
       const o=(type==="order"?orders:personalRequests).find(o=>o.id===id);
       if(!o)return;byId(type==="order"?"orderSearch":"personalSearch").value=type==="order"?o.order_number:o.request_number;
@@ -855,6 +855,7 @@
         personalStatusOptions(request.status).replace('日本已下單', japan ? '台灣已下單' : '日本已下單') + '</select></label><button type="button" data-preview-personal>報價單預覽</button><label>後台備註<textarea data-personal-note rows="1" placeholder="僅供管理使用">' +
         escapeHtml(request.admin_note || "") + '</textarea></label><button type="button" class="danger" data-delete-personal>刪除訂單</button><button class="admin-save" type="button" data-save-personal>儲存變更</button></div></article>';
     }).join("");
+    window.FreaPersonalView.compact(target,filtered,{purchaseOrders,relations:window.FreaPurchaseRelations,money:formatMoney,day:overviewDay,labels:personalStatusLabels,safeUrl:safeHttpUrl});
     target.querySelectorAll("[data-personal-id]").forEach(recalculatePersonalQuote);
     renderBankRate();
   }
@@ -1318,6 +1319,9 @@
   byId("personalCards").addEventListener("click", event => {
     const card=event.target.closest('[data-personal-id]');
     if(!card)return;
+    if(event.target.closest('[data-personal-detail]'))return window.FreaPersonalView.toggle(card,false);
+    if(event.target.closest('[data-personal-edit]'))return window.FreaPersonalView.toggle(card,true);
+    if(event.target.closest('[data-personal-cancel]')){window.FreaPersonalView.cancel(card);recalculatePersonalQuote(card);renderBankRate();return;}
     if(event.target.closest('[data-add-personal-item]')) {
       card.querySelector('.personal-quote-table').insertAdjacentHTML('beforeend',personalItemRow({},card.querySelectorAll('[data-item-index]').length,'',card.dataset.serviceDirection==='tw_to_jp'?'TWD':'JPY'));
       card.querySelector('[data-item-index]:last-child [data-item-name]').focus();
