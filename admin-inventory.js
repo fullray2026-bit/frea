@@ -81,7 +81,7 @@ async function saveMap(e){
 }
 function exportCsv(){
  if(!result)return;
- const cell=x=>'"'+(typeof x==="number"?String(x):String(x??"").replace(/^[\s\uFEFF]*[=+@-]/,"'const cell=x=>'"'+String(x??"").replace(/^[=+@-]/,"'$&").replace(/"/g,'""')+'"';")).replace(/"/g,'""')+'"';
+ const cell=x=>{let v=String(x??"");if(typeof x!=="number"&&/^[\s\uFEFF]*[=+@-]/.test(v))v="'"+v;return '"'+v.replace(/"/g,'""')+'"';};
  const content=[["商品／規格","已購買","已到貨","已出貨","在手","未出貨需求","可用","待到貨","尚缺採購","採購減需求"],...result.rows.map(r=>[skuText(r),r.purchased,r.received,r.shipped,r.onhand,r.reserved,r.available,r.pending,r.shortage,r.balance])].map(row=>row.map(cell).join(",")).join("\r\n");
  const url=URL.createObjectURL(new Blob(["\uFEFF"+content],{type:"text/csv;charset=utf-8"}));const a=document.createElement("a");a.href=url;a.download="庫存查詢-"+today()+".csv";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
