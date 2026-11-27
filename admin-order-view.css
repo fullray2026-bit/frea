@@ -1,0 +1,46 @@
+/* Compact regular order management. */
+[data-admin-panel="orders"] #orderCards{display:block}
+[data-admin-panel="orders"] .admin-toolbar{display:flex;align-items:center;gap:8px;margin:10px 0}
+[data-admin-panel="orders"] .admin-toolbar input{flex:1;max-width:390px}
+[data-admin-panel="orders"] .admin-toolbar select{width:160px}
+[data-admin-panel="orders"] .admin-toolbar input,[data-admin-panel="orders"] .admin-toolbar select{padding:7px 9px;font-size:13px;min-height:34px}
+[data-admin-panel="orders"] #orderCount{margin-left:auto;font-size:12px;white-space:nowrap}
+.order-table-scroll{overflow:auto;border:1px solid var(--admin-line,#ddcfbe);border-radius:8px;background:var(--admin-panel,#fffdf9)}
+.order-list-table{width:100%;min-width:1150px;table-layout:fixed;border-collapse:collapse;font-size:13px}
+.order-list-table .compact-order{display:table-row-group;padding:0;border:0;border-radius:0}
+.order-list-table th,.order-list-table td{padding:6px 9px;text-align:left;vertical-align:middle;border-bottom:1px solid var(--admin-line,#e8ded2);overflow-wrap:anywhere}
+.order-list-table th{background:#f3ede5;font-size:12px;font-weight:600;white-space:nowrap}
+.order-list-table>thead th,.order-list-table .order-summary-row>td{height:38px;box-sizing:border-box}
+.order-full-number,.order-receipt-code{white-space:nowrap;overflow-wrap:normal;word-break:normal;font:12px ui-monospace,SFMono-Regular,Consolas,monospace}
+.order-full-number{font-weight:600}
+.order-receipt-code{display:block;line-height:20px}
+.order-list-table .order-money{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.order-row-actions,.order-edit-actions{display:flex;align-items:center;gap:5px}
+.order-list-table button{font:inherit;font-size:13px;padding:4px 8px;min-height:28px;border:1px solid var(--admin-line,#d9ccbc);border-radius:6px;background:#fffdf9;color:var(--admin-ink,#493c32);cursor:pointer;white-space:nowrap}
+.order-list-table button.admin-save{background:#514236;color:#fff}
+.order-list-table button.danger{color:#a3352b}
+.order-list-table [hidden]{display:none!important}
+.order-list-table [data-order-expanded]>td{padding:7px 10px}
+.order-item-table{table-layout:fixed;width:100%;border-collapse:collapse;font-size:12px}
+.order-item-table th,.order-item-table td{padding:5px 7px;line-height:1.4}
+.order-item-table:not(.order-edit-items) th:nth-child(n+4):nth-child(-n+6),.order-item-table:not(.order-edit-items) td:nth-child(n+4):nth-child(-n+6){text-align:right;white-space:nowrap}
+.order-read-sections{display:flex;flex-wrap:wrap;align-items:flex-start;gap:8px 24px;margin-top:6px;font-size:12px}
+.order-read-sections details{min-width:160px;max-width:100%}
+.order-read-sections details p,.order-edit-payment p{white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0}
+.order-list-table summary{cursor:pointer;font-size:12px}
+.order-muted{color:#8b7b6b;font-size:12px}
+.order-list-table [data-order-editor]{background:#faf7f2;padding:12px;border:1px solid var(--admin-line,#ddcfbe);border-radius:6px;margin-top:6px}
+.order-list-table [data-order-editor] h3{font-size:15px;margin:0 0 8px}
+.order-list-table input,.order-list-table select,.order-list-table textarea{box-sizing:border-box;font:inherit;width:100%;min-width:0;border:1px solid var(--admin-line,#d9ccbc);padding:6px 8px;border-radius:5px;background:#fff;min-height:32px}
+.order-edit-items th:nth-child(3),.order-edit-items td:nth-child(3){width:90px}
+.order-edit-items th:nth-child(4),.order-edit-items td:nth-child(4){width:110px;text-align:right}
+.order-list-table .order-recipient-editor{grid-template-columns:1fr 1fr 120px 2fr;gap:9px;margin-top:10px}
+.order-list-table .order-recipient-editor .order-recipient-address{grid-column:auto}
+.order-list-table label{display:grid;gap:4px;font-size:12px}
+.order-edit-meta{display:grid;grid-template-columns:170px 190px minmax(200px,1fr);gap:10px;margin-top:10px}
+.order-edit-note{margin-top:10px}
+.order-edit-payment{margin-top:8px}
+.order-edit-actions{margin-top:10px}
+.order-edit-actions .danger{margin-left:auto}
+.order-list-table .admin-proof-upload{margin-top:7px;padding:8px;gap:6px 9px}
+@media(max-width:800px){.order-list-table .order-recipient-editor{grid-template-columns:1fr 1fr}.order-list-table .order-recipient-editor .order-recipient-address{grid-column:1/-1}.order-edit-meta{grid-template-columns:1fr 1fr}}

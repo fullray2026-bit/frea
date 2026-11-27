@@ -193,7 +193,7 @@
     renderProducts();
     renderMasterProducts();
     renderCosts();
-    window.FreaPurchaseRelations.setData({orders,personalRequests,purchaseOrders,masterProducts},{onChange:renderPurchaseList,refresh:loadData,openOrder(type,id){
+    window.FreaPurchaseRelations.setData({orders,personalRequests,purchaseOrders,masterProducts},{onChange(){renderPurchaseList();renderOrders();},refresh:loadData,openOrder(type,id){
       switchView(type==="order"?"orders":"personal");
       const o=(type==="order"?orders:personalRequests).find(o=>o.id===id);
       if(!o)return;byId(type==="order"?"orderSearch":"personalSearch").value=type==="order"?o.order_number:o.request_number;
@@ -1088,36 +1088,7 @@
       target.innerHTML = '<div class="admin-empty">目前沒有符合的訂單。</div>';
       return;
     }
-    target.innerHTML = filtered.map(order => {
-      const member = profiles.find(profile => profile.id === order.user_id);
-      const items = Array.isArray(order.order_items) ? order.order_items : [];
-      const itemHtml = items.length ? '<ul class="admin-order-items">' + items.map(item =>
-        "<li>" + escapeHtml(item.product_name) + "｜" + escapeHtml(item.specification) +
-        ' <label class="order-quantity-label">數量<input data-order-quantity data-item-id="'+escapeHtml(item.id)+'" aria-label="'+escapeHtml(item.product_name)+' 數量" type="number" min="1" max="99999" step="1" required value="'+escapeHtml(item.quantity)+'"></label>｜' + escapeHtml(formatMoney(item.line_total, order.currency)) + "</li>"
-      ).join("") + "</ul>" : "<p>沒有商品明細</p>";
-      return '<article class="admin-order" data-order-id="' + escapeHtml(order.id) + '">' +
-        '<div class="admin-order-head"><div><h3>' + escapeHtml(order.order_number) +
-        '</h3><p class="admin-order-meta">' + escapeHtml(new Intl.DateTimeFormat("zh-TW",{timeZone:"Asia/Taipei",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}).format(new Date(order.created_at))) + "（台灣時間）" + " · " +
-        escapeHtml(statusLabels[order.status] || order.status) + '</p></div><div><small class="admin-order-meta">所屬會員</small><br><strong>' +
-        escapeHtml(member?.full_name || "未填姓名") + '</strong><p class="admin-order-meta">' +
-        escapeHtml(member?.email || "") + '</p></div><strong class="admin-order-total">' +
-        escapeHtml(formatMoney(order.total_amount, order.currency)) + '</strong></div>' +
-        '<div class="admin-order-grid"><div><h4>商品明細</h4>' + itemHtml +
-        '</div><div><h4>收件與付款資料</h4><div class="order-recipient-editor">' +
-        '<label>本次收件人<input data-recipient-name maxlength="100" required value="' + escapeHtml(order.recipient_name || "") + '"></label>' +
-        '<label>聯絡電話<input data-recipient-phone type="tel" maxlength="40" required value="' + escapeHtml(order.recipient_phone || "") + '"></label>' +
-        '<label>郵遞區號<input data-recipient-postal maxlength="20" value="' + escapeHtml(order.postal_code || "") + '"></label>' +
-        '<label class="order-recipient-address">完整收件地址<textarea data-recipient-address rows="2" maxlength="500" required>' + escapeHtml(order.shipping_address || "") + '</textarea></label></div>' +
-        '<p>匯款證明：' + escapeHtml(order.payment_proof_name || "未上傳") + "</p>" +
-        (order.payment_proof_path ? '<button class="admin-save" type="button" data-view-payment-proof>查看匯款證明</button>' : "") + "</div></div>" +
-        '<div class="admin-order-controls standard-order-controls"><div class="order-status-fields"><label>訂單狀態<select data-order-status>' +
-        statusOptions(order.status) + '</select></label><label data-tracking-wrap' + (order.status === "shipped" ? "" : " hidden") +
-        '>出貨單號<input data-tracking-number value="' + escapeHtml(order.tracking_number || "") +
-        '" placeholder="請輸入物流出貨單號"></label></div><label>後台備註<textarea data-order-note rows="1" placeholder="僅供管理使用">' +
-        escapeHtml(order.admin_note || "") + '</textarea></label>' +
-        '<label>下單日期（台灣時間）<input type="date" data-order-date min="2000-01-01" max="2099-12-31" required value="' + escapeHtml(overviewDay(order.created_at)) + '"></label>' +
-        '<button class="admin-save" type="button" data-save-order>變更儲存</button><button class="danger product-cancel" type="button" data-delete-order>刪除訂單</button></div></article>';
-    }).join("");
+    target.innerHTML = window.FreaOrderView.render(filtered,{profiles,purchaseOrders,relations:window.FreaPurchaseRelations,inventory:window.FreaInventory?.editorData(),masters:masterProducts,money:formatMoney,day:overviewDay,labels:statusLabels,statusOptions});
   }
 
   async function deleteOrder(card) {
@@ -1322,6 +1293,9 @@
   byId("supplierForm").addEventListener("submit",saveSupplier);
   byId("purchaseForm").addEventListener("submit",savePurchase);
   byId("orderCards").addEventListener("click", event => {
+    const detail=event.target.closest("[data-order-detail]"),edit=event.target.closest("[data-order-edit]"),cancel=event.target.closest("[data-order-cancel]");
+    if(detail||edit)return window.FreaOrderView.toggle((detail||edit).closest(".admin-order"),detail?"detail":"edit");
+    if(cancel)return window.FreaOrderView.cancel(cancel.closest(".admin-order"));
     const deletion = event.target.closest("[data-delete-order]");
     if (deletion) return deleteOrder(deletion.closest(".admin-order"));
     const proof = event.target.closest("[data-view-payment-proof]");
