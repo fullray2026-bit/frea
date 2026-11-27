@@ -7,7 +7,8 @@ function sources(data){
  for(const o of data.personalRequests||[])(o.items||[]).forEach((i,n)=>map.set("personal:"+o.id+":"+n,{type:"personal",key:o.id+":"+n,parentId:o.id,index:n,number:o.request_number,status:o.status,name:i.name,specification:i.specification||"",quantity:Number(i.quantity||1),snapshot:{name:i.name??null,specification:i.specification??null,quantity:i.quantity??null}}));
  return map;
 }
-function purchaseSnapshot(i){return i.personal_request_id==null?{master:i.product_master_id,quantity:i.quantity}:{master:null,quantity:i.quantity,personal_id:i.personal_request_id,personal_index:i.personal_item_index,personal_snapshot:i.personal_snapshot,sku:i.inventory_sku_id};}
+function withReceiptSpec(i,s){return i.receipt_specification==null?s:{...s,receipt_specification:i.receipt_specification};}
+function purchaseSnapshot(i){return withReceiptSpec(i,i.personal_request_id==null?{master:i.product_master_id,quantity:i.quantity}:{master:null,quantity:i.quantity,personal_id:i.personal_request_id,personal_index:i.personal_item_index,personal_snapshot:i.personal_snapshot,sku:i.inventory_sku_id});}
 function destinationKey(a){return a.order_item_id!=null?"order:"+a.order_item_id:"personal:"+a.personal_request_id+":"+a.personal_item_index;}
 function inspect(order,data,allocations,bindings=[],loaded=true){
  const dest=sources(data),bindingIndex=new Map(bindings.map(b=>[b.source_type+":"+b.source_key,b])),numbers=new Map();

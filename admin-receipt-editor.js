@@ -7,13 +7,14 @@ function snapshotPurchase(o){
 return {supplier_id:o.supplier_id,ordered_at:o.ordered_at,notes:o.notes,currency:o.currency,status:o.status,received_at:o.received_at,
 items:(o.purchase_order_items||[]).map(i=>({id:i.id,product_master_id:i.product_master_id,cost_scenario_id:i.cost_scenario_id,quantity:Number(i.quantity),unit_cost:Number(i.unit_cost),
 personal_request_id:i.personal_request_id??null,personal_item_index:i.personal_item_index??null,personal_snapshot:i.personal_snapshot??null,inventory_sku_id:i.inventory_sku_id??null,
-received_quantity:Number(i.received_quantity??0),received_on:i.received_on??null})).sort((a,b)=>a.id.localeCompare(b.id))};
+received_quantity:Number(i.received_quantity??0),received_on:i.received_on??null,...(i.receipt_specification!=null?{receipt_specification:i.receipt_specification}:{})})).sort((a,b)=>a.id.localeCompare(b.id))};
 }
 function populate(row,item,data){
  const choices=personalChoices(data.personalRequests||[]),inventory=data.inventory||{};
  const legacyMaster=(data.masterProducts||[]).find(m=>m.id===item?.product_master_id&&m.catalog_type==="personal");
  const personal=item?.personal_request_id!=null,legacy=!!legacyMaster;
  row.dataset.purchaseItemId=item?.id||row.dataset.purchaseItemId;
+ row.receiptLegacySpecification=legacyMaster?.specification||"依原收據";
  row.innerHTML='<div class="receipt-line"><label>來源<select data-purchase-kind><option value="catalog">常態商品</option><option value="personal">代購商品</option>'+(legacy?'<option value="legacy">代購歷史</option>':"")+'</select></label>'+
  '<div class="receipt-product-cell"><div data-purchase-catalog><label>商品<select data-purchase-product><option value="">選擇常態商品</option>'+
  (data.masterProducts||[]).filter(p=>(p.catalog_type!=="personal"&&p.status!=="archived")||p.id===item?.product_master_id).map(p=>'<option value="'+esc(p.id)+'">'+esc((p.product_code||"代購歷史")+'｜'+p.name)+'</option>').join("")+'</select></label>'+
@@ -50,14 +51,16 @@ function populate(row,item,data){
   const value=$('[data-purchase-kind]').value,direct=value==="personal",historical=value==="legacy";
   $('[data-purchase-catalog]').hidden=direct||historical;$('[data-purchase-personal-fields]').hidden=!direct;$('[data-purchase-legacy-fields]').hidden=!historical;
   $('[data-purchase-sku-fields]').hidden=direct||historical;$('[data-purchase-direct-spec-fields]').hidden=!direct&&!historical;
-  $('[data-purchase-direct-spec]').value=historical?legacyMaster?.specification||"依原收據":row.receiptPersonalSnapshot?.specification||"標準規格";
+  $('[data-purchase-direct-spec]').readOnly=!historical;
+  $('[data-purchase-direct-spec]').maxLength=500;
+  $('[data-purchase-direct-spec]').value=historical?(row.receiptSpecDraft??item?.receipt_specification??legacyMaster?.specification??"依原收據"):row.receiptPersonalSnapshot?.specification||"標準規格";
   $('[data-purchase-product]').required=!direct&&!historical;$('[data-purchase-personal]').required=direct;
   $('[data-purchase-product]').disabled=direct||historical;$('[data-purchase-cost]').disabled=direct||historical;$('[data-purchase-sku]').disabled=direct||historical;
   $('[data-purchase-personal]').disabled=!direct;
  }
  function subtotal(){const q=Number($('[data-purchase-quantity]').value),p=Number($('[data-purchase-price]').value);$('[data-purchase-subtotal]').textContent=(q*p).toLocaleString('zh-TW',{maximumFractionDigits:2});}
  kind();subtotal();
- row.addEventListener("input",subtotal);
+ row.addEventListener("input",event=>{if(event.target.matches("[data-purchase-direct-spec]"))row.receiptSpecDraft=event.target.value;subtotal();});
  row.addEventListener("change",event=>{
   if(event.target.matches('[data-purchase-kind]')){if(event.target.value==="catalog"&&$('[data-purchase-product]').value===legacyMaster?.id){$('[data-purchase-product]').value="";fillCatalog();}kind();}
   if(event.target.matches('[data-purchase-product]')){fillCatalog();$('[data-purchase-quantity]').value=1;$('[data-purchase-price]').value=0;}
@@ -73,11 +76,13 @@ function populate(row,item,data){
   subtotal();
  });
 }
+function legacySpecification(row){return row.receiptLegacySpecification;}
 function serialize(row){
  const $=q=>row.querySelector(q),direct=$('[data-purchase-kind]').value==="personal",key=$('[data-purchase-personal]').value.split(":");
  return {id:row.dataset.purchaseItemId,product_master_id:direct?null:$('[data-purchase-product]').value||null,
  cost_scenario_id:direct?null:$('[data-purchase-cost]').value||null,inventory_sku_id:direct?null:$('[data-purchase-sku]').value||null,
  personal_request_id:direct?Number(key[0]):null,personal_item_index:direct?Number(key[1]):null,personal_snapshot:direct?row.receiptPersonalSnapshot:null,
+ receipt_specification:$('[data-purchase-kind]').value==='legacy'?($('[data-purchase-direct-spec]').value.trim()===legacySpecification(row)?null:$('[data-purchase-direct-spec]').value.trim()||null):null,
  quantity:Number($('[data-purchase-quantity]').value),unit_cost:Number($('[data-purchase-price]').value)};
 }
 const api={populate,serialize,snapshotPurchase,personalChoices,snapshot};root.FreaReceiptEditor=api;

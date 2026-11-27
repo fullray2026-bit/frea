@@ -1,15 +1,16 @@
 /* Shared inventory calculation; no storefront stock mutation. */
 (function(root){
 "use strict";
+const withReceiptSpec=(i,s)=>i.receipt_specification==null?s:{...s,receipt_specification:i.receipt_specification};
 const stable=x=>JSON.stringify(x&&typeof x==="object"&&!Array.isArray(x)?Object.fromEntries(Object.keys(x).sort().map(k=>[k,x[k]])):x);
 function sources(data){
  const rows=[];
  for(const p of data.purchaseOrders||[]) for(const i of p.purchase_order_items||[]) rows.push({
  type:"purchase",key:String(i.id),number:p.order_number,date:p.ordered_at,status:p.status,
- name:i.personal_snapshot?.name||i.product_master?.name||"",spec:i.personal_snapshot?.specification||"",master:i.product_master_id,quantity:Number(i.quantity),
+ name:i.personal_snapshot?.name||i.product_master?.name||"",spec:i.receipt_specification??i.personal_snapshot?.specification??"",master:i.product_master_id,quantity:Number(i.quantity),
  personalId:i.personal_request_id,personalIndex:i.personal_item_index,personalSnapshot:i.personal_snapshot,directSku:i.inventory_sku_id,
  receivedQuantity:i.received_quantity,receivedOn:i.received_on,
- snapshot:i.personal_request_id==null?{master:i.product_master_id,quantity:i.quantity}:{master:null,quantity:i.quantity,personal_id:i.personal_request_id,personal_index:i.personal_item_index,personal_snapshot:i.personal_snapshot,sku:i.inventory_sku_id},notes:p.notes||""
+ snapshot:withReceiptSpec(i,i.personal_request_id==null?{master:i.product_master_id,quantity:i.quantity}:{master:null,quantity:i.quantity,personal_id:i.personal_request_id,personal_index:i.personal_item_index,personal_snapshot:i.personal_snapshot,sku:i.inventory_sku_id}),notes:p.notes||""
  });
  for(const o of data.orders||[]) for(const i of o.order_items||[]) rows.push({
  type:"order",key:String(i.id),number:o.order_number,date:o.created_at?.slice(0,10),status:o.status,

@@ -445,7 +445,7 @@
     const lineName=i=>i.personal_snapshot?.name||i.product_master?.name||"未命名商品";
     const lineSpec=i=>{
       const b=state.bindings.find(b=>b.source_type==="purchase"&&b.source_key===i.id),s=state.skus.find(s=>s.id===(i.inventory_sku_id||b?.sku_id));
-      return i.personal_snapshot?.specification||s?.specification||i.product_master?.specification||"待確認";
+      return i.receipt_specification??i.personal_snapshot?.specification??s?.specification??i.product_master?.specification??"待確認";
     };
     byId("purchaseRows").innerHTML='<div class="receipt-table-wrap"><table class="receipt-table"><colgroup><col class="receipt-col-number"><col class="receipt-col-date"><col class="receipt-col-supplier"><col class="receipt-col-orders"><col class="receipt-col-type"><col class="receipt-col-status"><col class="receipt-col-amount"><col class="receipt-col-actions"></colgroup><thead><tr><th>進貨單號</th><th>日期</th><th>供應商</th><th>對應訂單號碼</th><th>類型</th><th>到貨</th><th>金額</th><th>操作</th></tr></thead><tbody>'+rows.map(o=>{
       const types=[...new Set(o.purchase_order_items.map(i=>window.FreaPurchaseView.kind(i,masterProducts)))];
@@ -558,7 +558,7 @@
       const editing=Boolean(purchaseEditing);
       const data=await procurementRpc("save_purchase_receipt",payload);
       resetPurchaseEditor();await loadData();
-      showMessage("adminGlobalMessage","進貨單 "+data.order_number+(editing?" 已儲存修改。":" 已建立。"),"success");
+      showMessage("adminGlobalMessage","進貨單 "+data.order_number+(editing?" 已儲存修改；若有更改規格，請檢查對應訂單是否顯示待核對。":" 已建立。"),"success");
     }catch(error){showMessage("adminGlobalMessage",error.message||"儲存進貨單失敗。","error");}
     finally{form.dataset.saving="false";controls.forEach(el=>el.disabled=false);}
   }

@@ -30,7 +30,7 @@ function alertMessage(s,isError=false){$("purchaseLinkMessage").textContent=s;$(
 function renderLine(){
  const i=selectedLine();if(!i)return;const o=(data.purchaseOrders||[]).find(o=>o.id===currentOrder),s=summary({...o,purchase_order_items:[i]}).lines[0];
  const key=$("purchaseLinkTarget").value,pb=binding("purchase",i.id),all=C.sources(data);
- $("purchaseLinkInfo").textContent=(i.personal_snapshot?.name||i.product_master?.name||"商品")+" ｜"+(i.personal_snapshot?.specification||i.product_master?.specification||"規格待確認")+" ｜進貨 "+num(i.quantity)+"，尚未分配 "+num(s.remaining);
+ $("purchaseLinkInfo").textContent=(i.personal_snapshot?.name||i.product_master?.name||"商品")+" ｜"+(i.receipt_specification??i.personal_snapshot?.specification??i.product_master?.specification??"規格待確認")+" ｜進貨 "+num(i.quantity)+"，尚未分配 "+num(s.remaining);
  $("purchaseLinkRows").innerHTML=allocations.filter(a=>a.purchase_item_id===i.id).map(a=>{
   const d=targetFor(a),valid=s.links.some(l=>l.id===a.id);
   return '<tr><td><span class="receipt-full-order">'+esc(d?.number||"來源已移除")+'</span><small>'+esc(d?.name||"")+'｜'+esc(d?.specification||"")+'</small></td><td>'+num(a.quantity)+'</td><td>'+num(a.order_quantity)+'</td><td>'+(valid?"已對應":"待核對")+'</td><td><button type="button" data-edit-allocation="'+a.id+'">編輯</button><button type="button" data-remove-allocation="'+a.id+'">移除</button></td></tr>';
