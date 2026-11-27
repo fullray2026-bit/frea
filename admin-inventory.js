@@ -8,7 +8,7 @@ const num=v=>Number(v).toLocaleString("zh-TW",{maximumFractionDigits:3});
 const today=()=>new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Tokyo"}).format(new Date());
 const msg=(s,error=false)=>{ $("inventoryMessage").textContent=s;$("inventoryMessage").style.color=error?"#a22":""; };
 async function pages(table){
- let all=[];for(let from=0;;from+=1000){const r=await client.from(table).select("*").order(table==="inventory_history"?"id":"created_at").range(from,from+999);if(r.error)throw r.error;all.push(...r.data);if(r.data.length<1000)return all;}
+ let all=[];for(let from=0;;from+=1000){const r=await client.from(table).select("*").order("id").range(from,from+999);if(r.error)throw r.error;all.push(...r.data);if(r.data.length<1000)return all;}
 }
 async function refresh(){
  if(busy)return;busy=true;msg("正在載入庫存對應…");
@@ -24,7 +24,7 @@ function render(){
  const term=$("inventorySearch").value.trim().toLowerCase(),filter=$("inventoryFilter").value;
  $("inventorySummary").textContent="已建規格 "+skus.length+" ｜待對應／來源變更 "+result.unresolved+" 筆 ｜試喝／費用 "+result.excluded+" 筆"+(result.orphaned.length?" ｜來源已刪除 "+result.orphaned.length+" 筆":"");
  $("inventoryWarning").textContent=result.unresolved||result.orphaned.length?"對應尚未完成，以下是已確認部分，不能據此判定全部庫存為 0。":"規格均已對應；實際現貨仍以已登記到貨及出貨狀態計算。";
- const rows=result.rows.filter(r=>skuText(r).toLowerCase().includes(term)&&(!filter||filter==="shortage"&&r.shortage>0||filter==="surplus"&&r.balance>0||filter==="pending"&&r.pending>0));
+ const rows=result.rows.filter(r=>(skuText(r)+" "+r.sources.map(s=>s.number).join(" ")).toLowerCase().includes(term)&&(!filter||filter==="shortage"&&r.shortage>0||filter==="surplus"&&r.balance>0||filter==="pending"&&r.pending>0));
  $("inventoryRows").innerHTML=rows.length?rows.map(r=>'<tr><td><details><summary>'+esc(skuText(r))+'</summary>'+r.sources.map(s=>'<p>'+esc(s.number)+' ｜'+esc(s.date)+' ｜'+(s.type==="purchase"?"進貨":"訂單")+' '+num(s.stockQuantity)+' ｜'+esc(s.spec||"")+'</p>').join("")+'</details></td>'+["purchased","received","shipped","onhand","reserved","available","pending","shortage","balance"].map(k=>'<td class="'+(r[k]<0||k==="shortage"&&r[k]>0?"inventory-negative":"")+'">'+num(r[k])+'</td>').join("")+'</tr>').join(""):'<tr><td colspan="10">目前沒有符合條件的規格。請先在下方對應來源商品。</td></tr>';
  const sourceFilter=$("inventorySourceFilter").value;
  const src=result.sources.filter(s=>!s.cancelled&&(s.number+" "+s.name+" "+(s.spec||"")).toLowerCase().includes(term)&&(!sourceFilter||sourceFilter==="unmapped"&&!s.valid||sourceFilter===s.type));
