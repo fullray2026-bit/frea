@@ -21,6 +21,12 @@ function skuText(s){if(!s)return "規格待確認";const m=master(s.product_mast
 function render(){
  if(!loaded)return;
  result=C.calculate(data,skus,bindings,adjustments,{scope:"regular"});
+ result.rows.sort((a,b)=>{
+  const ac=master(a.product_master_id)?.product_code||"",bc=master(b.product_master_id)?.product_code||"";
+  return (ac&&bc?ac.localeCompare(bc,"en",{numeric:true}):ac?-1:bc?1:0)
+   ||String(a.specification||"").localeCompare(String(b.specification||""),"zh-TW",{numeric:true})
+   ||String(a.id).localeCompare(String(b.id));
+ });
  const term=$("inventorySearch").value.trim().toLowerCase(),filter=$("inventoryFilter").value;
  $("inventorySummary").textContent="常態規格 "+result.rows.length+" ｜待對應／來源變更 "+result.unresolved+" 筆 ｜試喝／費用 "+result.excluded+" 筆"+(result.orphaned.length?" ｜來源已刪除 "+result.orphaned.length+" 筆":"");
  $("inventoryWarning").hidden=!(result.unresolved||result.orphaned.length);$("inventoryWarning").textContent="尚有 "+result.unresolved+" 筆常態商品來源待對應"+(result.orphaned.length?"，另有 "+result.orphaned.length+" 筆來源異動待核對":"")+"，餘量尚未完整。";
