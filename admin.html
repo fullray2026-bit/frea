@@ -130,12 +130,12 @@
 [data-admin-panel="overview"] .admin-card h2{font-size:17px;margin:0 0 10px}
 [data-admin-panel="overview"] .admin-card>div:has(#overviewStart){gap:8px!important;margin-bottom:10px!important}
 [data-admin-panel="overview"] .overview-record-heading{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;margin-bottom:10px}
-[data-admin-panel="overview"] .overview-record-heading h2{margin:0}
-[data-admin-panel="overview"] .overview-record-heading .overview-record-actions{margin:0;align-items:center}
+[data-admin-panel="overview"] .overview-record-heading h2{margin:0;white-space:nowrap;flex:0 0 auto}
+[data-admin-panel="overview"] .overview-record-heading .overview-record-actions{margin:0;align-items:center;flex:1 1 auto}
 [data-admin-panel="overview"] .overview-record-toolbar{display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px;margin-bottom:10px}
-[data-admin-panel="overview"] .overview-record-toolbar label{display:grid;gap:5px;font:inherit;font-size:13px;color:#4d3d30}
+[data-admin-panel="overview"] .overview-record-toolbar label{display:flex;align-items:center;gap:6px;white-space:nowrap;font:inherit;font-size:13px;color:#4d3d30}
 [data-admin-panel="overview"] .overview-record-toolbar input,[data-admin-panel="overview"] .overview-record-toolbar button{box-sizing:border-box;font:inherit;font-size:13px;line-height:20px;height:36px;min-height:36px;padding:7px 10px;border:1px solid #dfd0bf;border-radius:6px;background:#fffdfa;color:#4d3d30}
-[data-admin-panel="overview"] .overview-record-toolbar input{width:160px;min-width:0}
+[data-admin-panel="overview"] .overview-record-toolbar input{width:150px;min-width:0}
 [data-admin-panel="overview"] .overview-record-toolbar button{flex:0 0 auto;width:auto;white-space:nowrap;cursor:pointer}
 [data-admin-panel="overview"] .overview-record-toolbar button:hover{background:#f4f0ea}
 [data-admin-panel="overview"] .overview-record-toolbar :is(button,input):focus-visible{outline:2px solid #9c7c60;outline-offset:2px}
@@ -284,13 +284,10 @@
           <p id="overviewBacklog" class="overview-backlog"></p>
           <details class="overview-rules"><summary>統計說明</summary><p id="overviewRevenueNote"></p><p>本月總數＝待處理＋已出貨未完成＋已完成。待處理包含一般待付款及代購詢問／報價；已取消不計入本月筆數。跨月未結另外提醒。</p></details>
           <div class="admin-card" style="margin-top:20px">
-            <div class="overview-record-heading"><h2>訂單紀錄篩選</h2><div class="overview-record-toolbar overview-record-actions" role="group" aria-label="訂單紀錄篩選操作"><button id="overviewPreviewButton" type="button">預覽</button>
+            <div class="overview-record-heading"><h2>訂單紀錄篩選</h2><div class="overview-record-toolbar overview-record-actions" role="group" aria-label="訂單紀錄篩選操作"><label>訂單起日<input id="overviewStart" type="date"></label>
+              <label>訂單迄日<input id="overviewEnd" type="date"></label><button id="overviewPreviewButton" type="button">預覽</button>
               <button id="overviewClear" type="button">清除篩選</button>
               <button id="overviewDownload" type="button">下載訂單紀錄 CSV</button></div></div>
-            <div class="overview-record-toolbar">
-              <label>訂單起日<input id="overviewStart" type="date"></label>
-              <label>訂單迄日<input id="overviewEnd" type="date"></label>
-            </div>
             <div id="overviewPreview" aria-live="polite"></div>
           </div>
         </section>
