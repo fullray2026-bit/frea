@@ -31,3 +31,10 @@
 #personalCards .personal-order-controls label{gap:4px}
 #personalCards .personal-order-controls textarea,#personalCards .personal-order-controls select{padding:6px 8px;min-height:32px}
 #personalCards .personal-order-controls .danger{margin-left:auto}
+
+/* Single-line personal-order summaries, matching regular orders. */
+.personal-list-table{table-layout:auto;min-width:1400px}
+.personal-list-table .order-summary-row>td{white-space:nowrap;overflow-wrap:normal}
+.personal-list-table .order-summary-row>td:nth-child(7){min-width:300px}
+.personal-list-table .order-receipt-list{display:inline-flex;align-items:center;flex-wrap:nowrap;gap:12px;white-space:nowrap;line-height:20px}
+.personal-list-table .order-receipt-list .order-receipt-code{display:inline;line-height:inherit}
