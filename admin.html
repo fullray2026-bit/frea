@@ -110,7 +110,34 @@
 }
 </style><link rel="stylesheet" href="admin-inventory.css?v=20261127-3">
 <link rel="stylesheet" href="admin-stock-layout.css?v=aligned-details-20261128-1">
-<link rel="stylesheet" href="admin-order-view.css?v=item-type-20261128-1"><link rel="stylesheet" href="admin-personal-view.css?v=20261128-1"><style>.cost-saved-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}#costListMessage{margin:8px 0;font-size:12px}#costListMessage[hidden]{display:none}#costListMessage.error{color:#a3352b}</style><link rel="stylesheet" href="admin-cost-layout.css?v=20261128-1"><link rel="stylesheet" href="admin-inventory-tools.css?v=20261128-1"></head>
+<link rel="stylesheet" href="admin-order-view.css?v=item-type-20261128-1"><link rel="stylesheet" href="admin-personal-view.css?v=20261128-1"><style>.cost-saved-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}#costListMessage{margin:8px 0;font-size:12px}#costListMessage[hidden]{display:none}#costListMessage.error{color:#a3352b}</style><link rel="stylesheet" href="admin-cost-layout.css?v=20261128-1"><link rel="stylesheet" href="admin-inventory-tools.css?v=20261128-1"><style id="compact-overview">
+.admin-main:has([data-admin-panel="overview"]:not([hidden])){padding:20px 28px}
+.admin-main:has([data-admin-panel="overview"]:not([hidden])) .admin-topbar{margin-bottom:8px}
+.admin-main:has([data-admin-panel="overview"]:not([hidden])) .admin-eyebrow{display:none}
+.admin-main:has([data-admin-panel="overview"]:not([hidden])) #adminPageTitle{font-size:28px;margin:0}
+[data-admin-panel="overview"] .overview-period{margin:4px 0 8px;font-size:13px;color:#867667}
+[data-admin-panel="overview"] .overview-stats{display:grid;grid-template-columns:.7fr 1.05fr 1.15fr 1.15fr 1.15fr;gap:10px;margin:0}
+[data-admin-panel="overview"] .overview-stats article{padding:14px 16px;border-radius:9px;min-height:0;display:flex;flex-direction:column;gap:5px}
+[data-admin-panel="overview"] .overview-stats article>span{font-size:12px;line-height:1.5}
+[data-admin-panel="overview"] .overview-stats article>span:first-child{font-size:13px;color:#584536}
+[data-admin-panel="overview"] .overview-stats strong{font-size:28px;line-height:1.2;margin:2px 0;letter-spacing:0}
+[data-admin-panel="overview"] .overview-revenue>div{display:grid;gap:3px}
+[data-admin-panel="overview"] .overview-revenue strong{font-size:21px;white-space:nowrap}
+.overview-backlog{font-size:13px;margin:10px 0 6px}
+.overview-rules{font-size:12px;line-height:1.6;margin-bottom:12px}
+.overview-rules p{margin:5px 0}
+[data-admin-panel="overview"]>.admin-card{padding:14px 16px;margin-top:12px!important;border-radius:9px}
+[data-admin-panel="overview"] .admin-card h2{font-size:17px;margin:0 0 10px}
+[data-admin-panel="overview"] .admin-card>div:has(#overviewStart){gap:8px!important;margin-bottom:10px!important}
+[data-admin-panel="overview"] button,[data-admin-panel="overview"] input{font:inherit;min-height:36px;padding:7px 10px}
+#overviewPreview>p{font-size:13px;margin:7px 0}
+#overviewPreview table{border-collapse:collapse;font-size:13px}
+#overviewPreview th,#overviewPreview td{padding:7px 9px;border-bottom:1px solid #e5d9cb;text-align:left;vertical-align:top}
+#overviewPreview th{background:#f1ebe2;white-space:nowrap}
+#overviewPreview td:nth-child(3){white-space:nowrap}
+@media(max-width:1100px){[data-admin-panel="overview"] .overview-stats{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:650px){.admin-main:has([data-admin-panel="overview"]:not([hidden])){padding:14px}[data-admin-panel="overview"] .overview-stats{grid-template-columns:repeat(2,minmax(0,1fr))}[data-admin-panel="overview"] .overview-stats article{padding:10px}[data-admin-panel="overview"] .overview-stats article:last-child{grid-column:1/-1}}
+</style></head>
 <body class="admin-page">
   <main>
     <section class="admin-login" id="adminLogin">
@@ -172,16 +199,16 @@
         <section class="admin-view" data-admin-panel="social" hidden><iframe id="adminSocialFrame" title="社群貼文管理" style="display:block;width:100%;height:calc(100vh - 190px);min-height:520px;border:0;border-radius:12px"></iframe></section>
         <section class="admin-view" data-admin-panel="nora" hidden><iframe id="adminNoraFrame" title="fréa小芙 行銷工作室" style="display:block;width:100%;height:calc(100dvh - 170px);min-height:700px;border:0"></iframe></section>
         <section class="admin-view" data-admin-panel="overview">
-          <div class="admin-stats">
-            <article><span>會員總數</span><strong id="statMembers">—</strong></article>
-            <article><span>訂單／代購單總數</span><strong id="statOrders">—</strong><span id="statOrdersDetail"></span><span>含詢價及已取消紀錄</span></article>
-            <article><span>待處理</span><strong id="statPending">—</strong><span id="statPendingDetail"></span><span id="statPendingNote"></span></article>
-            <article><span>已完成</span><strong id="statCompleted">—</strong><span id="statCompletedDetail"></span></article>
+          <p id="overviewMonth" class="overview-period"></p>
+          <div class="admin-stats overview-stats">
+            <article><span>會員總數</span><strong id="statMembers">—</strong><span>累計會員人數</span></article>
+            <article class="overview-revenue"><span>本月業績總額</span><div><strong id="statRevenueJPY">—</strong><strong id="statRevenueTWD">—</strong></div><span>已成立訂單金額・非實收</span></article>
+            <article><span>本月訂單／代購單總數</span><strong id="statOrders">—</strong><span id="statOrdersDetail"></span><span id="statOrdersNote"></span></article>
+            <article><span>本月待處理</span><strong id="statPending">—</strong><span id="statPendingDetail"></span><span id="statPendingNote"></span></article>
+            <article><span>本月已完成</span><strong id="statCompleted">—</strong><span id="statCompletedDetail"></span><span id="statCompletedNote"></span></article>
           </div>
-          <div class="admin-card">
-            <h2>近期訂單</h2>
-            <div id="recentOrders"></div>
-          </div>
+          <p id="overviewBacklog" class="overview-backlog"></p>
+          <details class="overview-rules"><summary>統計說明</summary><p id="overviewRevenueNote"></p><p>本月總數＝待處理＋已出貨未完成＋已完成。待處理包含一般待付款及代購詢問／報價；已取消不計入本月筆數。跨月未結另外提醒。</p></details>
           <div class="admin-card" style="margin-top:20px">
             <h2>訂單紀錄篩選</h2>
             <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin-bottom:20px">
@@ -371,7 +398,7 @@
   <script src="admin-lifestyle-gallery.js?v=20261108-all-products"></script>
   <script src="admin-merchandising.js?v=category-filter-20261003-master"></script>
   <script src="admin-product-extract.js?v=20261003-translate"></script>
-  <script src="admin-procurement.js?v=unassigned-20261128-1"></script><script src="admin-purchase-view.js?v=newest-first-20261128-1"></script><script src="admin-purchase-links-core.js?v=item-type-20261128-1"></script><script src="admin-purchase-links.js?v=item-type-20261128-1"></script><script src="admin-receipt-editor.js?v=receipt-spec-20261128-1"></script><script src="admin-inventory-core.js?v=fulfillment-20261128-2"></script><script src="admin-inventory-tools.js?v=20261128-1"></script><script src="admin-inventory.js?v=fulfillment-20261128-2"></script><script src="admin-order-view.js?v=partial-receipts-20261128-1"></script><script src="admin-personal-view.js?v=20261128-1"></script><script src="admin-cost-list.js?v=20261128-1"></script><script src="admin-cost-layout.js?v=20261128-1"></script><script src="admin-fulfillment-core.js?v=unassigned-20261128-1"></script><script src="admin.js?v=compact-costs-20261128-1"></script>
+  <script src="admin-procurement.js?v=unassigned-20261128-1"></script><script src="admin-purchase-view.js?v=newest-first-20261128-1"></script><script src="admin-purchase-links-core.js?v=item-type-20261128-1"></script><script src="admin-purchase-links.js?v=item-type-20261128-1"></script><script src="admin-receipt-editor.js?v=receipt-spec-20261128-1"></script><script src="admin-inventory-core.js?v=fulfillment-20261128-2"></script><script src="admin-inventory-tools.js?v=20261128-1"></script><script src="admin-inventory.js?v=fulfillment-20261128-2"></script><script src="admin-order-view.js?v=partial-receipts-20261128-1"></script><script src="admin-personal-view.js?v=20261128-1"></script><script src="admin-cost-list.js?v=20261128-1"></script><script src="admin-cost-layout.js?v=20261128-1"></script><script src="admin-fulfillment-core.js?v=unassigned-20261128-1"></script><script src="admin-overview.js?v=20261128-1"></script><script src="admin.js?v=monthly-overview-20261128-1"></script>
   <script src="admin-payment-proof.js?v=20260910-1"></script>
 </body>
 </html>

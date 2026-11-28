@@ -126,19 +126,30 @@
     } finally { clearTimeout(timer); bankRateLoading = false; renderBankRate(); }
   }
 
+  async function loadOverviewRows(table,columns){
+    const rows=[];
+    for(let start=0;;start+=1000){
+      const r=await client.from(table).select(columns).order("created_at",{ascending:false}).order("id",{ascending:false}).range(start,start+999);
+      if(r.error)return r;
+      if(!Array.isArray(r.data))return {error:{message:"統計資料未完整載入，請重新整理。"}};
+      rows.push(...r.data);
+      if(r.data.length<1000)return {data:rows,error:null};
+    }
+  }
+
   async function loadData() {
     refreshBankRate();
     showMessage("adminGlobalMessage", "正在讀取最新資料…");
     let loadingTimeout;
     try {
     const [profileResult, accountResult, applicationResult, addressResult, ezwayResult, orderResult, personalResult, productResult, masterResult, costResult, supplierResult, purchaseResult, categoryResult, categoryLinkResult] = await Promise.race([Promise.all([
-      client.from("profiles").select("id,email,full_name,phone,referrer,newsletter,created_at").order("created_at", { ascending: false }),
+      loadOverviewRows("profiles","id,email,full_name,phone,referrer,newsletter,created_at"),
       client.from("member_accounts").select("*").order("created_at", { ascending: false }),
       client.from("membership_applications").select("*").order("created_at", { ascending: false }),
       client.from("member_addresses").select("user_id,recipient_name,recipient_phone,postal_code,address,is_default").eq("is_default", true),
       client.from("ezway_profiles").select("user_id,real_name,mobile"),
-      client.from("orders").select("id,user_id,order_number,status,currency,total_amount,created_at,updated_at,recipient_name,recipient_phone,postal_code,shipping_address,payment_proof_name,payment_proof_path,admin_note,tracking_number,order_items(id,product_name,specification,quantity,unit_price,line_total,item_type)").order("created_at", { ascending: false }),
-      client.from("personal_shopping_requests").select("id,request_number,user_id,customer_name,email,phone,line_id,note,items,status,quote_amount,quote_details,service_direction,contact_language,quote_currency,delivery_address,payment_method,admin_note,created_at,updated_at").order("created_at", { ascending: false }),
+      loadOverviewRows("orders","id,user_id,order_number,status,currency,total_amount,created_at,updated_at,recipient_name,recipient_phone,postal_code,shipping_address,payment_proof_name,payment_proof_path,admin_note,tracking_number,order_items(id,product_name,specification,quantity,unit_price,line_total,item_type)"),
+      loadOverviewRows("personal_shopping_requests","id,request_number,user_id,customer_name,email,phone,line_id,note,items,status,quote_amount,quote_details,service_direction,contact_language,quote_currency,delivery_address,payment_method,admin_note,created_at,updated_at"),
       client.from("products").select("*,product_variants(id,option_value,sku,image_url,stock_quantity,sort_order,is_active)").order("brand_code").order("sort_order").order("created_at"),
       client.from("product_master").select("*").order("created_at", { ascending: false }),
       client.from("cost_scenarios").select("*").order("created_at", { ascending: false }),
@@ -178,17 +189,8 @@
   }
 
   function renderAll() {
-    const count = rows => ({total:rows.length,pending:rows.filter(r=>!["completed","cancelled"].includes(r.status)).length,completed:rows.filter(r=>r.status==="completed").length});
-    const normal=count(orders),personal=count(personalRequests);
-    byId("statMembers").textContent=profiles.length;
-    for(const [id,key] of [["statOrders","total"],["statPending","pending"],["statCompleted","completed"]]){
-      byId(id).textContent=normal[key]+personal[key];
-      byId(id+"Detail").textContent='一般 '+normal[key]+' 筆／代購 '+personal[key]+' 筆';
-    }
-    const awaitingQuote=personalRequests.filter(r=>["new","reviewing"].includes(r.status)).length;
-    const awaitingConfirm=personalRequests.filter(r=>r.status==="quoted").length;
-    byId("statPendingNote").textContent='代購含待報價 '+awaitingQuote+' 筆、待確認 '+awaitingConfirm+' 筆';
-    renderRecentOrders();
+    renderOverviewStats();
+    renderOverviewPreview();
     renderMembers();
     renderOrders();
     renderPersonalRequests();
@@ -804,6 +806,7 @@
   }
 
   function renderPersonalRequests() {
+    renderOverviewStats();
     const term = byId("personalSearch").value.trim().toLowerCase();
     const status = byId("personalStatusFilter").value;
     const filtered = personalRequests.filter(request => {
@@ -989,11 +992,7 @@
     const blob=new Blob(["\uFEFF"+data.map(r=>r.map(cell).join(",")).join("\r\n")],{type:"text/csv;charset=utf-8"});
     const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="訂單紀錄_"+(byId("overviewStart").value||"全部")+"_"+(byId("overviewEnd").value||"全部")+".csv";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
   }
-  function renderRecentOrders() {
-    const target = byId("recentOrders"),records=overviewRecords();
-    target.innerHTML=records.length?records.slice(0,5).map(o=>'<div class="admin-recent"><div><strong>'+escapeHtml(o.number)+'</strong><small>'+escapeHtml(o.kind+" · "+o.name+" · "+o.statusText)+'</small></div><strong>'+escapeHtml(o.amount==null?"尚未報價":formatMoney(o.amount,o.currency))+'</strong></div>').join(""):'<div class="admin-empty">目前尚無訂單。</div>';
-    renderOverviewPreview();
-  }
+  function renderOverviewStats(){window.FreaOverview.render({orders,personalRequests,members:profiles.length});}
   byId("overviewStart").addEventListener("change",renderOverviewPreview);
   byId("overviewEnd").addEventListener("change",renderOverviewPreview);
   byId("overviewPreviewButton").addEventListener("click",renderOverviewPreview);
@@ -1080,6 +1079,7 @@
   }
 
   function renderOrders() {
+    renderOverviewStats();
     const term = byId("orderSearch").value.trim().toLowerCase();
     const status = byId("orderStatusFilter").value;
     const filtered = orders.filter(order => {
