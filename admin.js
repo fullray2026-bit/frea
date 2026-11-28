@@ -6,6 +6,7 @@
   if (!sdk || !config) return;
 
   const client = sdk.createClient(config.url, config.publishableKey);
+  window.FreaCostList.init(client);
   window.FreaMerchandising?.init(client);
   window.FreaInventory?.init(client);
   window.FreaPurchaseRelations.init(client);
