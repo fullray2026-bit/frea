@@ -1,0 +1,17 @@
+/* Compact stock rows and top-level inventory tools. */
+.inventory-view .inventory-quick-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.inventory-view>.inventory-tools{gap:8px;align-items:flex-end;margin:7px 0}
+.inventory-view .inventory-quick-actions button{min-height:32px;padding:5px 8px!important;font-size:13px!important}
+.inventory-view .inventory-quick-actions button[aria-expanded="true"]{background:#514236;color:#fff;border-color:#514236}
+.inventory-view .inventory-utility-panel[hidden]{display:none!important}
+.inventory-view .inventory-utility-panel{border:1px solid #ddcfbe;border-radius:7px;background:#fffdf9;padding:10px 12px;margin:8px 0 10px}
+.inventory-utility-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.inventory-utility-heading h3{font-size:15px;margin:0}
+.inventory-view .inventory-utility-heading button{min-height:28px;padding:3px 8px!important;font-size:12px!important}
+.inventory-view .inventory-utility-panel p{font-size:12px;margin:5px 0;line-height:1.5}
+.inventory-view .inventory-stock-table>table>thead>tr>th{padding:5px 8px!important;line-height:1.35}
+.inventory-view #inventoryRows>tr>td{padding:4px 8px!important;line-height:1.35;font-size:13px;vertical-align:middle}
+.inventory-view #inventoryRows details{margin:0}
+.inventory-view #inventoryRows summary{font-size:13px;line-height:1.4}
+.inventory-view #inventoryRows details p{margin:4px 0;line-height:1.4}
+@media(max-width:1000px){.inventory-view .inventory-quick-actions{flex-basis:100%}.inventory-view .inventory-quick-actions button{flex:0 1 auto}}
