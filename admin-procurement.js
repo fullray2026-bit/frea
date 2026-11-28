@@ -12,11 +12,11 @@ function init({client}){
  const target=document.querySelector('[data-admin-panel="orders"]');if(!target)return;
  const area=document.createElement("section");area.className="admin-card procurement fulfillment";
  const defaults=new Set(["pending_payment","payment_review","paid","processing","confirmed","purchased","shipped","completed"]);
- area.innerHTML='<button type="button" class="product-cancel" id="procToggle" aria-expanded="false" aria-controls="procBody">備貨／採購清單</button><div id="procBody" hidden><div class="fulfillment-tools"><label>查詢內容<select id="procMode"><option value="fulfillment">待備貨清單</option><option value="buy">待採購清單</option><option value="demand">訂購需求彙整</option></select></label><label>訂單類型<select id="procType"><option value="">一般＋代購</option><option value="order">一般訂單</option><option value="personal">代購訂單</option></select></label><label class="fulfillment-check"><input type="checkbox" id="procUnpaid" checked>顯示待付款保留</label><input type="search" id="procSearch" placeholder="搜尋商品、規格或訂單" aria-label="搜尋清單"><button type="button" id="procRun" class="admin-primary">更新清單</button><button type="button" id="procExport" disabled>匯出 Excel（XML）</button></div>'+
+ area.innerHTML='<button type="button" class="product-cancel" id="procToggle" aria-expanded="false" aria-controls="procBody">備貨／採購清單</button><div id="procBody" hidden><div class="fulfillment-tools"><label>查詢內容<select id="procMode"><option value="fulfillment">待備貨清單</option><option value="buy">待採購清單</option><option value="demand">訂購需求彙整</option></select></label><label>訂單類型<select id="procType"><option value="">一般＋代購</option><option value="order">一般訂單</option><option value="personal">代購訂單</option></select></label><label class="fulfillment-check"><input type="checkbox" id="procUnpaid" checked>顯示待付款保留</label><input type="search" id="procSearch" placeholder="搜尋商品、規格或訂單" aria-label="搜尋清單"><button type="button" id="procRun" class="admin-primary" aria-label="更新清單">更新清單</button><button type="button" id="procExport" disabled>匯出 Excel（XML）</button></div>'+
  '<div id="procHistoryControls" hidden><div class="proc-controls"><label>起日（台灣時間）<input type="date" id="procStart"></label><label>迄日<input type="date" id="procEnd"></label><button type="button" data-period="all">全部日期</button><button type="button" data-period="month">本月</button></div><fieldset><legend>歷史需求納入狀態</legend>'+Object.entries(labels).filter(([k])=>k!=="cancelled").map(([k,v])=>'<label><input type="checkbox" value="'+k+'"'+(defaults.has(k)?" checked":"")+'> '+v+'</label>').join("")+'</fieldset></div>'+
  '<p id="procExplanation"></p><p id="procMessage" role="status"></p><div id="procResults"></div></div>';
  target.prepend(area);const $=id=>area.querySelector("#"+id);let plan=null,busy=false,generated="",exportRows=[],detailRows=[];
- function explain(){const mode=$("procMode").value;$("procHistoryControls").hidden=mode!=="demand";$("procUnpaid").closest("label").hidden=mode==="demand";$("procExplanation").textContent=mode==="demand"?"依日期與狀態查閱歷史訂購量；不是待採買數量。費用不列入商品，規格依正式對應分組。":"涵蓋所有尚未出貨的已確認需求，不按下單日期截斷。待付款保留另列；詢價、確認中、僅報價的代購不占庫存。採購清單以全站同規格缺額彙總，搜尋與訂單類型只篩選顯示商品，不重算全站總量。現貨或在途可供是全單檢查後的分配建議，不會自動寫入進貨對應。";}
+ function explain(){const mode=$("procMode").value;$("procHistoryControls").hidden=mode!=="demand";$("procUnpaid").closest("label").hidden=mode==="demand";$("procExplanation").textContent=mode==="demand"?"依日期與狀態查閱歷史訂購量；不是待採買數量。費用不列入商品，規格依正式對應分組。":"涵蓋所有尚未出貨的已確認需求，不按下單日期截斷。待付款保留另列；詢價、確認中、僅報價的代購不占庫存。採購清單以全站同規格缺額彙總，搜尋與訂單類型只篩選顯示商品，不重算全站總量。現貨或在途可供是全單檢查後的分配建議，不會自動寫入進貨對應。尚未完成進貨對應的商品會保留顯示，不論是否有現貨可供。";}
  function invalidate(){plan=null;exportRows=[];detailRows=[];$("procResults").innerHTML="";$("procExport").disabled=true;$("procMessage").textContent="查詢條件已改變，請更新清單。";explain();}
  $("procToggle").onclick=()=>{const open=$("procBody").hidden;$("procBody").hidden=!open;$("procToggle").setAttribute("aria-expanded",String(open));};
  function period(which){const today=new Intl.DateTimeFormat("sv-SE",{timeZone:"Asia/Taipei",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());$("procStart").value=which==="all"?"":today.slice(0,7)+"-01";$("procEnd").value=which==="all"?"":today;invalidate();}
@@ -28,17 +28,17 @@ function init({client}){
  const orderText=l=>l.number+"｜"+(labels[l.status]||l.status)+"｜"+l.date;
  function render(){
   if(!plan)return;const mode=$("procMode").value;area.dataset.mode=mode;detailRows=[];exportRows=[];
-  const header=mode==="fulfillment"?["訂單／狀態","商品／編號","規格","訂購量","正式已分配","現貨可備","待到貨可供","尚缺","備貨判斷"]:mode==="buy"?["商品／編號","規格","需求量（庫存單位）","現貨可備","待到貨可供","確定需採購","待付款保留","待付款缺額（暫不採買）","確認事項","涉及訂單"]:["商品／編號","規格","訂購量（庫存單位）","訂單筆數","涉及訂單"];
+  const header=mode==="fulfillment"?["訂單／狀態","商品／編號","規格","訂購量","正式已分配","待對應","現貨可備","待到貨可供","尚缺","備貨判斷"]:mode==="buy"?["商品／編號","規格","需求量（庫存單位）","現貨可備","待到貨可供","確定需採購","待付款保留","待付款缺額（暫不採買）","待對應（庫存單位）","確認事項","涉及訂單"]:["商品／編號","規格","訂購量（庫存單位）","訂單筆數","涉及訂單"];
   if(mode==="fulfillment"){
    const lines=plan.lines.filter(match);
-   exportRows=lines.map(l=>[orderText(l),l.code+"｜"+l.name,l.spec,l.quantity,l.assigned,l.ready,l.incoming,l.review?"待核對":l.shortage,l.state]);
+   exportRows=lines.map(l=>[orderText(l),l.code+"｜"+l.name,l.spec,l.quantity,l.assigned,l.unassigned,l.ready,l.incoming,l.review?"待核對":l.shortage,l.state]);
    $("procResults").innerHTML=lines.length?table(header,exportRows.map(cells)):'<p>沒有符合條件的待備貨商品。</p>';
   }else if(mode==="buy"){
    // Supply is allocated globally before any display filters, so hiding another order cannot reuse its stock.
-   const groups=plan.groups.filter(g=>g.lines.some(match)&&(g.review||Number(g.buy)>0||$("procUnpaid").checked&&g.unpaidGap>0));
-   exportRows=groups.map(g=>[g.code+"｜"+g.name,g.spec,g.quantity,g.ready,g.incoming,g.review?"待核對":g.buy,g.unpaid,g.unpaidGap,g.review?"資料待核對，不自動建議採買":"僅已確認需求缺額列入確定採購；待付款缺額另列",g.lines.map(orderText).join("；")]);
-   detailRows=groups.flatMap(g=>g.lines.map(l=>[orderText(l),l.code+"｜"+l.name,l.spec,l.quantity,l.assigned,l.ready,l.incoming,l.review?"待核對":l.shortage,l.state]));
-   $("procResults").innerHTML=groups.length?table(header,exportRows.map((r,i)=>{const t=cells(r.slice(0,-1));return t.slice(0,-5)+'<td><details><summary>訂單明細</summary>'+groups[i].lines.map(l=>'<p>'+esc(orderText(l))+'｜需求 '+num(l.quantity)+'｜'+esc(l.state)+'</p>').join("")+'</details></td></tr>';})):'<p>目前沒有需新增採購或待核對的商品；已購待到貨不會重複列為採購缺額。</p>';
+   const groups=plan.groups.filter(g=>g.lines.some(match)&&(g.unassigned>0||g.review||Number(g.buy)>0||$("procUnpaid").checked&&g.unpaidGap>0));
+   exportRows=groups.map(g=>[g.code+"｜"+g.name,g.spec,g.quantity,g.ready,g.incoming,g.review?"待核對":g.buy,g.unpaid,g.unpaidGap,g.unassigned,g.review?"資料待核對，不自動建議採買":(g.unassigned>0?"進貨待對應 "+num(g.unassigned)+"；":"")+"僅已確認需求缺額列入確定採購；待付款缺額另列",g.lines.map(orderText).join("；")]);
+   detailRows=groups.flatMap(g=>g.lines.map(l=>[orderText(l),l.code+"｜"+l.name,l.spec,l.quantity,l.assigned,l.unassigned,l.ready,l.incoming,l.review?"待核對":l.shortage,l.state]));
+   $("procResults").innerHTML=groups.length?table(header,exportRows.map((r,i)=>{const t=cells(r.slice(0,-1));return t.slice(0,-5)+'<td><details><summary>訂單明細</summary>'+groups[i].lines.map(l=>'<p>'+esc(orderText(l))+'｜需求 '+num(l.quantity)+'｜'+esc(l.state)+'</p>').join("")+'</details></td></tr>';})):'<p>目前沒有需新增採購、待對應或待核對的商品；已購待到貨不會重複列為採購缺額。</p>';
   }else{
    const statuses=[...area.querySelectorAll("fieldset input:checked")].map(i=>i.value);
    const groups=root.FreaFulfillmentCore.demand(plan,{from:$("procStart").value,to:$("procEnd").value,statuses}).map(g=>({...g,lines:g.lines.filter(l=>(!$("procType").value||l.type===$("procType").value)&&[l.code,l.name,l.spec,l.number].join(" ").normalize("NFKC").toLowerCase().includes($("procSearch").value.normalize("NFKC").toLowerCase().trim()))})).filter(g=>g.lines.length);
@@ -46,7 +46,7 @@ function init({client}){
    detailRows=groups.flatMap(g=>g.lines.map(l=>[orderText(l),l.code+"｜"+l.name,l.spec,l.quantity,"歷史訂購量，不是採購缺額"]));
    $("procResults").innerHTML=groups.length?table(header,exportRows.map(cells)):'<p>沒有符合日期與狀態的訂購商品。</p>';
   }
-  $("procExport").disabled=!exportRows.length;$("procMessage").textContent="產生時間："+generated+"｜顯示 "+exportRows.length+" 筆"+(plan.unresolved||plan.stale?"｜有 "+plan.unresolved+" 筆來源待對應、"+plan.stale+" 筆對應待核對，相關缺額不提供自動採買建議":"")+"｜未確認代購 "+plan.inquiries+" 項未列入庫存保留";
+  $("procExport").disabled=!exportRows.length;$("procMessage").textContent="產生時間："+generated+"｜顯示 "+exportRows.length+" 筆｜全站進貨待對應 "+plan.lines.filter(l=>l.unassigned>0).length+" 項"+(plan.unresolved||plan.stale?"｜有 "+plan.unresolved+" 筆來源待對應、"+plan.stale+" 筆對應待核對，相關缺額不提供自動採買建議":"")+"｜未確認代購 "+plan.inquiries+" 項未列入庫存保留";
   $("procExport").dataset.headers=JSON.stringify(header);
  }
  $("procSearch").oninput=render;$("procType").onchange=render;$("procUnpaid").onchange=render;
@@ -62,7 +62,7 @@ function init({client}){
   const meta=[["清單",title],["產生時間（日本）",generated],["日期範圍",mode==="demand"?($("procStart").value||"不限")+"～"+($("procEnd").value||"不限"):"全部未出貨需求，不限下單日期"],["計算說明",$("procExplanation").textContent],["商品／訂單搜尋",$("procSearch").value],["注意","待核對不等於缺貨；待付款缺額不屬於確定採購數量；現貨／在途分配建議未寫回資料庫"],[]];
   const sheet=(name,rows)=>'<Worksheet ss:Name="'+name+'"><Table>'+rows.map(row=>'<Row>'+row.map(v=>'<Cell><Data ss:Type="'+(typeof v==="number"?"Number":"String")+'">'+esc(v)+'</Data></Cell>').join("")+'</Row>').join("")+'</Table></Worksheet>';
   const details=detailRows.length?detailRows:exportRows;
-  const xml='<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'+sheet("清單",[...meta,headers,...exportRows])+sheet("訂單明細",[...meta,...(mode==="buy"?[["訂單／狀態","商品／編號","規格","訂購量","正式已分配","現貨可備","待到貨可供","尚缺","備貨判斷"]]:mode==="demand"?[["訂單／狀態","商品／編號","規格","數量","說明"]]:[headers]),...details])+'</Workbook>';
+  const xml='<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'+sheet("清單",[...meta,headers,...exportRows])+sheet("訂單明細",[...meta,...(mode==="buy"?[["訂單／狀態","商品／編號","規格","訂購量","正式已分配","待對應","現貨可備","待到貨可供","尚缺","備貨判斷"]]:mode==="demand"?[["訂單／狀態","商品／編號","規格","數量","說明"]]:[headers]),...details])+'</Workbook>';
   const url=URL.createObjectURL(new Blob([xml],{type:"application/xml;charset=utf-8"})),a=document.createElement("a");a.href=url;a.download="fréa-"+title+"-"+new Date().toISOString().slice(0,10)+".xml";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
  };
  explain();

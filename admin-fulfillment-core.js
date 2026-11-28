@@ -45,11 +45,13 @@ function calculate(d){
  for(const l of lines){
   const p=pools.get(l.skuId);if(p&&!l.review){const q=Math.min(Math.max(0,l.quantity-l.ready-l.incoming),p.incoming/l.factor);l.incoming+=q;p.incoming=Math.max(0,p.incoming-q*l.factor);}
   l.shortage=Math.max(0,l.quantity-l.ready-l.incoming);
+  l.unassigned=Math.max(0,l.quantity-l.assigned);
   l.state=l.review?"規格／進貨對應待核對":l.unpaid?(l.status==="payment_review"?"待核款，保留量另列":"待匯款，保留量另列"):l.ready+EPS>=l.quantity?(l.stockSuggested>EPS||l.assigned+EPS<l.quantity?"可配現貨，請確認進貨對應":l.type==="personal"?"已備妥，待確認出貨":"已備妥，可安排出貨"):l.incoming>EPS?(l.shortage>EPS?"部分待到貨，仍有缺額":"已購待到貨，勿重複採買"):"尚缺商品";
+  if(l.unassigned>EPS)l.state="進貨待對應；"+l.state;
   l.buy=l.review?null:l.unpaid?0:l.shortage;
  }
  const groups=new Map();
- for(const l of lines){const k=l.skuId||l.key;if(!groups.has(k))groups.set(k,{key:k,skuId:l.skuId,code:l.code,name:l.name,spec:l.spec,unit:skuMap.get(l.skuId)?.unit||"件",quantity:0,assigned:0,ready:0,incoming:0,unpaid:0,buy:0,unpaidGap:0,review:false,lines:[]});const g=groups.get(k),f=l.factor;g.quantity+=l.quantity*f;g.assigned+=l.assigned*f;g.ready+=l.ready*f;g.incoming+=l.incoming*f;g.unpaid+=l.unpaid?l.quantity*f:0;g.unpaidGap+=l.unpaid?l.shortage*f:0;g.buy+=Number(l.buy||0)*f;g.review=g.review||l.review;g.lines.push(l);}
+ for(const l of lines){const k=l.skuId||l.key;if(!groups.has(k))groups.set(k,{key:k,skuId:l.skuId,code:l.code,name:l.name,spec:l.spec,unit:skuMap.get(l.skuId)?.unit||"件",quantity:0,assigned:0,ready:0,incoming:0,unpaid:0,buy:0,unpaidGap:0,unassigned:0,review:false,lines:[]});const g=groups.get(k),f=l.factor;g.unassigned+=l.unassigned*f;g.quantity+=l.quantity*f;g.assigned+=l.assigned*f;g.ready+=l.ready*f;g.incoming+=l.incoming*f;g.unpaid+=l.unpaid?l.quantity*f:0;g.unpaidGap+=l.unpaid?l.shortage*f:0;g.buy+=Number(l.buy||0)*f;g.review=g.review||l.review;g.lines.push(l);}
  const result=[...groups.values()].sort((a,b)=>a.code.localeCompare(b.code,"en",{numeric:true})||a.spec.localeCompare(b.spec,"zh-TW"));
  for(const g of result)if(g.review)g.buy=null;
  return {lines,groups:result,all,unresolved:ledger.unresolved,stale:stale.size,inquiries:all.filter(l=>l.inquiry).length,ledger};
