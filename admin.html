@@ -137,7 +137,33 @@
 #overviewPreview td:nth-child(3){white-space:nowrap}
 @media(max-width:1100px){[data-admin-panel="overview"] .overview-stats{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:650px){.admin-main:has([data-admin-panel="overview"]:not([hidden])){padding:14px}[data-admin-panel="overview"] .overview-stats{grid-template-columns:repeat(2,minmax(0,1fr))}[data-admin-panel="overview"] .overview-stats article{padding:10px}[data-admin-panel="overview"] .overview-stats article:last-child{grid-column:1/-1}}
-</style><style>.overview-filter-summary{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 24px;margin:8px 0 10px;font-size:13px;line-height:1.6}.overview-filter-revenue strong{white-space:nowrap;font-weight:600}.overview-filter-revenue{color:#584536}@media(max-width:650px){.overview-filter-revenue{flex-basis:100%}}</style></head>
+</style><style>.overview-filter-summary{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 24px;margin:8px 0 10px;font-size:13px;line-height:1.6}.overview-filter-revenue strong{white-space:nowrap;font-weight:600}.overview-filter-revenue{color:#584536}@media(max-width:650px){.overview-filter-revenue{flex-basis:100%}}</style><style id="compact-members">
+.admin-main:has([data-admin-panel="members"]:not([hidden])){padding:20px 28px}
+.admin-main:has([data-admin-panel="members"]:not([hidden])) .admin-topbar{margin-bottom:8px}
+.admin-main:has([data-admin-panel="members"]:not([hidden])) .admin-eyebrow{display:none}
+.admin-main:has([data-admin-panel="members"]:not([hidden])) #adminPageTitle{font-size:28px;margin:0}
+[data-admin-panel="members"] .admin-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:8px 0}
+[data-admin-panel="members"] .admin-toolbar input{flex:0 1 350px;min-width:200px}
+[data-admin-panel="members"] .admin-toolbar select{flex:0 0 150px;width:150px}
+[data-admin-panel="members"] .admin-toolbar button{flex:0 0 auto;width:auto}
+[data-admin-panel="members"] .admin-toolbar input,[data-admin-panel="members"] .admin-toolbar select,[data-admin-panel="members"] button{font:inherit;font-size:13px;padding:7px 10px;min-height:36px;border:1px solid #dfd0bf;border-radius:6px;background:#fffdfa;color:#4d3d30}
+[data-admin-panel="members"] #memberCount{margin-left:auto;font-size:13px;white-space:nowrap}
+.member-qualifications{display:flex;flex-wrap:wrap;gap:5px 18px;font-size:12px;margin:8px 0 10px;color:#806e5e}
+[data-admin-panel="members"] .member-compact-table{min-width:1250px;width:100%;table-layout:fixed;border-collapse:collapse;font-size:13px}
+[data-admin-panel="members"] .member-compact-table th,[data-admin-panel="members"] .member-compact-table td{padding:8px 10px;line-height:1.45;vertical-align:top}
+[data-admin-panel="members"] .member-compact-table th{font-size:13px;white-space:nowrap}
+[data-admin-panel="members"] .member-compact-table small{display:block;margin:2px 0 0;font-size:12px;line-height:1.4;overflow-wrap:anywhere}
+[data-admin-panel="members"] .member-compact-table td:nth-child(2)>strong{white-space:nowrap}
+[data-admin-panel="members"] .member-admin-controls{display:grid;grid-template-columns:minmax(160px,1fr) auto;gap:5px;align-items:start}
+[data-admin-panel="members"] .member-admin-controls select{font:inherit;width:100%;min-width:0;padding:6px 7px;min-height:34px;border:1px solid #dfd0bf;border-radius:6px;background:#fffdfa;color:#4d3d30}
+[data-admin-panel="members"] .member-admin-controls button{width:auto;min-height:34px;padding:6px 9px}
+[data-admin-panel="members"] .member-admin-controls [data-review-status]{grid-column:1;grid-row:2}
+[data-admin-panel="members"] .member-admin-controls:has([data-review-status]) button{grid-column:2;grid-row:1/span 2;align-self:center}
+[data-admin-panel="members"] .member-delivery-detail{font-size:12px;margin:3px 0 0}
+[data-admin-panel="members"] .member-delivery-detail summary{cursor:pointer;line-height:1.4}
+[data-admin-panel="members"] .admin-table-wrap{overflow:auto;border-radius:8px}
+@media(max-width:650px){.admin-main:has([data-admin-panel="members"]:not([hidden])){padding:14px}[data-admin-panel="members"] .admin-toolbar input{flex:1 1 100%;min-width:0}[data-admin-panel="members"] #memberCount{margin-left:0}}
+</style></head>
 <body class="admin-page">
   <main>
     <section class="admin-login" id="adminLogin">
@@ -287,8 +313,9 @@
  </section>
 
 <section class="admin-view" data-admin-panel="members" hidden>
-          <div class="admin-toolbar"><input id="memberSearch" type="search" placeholder="搜尋姓名、Email 或手機"><select id="memberStatusFilter"><option value="">全部狀態</option><option value="pending">待審核</option><option value="approved">已通過</option><option value="rejected">未通過</option></select><button id="memberDownload" type="button">下載會員資料 CSV</button><span id="memberCount"></span></div>
-          <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>會員</th><th>會員編號／類別</th><th>聯絡方式</th><th>審核狀態／申請資料</th><th>操作</th><th>註冊時間</th></tr></thead><tbody id="memberRows"></tbody></table></div>
+          <div class="admin-toolbar"><input id="memberSearch" type="search" placeholder="搜尋會員編號、姓名、Email 或手機"><select id="memberStatusFilter"><option value="">全部狀態</option><option value="pending">待審核</option><option value="approved">已通過</option><option value="rejected">未通過</option></select><button id="memberDownload" type="button">下載會員資料 CSV</button><span id="memberCount"></span></div>
+          <div class="member-qualifications" aria-label="會員資格說明"><span>A01｜fréa 內部專用</span><span>B01｜企業會員</span><span>C01｜團購主／部落客</span><span>D01｜一般會員</span></div>
+          <div class="admin-table-wrap"><table class="admin-table member-compact-table"><colgroup><col style="width:24%"><col style="width:17%"><col style="width:13%"><col style="width:14%"><col style="width:21%"><col style="width:11%"></colgroup><thead><tr><th>會員</th><th>會員編號／資格</th><th>聯絡方式</th><th>審核狀態／申請資料</th><th>操作</th><th>註冊時間</th></tr></thead><tbody id="memberRows"></tbody></table></div>
         </section>
 
         <section class="admin-view" data-admin-panel="orders" hidden>
@@ -398,7 +425,7 @@
   <script src="admin-lifestyle-gallery.js?v=20261108-all-products"></script>
   <script src="admin-merchandising.js?v=category-filter-20261003-master"></script>
   <script src="admin-product-extract.js?v=20261003-translate"></script>
-  <script src="admin-procurement.js?v=unassigned-20261128-1"></script><script src="admin-purchase-view.js?v=newest-first-20261128-1"></script><script src="admin-purchase-links-core.js?v=item-type-20261128-1"></script><script src="admin-purchase-links.js?v=item-type-20261128-1"></script><script src="admin-receipt-editor.js?v=receipt-spec-20261128-1"></script><script src="admin-inventory-core.js?v=fulfillment-20261128-2"></script><script src="admin-inventory-tools.js?v=20261128-1"></script><script src="admin-inventory.js?v=fulfillment-20261128-2"></script><script src="admin-order-view.js?v=partial-receipts-20261128-1"></script><script src="admin-personal-view.js?v=20261128-1"></script><script src="admin-cost-list.js?v=20261128-1"></script><script src="admin-cost-layout.js?v=20261128-1"></script><script src="admin-fulfillment-core.js?v=unassigned-20261128-1"></script><script src="admin-overview.js?v=period-revenue-20261128-1"></script><script src="admin.js?v=period-revenue-20261128-1"></script>
+  <script src="admin-procurement.js?v=unassigned-20261128-1"></script><script src="admin-purchase-view.js?v=newest-first-20261128-1"></script><script src="admin-purchase-links-core.js?v=item-type-20261128-1"></script><script src="admin-purchase-links.js?v=item-type-20261128-1"></script><script src="admin-receipt-editor.js?v=receipt-spec-20261128-1"></script><script src="admin-inventory-core.js?v=fulfillment-20261128-2"></script><script src="admin-inventory-tools.js?v=20261128-1"></script><script src="admin-inventory.js?v=fulfillment-20261128-2"></script><script src="admin-order-view.js?v=partial-receipts-20261128-1"></script><script src="admin-personal-view.js?v=20261128-1"></script><script src="admin-cost-list.js?v=20261128-1"></script><script src="admin-cost-layout.js?v=20261128-1"></script><script src="admin-fulfillment-core.js?v=unassigned-20261128-1"></script><script src="admin-overview.js?v=period-revenue-20261128-1"></script><script src="admin.js?v=compact-members-20261128-1"></script>
   <script src="admin-payment-proof.js?v=20260910-1"></script>
 </body>
 </html>
