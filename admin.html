@@ -192,7 +192,16 @@
 [data-admin-panel="master"] #masterCreate{flex:0 0 auto;width:auto;min-width:0;margin-left:auto;white-space:nowrap;padding:8px 14px}
 [data-admin-panel="master"]>.admin-toolbar input,[data-admin-panel="master"]>.admin-toolbar select,[data-admin-panel="master"]>.admin-toolbar button{box-sizing:border-box;min-height:38px;height:38px;font:inherit;font-size:14px;padding:7px 10px}
 @media(max-width:650px){[data-admin-panel="master"] #masterSearch{flex:1 1 100%;width:100%;min-width:0}[data-admin-panel="master"] #masterTypeFilter{flex:0 1 160px;width:160px}[data-admin-panel="master"] #masterCreate{margin-left:0}}
-</style><style id="shared-header-content-gap">.admin-main:has(>.admin-view:not([hidden]))>.admin-view{margin-top:0!important}</style></head>
+</style><style id="shared-header-content-gap">.admin-main:has(>.admin-view:not([hidden]))>.admin-view{margin-top:0!important}</style><style id="create-category-tools">
+[data-admin-panel="merchCategories"] .category-create-tools{margin:0 0 10px}
+[data-admin-panel="merchCategories"] .category-create-tools .primary-action{margin:0}
+[data-admin-panel="merchCategories"] #category-create{max-width:760px;margin:0 0 10px;padding:12px 14px}
+[data-admin-panel="merchCategories"] .category-create-fields{display:grid;grid-template-columns:minmax(0,1fr) 130px;gap:12px}
+[data-admin-panel="merchCategories"] #category-create label{margin:0 0 8px;font-size:13px}
+[data-admin-panel="merchCategories"] #category-create .primary-action{margin-top:0}
+[data-admin-panel="merchCategories"] #category-create small{font-size:12px;margin-top:8px;color:#89786a}
+@media(max-width:480px){[data-admin-panel="merchCategories"] .category-create-fields{grid-template-columns:1fr}}
+</style></head>
 <body class="admin-page">
   <main>
     <section class="admin-login" id="adminLogin">
@@ -452,7 +461,7 @@
   <script src="supabase-config.js"></script>
   <script src="admin-personal-quote.js?v=20261108-quote-editor"></script>
   <script src="admin-lifestyle-gallery.js?v=20261108-all-products"></script>
-  <script src="admin-merchandising.js?v=compact-categories-20261128-1"></script>
+  <script src="admin-merchandising.js?v=create-category-20261128-1"></script>
   <script src="admin-product-extract.js?v=20261003-translate"></script>
   <script src="admin-procurement.js?v=dialog-20261128-1"></script><script src="admin-purchase-view.js?v=newest-first-20261128-1"></script><script src="admin-purchase-links-core.js?v=item-type-20261128-1"></script><script src="admin-purchase-links.js?v=item-type-20261128-1"></script><script src="admin-receipt-editor.js?v=receipt-spec-20261128-1"></script><script src="admin-inventory-core.js?v=fulfillment-20261128-2"></script><script src="admin-inventory-tools.js?v=20261128-1"></script><script src="admin-inventory.js?v=fulfillment-20261128-2"></script><script src="admin-order-view.js?v=horizontal-receipts-20261128-1"></script><script src="admin-personal-view.js?v=horizontal-receipts-20261128-1"></script><script src="admin-cost-list.js?v=20261128-1"></script><script src="admin-cost-layout.js?v=20261128-1"></script><script src="admin-fulfillment-core.js?v=unassigned-20261128-1"></script><script src="admin-overview.js?v=period-revenue-20261128-1"></script><script src="admin.js?v=activity-refresh-20261128-1"></script>
   <script src="admin-payment-proof.js?v=20260910-1"></script>
