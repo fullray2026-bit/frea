@@ -163,6 +163,14 @@
 [data-admin-panel="members"] .member-delivery-detail summary{cursor:pointer;line-height:1.4}
 [data-admin-panel="members"] .admin-table-wrap{overflow:auto;border-radius:8px}
 @media(max-width:650px){.admin-main:has([data-admin-panel="members"]:not([hidden])){padding:14px}[data-admin-panel="members"] .admin-toolbar input{flex:1 1 100%;min-width:0}[data-admin-panel="members"] #memberCount{margin-left:0}}
+</style><style id="overview-inline-update">
+.admin-main:has([data-admin-panel="overview"]:not([hidden])){display:grid;grid-template-columns:auto minmax(0,1fr) auto;column-gap:16px;align-items:center}
+.admin-main:has([data-admin-panel="overview"]:not([hidden]))>.admin-topbar{display:contents}
+.admin-main:has([data-admin-panel="overview"]:not([hidden]))>.admin-topbar>div{grid-column:1;grid-row:1}
+.admin-main:has([data-admin-panel="overview"]:not([hidden])) #adminRefresh{grid-column:3;grid-row:1}
+.admin-main:has([data-admin-panel="overview"]:not([hidden]))>#adminGlobalMessage{grid-column:2;grid-row:1;margin:0;font-size:13px;line-height:1.5}
+.admin-main:has([data-admin-panel="overview"]:not([hidden]))>.admin-view{grid-column:1/-1}
+@media(max-width:650px){.admin-main:has([data-admin-panel="overview"]:not([hidden])){grid-template-columns:minmax(0,1fr) auto;gap:8px}.admin-main:has([data-admin-panel="overview"]:not([hidden])) #adminRefresh{grid-column:2}.admin-main:has([data-admin-panel="overview"]:not([hidden]))>#adminGlobalMessage{grid-column:1/-1;grid-row:2}}
 </style></head>
 <body class="admin-page">
   <main>
