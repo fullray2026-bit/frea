@@ -129,7 +129,14 @@
 [data-admin-panel="overview"]>.admin-card{padding:14px 16px;margin-top:12px!important;border-radius:9px}
 [data-admin-panel="overview"] .admin-card h2{font-size:17px;margin:0 0 10px}
 [data-admin-panel="overview"] .admin-card>div:has(#overviewStart){gap:8px!important;margin-bottom:10px!important}
-[data-admin-panel="overview"] button,[data-admin-panel="overview"] input{font:inherit;min-height:36px;padding:7px 10px}
+[data-admin-panel="overview"] .overview-record-toolbar{display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px;margin-bottom:10px}
+[data-admin-panel="overview"] .overview-record-toolbar label{display:grid;gap:5px;font:inherit;font-size:13px;color:#4d3d30}
+[data-admin-panel="overview"] .overview-record-toolbar input,[data-admin-panel="overview"] .overview-record-toolbar button{box-sizing:border-box;font:inherit;font-size:13px;line-height:20px;height:36px;min-height:36px;padding:7px 10px;border:1px solid #dfd0bf;border-radius:6px;background:#fffdfa;color:#4d3d30}
+[data-admin-panel="overview"] .overview-record-toolbar input{width:160px;min-width:0}
+[data-admin-panel="overview"] .overview-record-toolbar button{flex:0 0 auto;width:auto;white-space:nowrap;cursor:pointer}
+[data-admin-panel="overview"] .overview-record-toolbar button:hover{background:#f4f0ea}
+[data-admin-panel="overview"] .overview-record-toolbar :is(button,input):focus-visible{outline:2px solid #9c7c60;outline-offset:2px}
+@media(max-width:480px){[data-admin-panel="overview"] .overview-record-toolbar label{flex:1 1 140px}[data-admin-panel="overview"] .overview-record-toolbar input{width:100%}}
 #overviewPreview>p{font-size:13px;margin:7px 0}
 #overviewPreview table{border-collapse:collapse;font-size:13px}
 #overviewPreview th,#overviewPreview td{padding:7px 9px;border-bottom:1px solid #e5d9cb;text-align:left;vertical-align:top}
@@ -275,7 +282,7 @@
           <details class="overview-rules"><summary>統計說明</summary><p id="overviewRevenueNote"></p><p>本月總數＝待處理＋已出貨未完成＋已完成。待處理包含一般待付款及代購詢問／報價；已取消不計入本月筆數。跨月未結另外提醒。</p></details>
           <div class="admin-card" style="margin-top:20px">
             <h2>訂單紀錄篩選</h2>
-            <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin-bottom:20px">
+            <div class="overview-record-toolbar">
               <label>訂單起日<input id="overviewStart" type="date"></label>
               <label>訂單迄日<input id="overviewEnd" type="date"></label>
               <button id="overviewPreviewButton" type="button">預覽</button>
