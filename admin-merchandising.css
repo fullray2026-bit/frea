@@ -36,3 +36,18 @@
 @media(max-width:760px){[data-admin-panel="merchActivities"] .activity-tools{flex-wrap:wrap}[data-admin-panel="merchActivities"] .checks{grid-template-columns:1fr}[data-admin-panel="merchActivities"] .image-editor{grid-template-columns:1fr}}
 
 [data-admin-panel="merchActivities"] .primary-action{background:#4d3d30;color:#fff;border-color:#4d3d30}
+
+[data-admin-panel="merchCategories"] .merch-root{font-size:13px}
+[data-admin-panel="merchCategories"] #merchMessage:empty{display:none}
+[data-admin-panel="merchCategories"] .admin-section>p{font-size:12px;line-height:1.5;margin:0 0 10px}
+[data-admin-panel="merchCategories"] #categories-edit{padding:12px 14px;margin:0;width:100%;max-width:760px;box-sizing:border-box}
+[data-admin-panel="merchCategories"] .category-head,[data-admin-panel="merchCategories"] .category-row{grid-template-columns:minmax(220px,480px) 130px 80px;gap:12px;justify-content:start}
+[data-admin-panel="merchCategories"] .category-head{font-size:12px;margin:0 0 4px}
+[data-admin-panel="merchCategories"] .category-row{padding:5px 0;min-height:34px}
+[data-admin-panel="merchCategories"] .category-row label{margin:0}
+[data-admin-panel="merchCategories"] input,[data-admin-panel="merchCategories"] select{font-size:13px;line-height:1.4;padding:6px 8px;height:34px;box-sizing:border-box}
+[data-admin-panel="merchCategories"] .sort-buttons{gap:5px}
+[data-admin-panel="merchCategories"] .sort-buttons button{min-width:32px;min-height:28px;padding:3px 8px;font-size:13px}
+[data-admin-panel="merchCategories"] .primary-action{font-size:13px;padding:7px 12px;min-height:34px;margin-top:10px;background:#4d3d30;border-color:#4d3d30;color:#fff}
+@media(max-width:760px){[data-admin-panel="merchCategories"] .category-head,[data-admin-panel="merchCategories"] .category-row{grid-template-columns:minmax(0,1fr) 105px 76px;gap:8px}}
+@media(max-width:480px){[data-admin-panel="merchCategories"] #categories-edit{padding:10px}[data-admin-panel="merchCategories"] .category-row{grid-template-columns:minmax(0,1fr) 76px}[data-admin-panel="merchCategories"] .category-row>label:first-child{grid-column:1/-1}}
