@@ -27,8 +27,8 @@
     cancelled: "已取消"
   };
   const personalStatusLabels = {
-    new: "新需求", reviewing: "確認中", quoted: "已報價", confirmed: "顧客已確認",
-    purchased: "日本已下單", shipped: "已寄出", completed: "已完成", cancelled: "已取消"
+    new: "新需求", reviewing: "確認中", quoted: "已報價", confirmed: "客人已確認",
+    purchased: "日本已下單", shipped: "已寄出", shipped_unpaid: "出貨待匯款", payment_received: "款項已收到", completed: "已完成", cancelled: "已取消"
   };
   let profiles = [];
   let memberAccounts = [];

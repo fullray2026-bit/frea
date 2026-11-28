@@ -162,7 +162,7 @@
       return;
     }
     const statuses = { pending_payment: "待付款", payment_review: "對帳中", paid: "已收款", processing: "備貨中", shipped: "已出貨", completed: "已完成", cancelled: "已取消" };
-    const personalStatuses = { new: "新需求", reviewing: "確認中", quoted: "已報價", confirmed: "已確認購買", purchased: "日本已下單", shipped: "已寄出", completed: "已完成", cancelled: "已取消" };
+    const personalStatuses = { new: "新需求", reviewing: "確認中", quoted: "已報價", confirmed: "客人已確認", purchased: "日本已下單", shipped: "已寄出", shipped_unpaid: "出貨待匯款", payment_received: "款項已收到", completed: "已完成", cancelled: "已取消" };
     target.innerHTML = data.map((order) => {
       const date = new Intl.DateTimeFormat("zh-TW", { dateStyle: "medium" }).format(new Date(order.created_at));
       if (order.kind === "personal") {

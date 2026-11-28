@@ -3,6 +3,7 @@
 "use strict";
 const withReceiptSpec=(i,s)=>i.receipt_specification==null?s:{...s,receipt_specification:i.receipt_specification};
 const stable=x=>JSON.stringify(x&&typeof x==="object"&&!Array.isArray(x)?Object.fromEntries(Object.keys(x).sort().map(k=>[k,x[k]])):x);
+const personalShipped=o=>["shipped","shipped_unpaid","completed"].includes(o.status)||(o.status==="payment_received"&&o.quote_details?.fulfillment_shipped===true);
 function sources(data){
  const rows=[];
  for(const p of data.purchaseOrders||[]) for(const i of p.purchase_order_items||[]) rows.push({
@@ -18,7 +19,7 @@ function sources(data){
  snapshot:{name:i.product_name,specification:i.specification,quantity:i.quantity},notes:o.admin_note||""
  });
  for(const o of data.personalRequests||[]) (Array.isArray(o.items)?o.items:[]).forEach((i,n)=>rows.push({
- type:"personal",key:o.id+":"+n,number:o.request_number,date:o.created_at?.slice(0,10),status:o.status,
+ type:"personal",key:o.id+":"+n,number:o.request_number,date:o.created_at?.slice(0,10),status:o.status,shipped:personalShipped(o),
  name:i.name||"",spec:i.specification||"",quantity:Number(i.quantity||1),
  snapshot:{name:i.name??null,specification:i.specification??null,quantity:i.quantity??null},notes:o.admin_note||""
  }));
@@ -41,7 +42,7 @@ function calculate(data,skus,bindings,adjustments,options={}){
  let unresolved=0,excluded=0;
  const visibleSources=[];
  for(const source of all){
-  if(source.type==="personal"&&!["confirmed","purchased","shipped","completed","cancelled"].includes(source.status))continue;
+  if(source.type==="personal"&&!["confirmed","purchased","shipped","shipped_unpaid","payment_received","completed","cancelled"].includes(source.status))continue;
   if(source.status==="cancelled"){source.cancelled=true;continue;}
   const b=index.get(source.type+":"+source.key);
   if(options.scope==="regular"){
@@ -62,7 +63,7 @@ function calculate(data,skus,bindings,adjustments,options={}){
   r.sources.push({...source,stockQuantity:q});
   if(source.type==="purchase"){
    r.purchased+=q;r.received+=Math.min(source.quantity,Number(source.receivedQuantity??b.received_quantity))*Number(b.quantity_factor);
-  } else {r.demand+=q;if(["shipped","completed"].includes(source.status))r.shipped+=q;else if(source.type==="order"&&["pending_payment","payment_review"].includes(source.status))r.reservedUnpaid+=q;else r.reservedConfirmed+=q;}
+  } else {r.demand+=q;if(source.shipped||["shipped","completed"].includes(source.status))r.shipped+=q;else if(source.type==="order"&&["pending_payment","payment_review"].includes(source.status))r.reservedUnpaid+=q;else r.reservedConfirmed+=q;}
  }
  for(const a of adjustments){const r=rows.get(a.sku_id);if(r)r.adjusted+=Number(a.quantity);}
  for(const r of rows.values()){
@@ -74,6 +75,6 @@ function calculate(data,skus,bindings,adjustments,options={}){
  const orphaned=bindings.filter(b=>!keys.has(b.source_type+":"+b.source_key)&&(options.scope!=="regular"||rows.has(b.sku_id)));
  return {rows:[...rows.values()],sources:visibleSources,unresolved,excluded,orphaned};
 }
-const api={sources,calculate,stable};root.FreaInventoryCore=api;
+const api={sources,calculate,stable,personalShipped};root.FreaInventoryCore=api;
 if(typeof module!=="undefined")module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);

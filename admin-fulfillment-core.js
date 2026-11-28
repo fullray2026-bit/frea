@@ -1,6 +1,6 @@
 (function(root){
 "use strict";
-const EPS=1e-6,normalClosed=new Set(["cancelled","shipped","completed"]),personalActive=new Set(["confirmed","purchased"]),wait=new Set(["pending_payment","payment_review"]);
+const EPS=1e-6,normalClosed=new Set(["cancelled","shipped","completed"]),personalActive=new Set(["confirmed","purchased","payment_received"]),wait=new Set(["pending_payment","payment_review"]);
 const key=a=>a.order_item_id!=null?"order:"+a.order_item_id:"personal:"+a.personal_request_id+":"+a.personal_item_index;
 function calculate(d){
  const I=root.FreaInventoryCore||require("./admin-inventory-core"),P=root.FreaPurchaseLinks||require("./admin-purchase-links-core");
@@ -16,7 +16,7 @@ function calculate(d){
   const dest=s.type+":"+s.key,b=bmap.get(dest),bindingValid=!!b&&I.stable(b.source_snapshot)===I.stable(s.snapshot);
   if(s.itemType==="expense"||bindingValid&&b.purpose!=="sale")continue;
   const sku=bindingValid&&b.purpose==="sale"?skuMap.get(b.sku_id):null,factor=sku?Number(b.quantity_factor):1;
-  const closed=normalClosed.has(s.status),inquiry=s.type==="personal"&&!closed&&!personalActive.has(s.status);
+  const closed=s.shipped||normalClosed.has(s.status),inquiry=s.type==="personal"&&!closed&&!personalActive.has(s.status);
   const parent=s.type==="order"?(d.orders||[]).find(o=>String(o.id)===String(s.key?.split(":")[0])||(o.order_items||[]).some(i=>String(i.id)===s.key)):(d.personalRequests||[]).find(o=>String(o.id)===s.key.split(":")[0]);
   const m=masters.get(sku?.product_master_id);
   all.push({key:dest,type:s.type,number:s.number,date:s.date?.slice(0,10)||"",status:s.status,name:m?.name||s.name,spec:sku?.specification||s.spec||"規格待確認",code:m?.product_code||(sku?.personal_request_id!=null?"單次代購":"待確認"),skuId:sku?.id||null,factor:Number.isFinite(factor)&&factor>0?factor:1,quantity:s.quantity,closed,inquiry,unpaid:s.type==="order"&&wait.has(s.status),assigned:0,assignedReceived:0,assignedPending:0,ready:0,incoming:0,stockSuggested:0,shortage:0,review:stale.has(dest)||sku&&uncertainSkus.has(sku.id)||!!b&&!bindingValid,receipts:[],parentId:parent?.id});

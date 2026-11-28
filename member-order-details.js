@@ -39,7 +39,7 @@ async function open(client,id,userId,trigger,kind){
 
 function renderPersonal(o){
  const japan=o.service_direction==="tw_to_jp",c=japan?"JPY":"TWD",source=japan?"TWD":"JPY",q=o.quote_details||{},quoted=o.quote_amount!=null;
- const states={new:"新需求",reviewing:"確認中",quoted:"已報價",confirmed:"已確認購買",purchased:japan?"台灣已下單":"日本已下單",shipped:"已寄出",completed:"已完成",cancelled:"已取消"};
+ const states={new:"新需求",reviewing:"確認中",quoted:"已報價",confirmed:"客人已確認",purchased:japan?"台灣已下單":"日本已下單",shipped:"已寄出",shipped_unpaid:"出貨待匯款",payment_received:"款項已收到",completed:"已完成",cancelled:"已取消"};
  const items=Array.isArray(o.items)?o.items:[],units=Array.isArray(q.unit_prices)?q.unit_prices:[];
  const valid=v=>v!==null&&v!==undefined&&v!==""&&Number.isFinite(Number(v));
  const rows=items.map((i,n)=>{const priced=quoted&&valid(units[n]);const itemCurrency=["TWD","JPY"].includes(q.unit_currencies?.[n])?q.unit_currencies[n]:source;return '<tr><td><strong>'+esc(i.name)+'</strong><small>'+esc(i.specification||i.spec||"")+'</small></td><td>'+esc(i.quantity)+'</td><td>'+esc(priced?money(units[n],itemCurrency):"待報價")+'</td><td>'+esc(priced?money(Number(units[n])*Number(i.quantity||1),itemCurrency):"待報價")+'</td></tr>';}).join("");
