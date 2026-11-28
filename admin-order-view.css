@@ -46,3 +46,12 @@
 @media(max-width:800px){.order-list-table .order-recipient-editor{grid-template-columns:1fr 1fr}.order-list-table .order-recipient-editor .order-recipient-address{grid-column:1/-1}.order-edit-meta{grid-template-columns:1fr 1fr}}
 
 .order-edit-items td:nth-child(4),.order-edit-items td:nth-child(5){text-align:right}.order-list-table input[readonly]{background:#f3efe9;color:#7c7064}.order-edit-items+button{margin-top:7px}
+
+/* Keep each order summary on one line; preserve stacked receipt details below. */
+.order-list-table{table-layout:auto;min-width:1250px}
+.order-list-table .order-summary-row>td{white-space:nowrap;overflow-wrap:normal}
+.order-list-table .order-summary-row>td:first-child{min-width:205px}
+.order-list-table .order-summary-row>td:nth-child(2){min-width:95px}
+.order-list-table .order-summary-row>td:last-child{min-width:100px}
+.order-list-table .order-receipt-list{display:inline-flex;align-items:center;flex-wrap:nowrap;gap:12px;white-space:nowrap;line-height:20px}
+.order-list-table .order-receipt-list .order-receipt-code{display:inline;line-height:inherit}
