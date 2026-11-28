@@ -33,8 +33,8 @@ function render(){
  const rows=result.rows.filter(r=>(skuText(r)+" "+r.sources.map(s=>s.number).join(" ")).toLowerCase().includes(term)&&(!filter||filter==="shortage"&&r.shortage>0||filter==="surplus"&&r.balance>0||filter==="pending"&&r.pending>0));
  $("inventoryRows").innerHTML=rows.length?rows.map(r=>{
  const m=master(r.product_master_id);
- return '<tr><td>'+esc(m?.product_code||"待確認")+'</td><td><details><summary>'+esc(m?.name||r.product_name)+'</summary><p>已購買 '+num(r.purchased)+'｜已到貨 '+num(r.received)+'｜已出貨 '+num(r.shipped)+'｜待到貨 '+num(r.pending)+'</p>'+r.sources.map(s=>'<p>'+esc(s.number)+' ｜'+esc(s.date)+' ｜'+(s.type==="purchase"?"進貨":"訂單")+' '+num(s.stockQuantity)+'</p>').join("")+'</details></td><td>'+esc(r.specification)+'</td>'+["onhand","reserved","available","shortage"].map(k=>'<td class="'+(r[k]<0||k==="shortage"&&r[k]>0?"inventory-negative":"")+'">'+num(r[k])+'</td>').join("")+'</tr>';
- }).join(""):'<tr><td colspan="7">沒有符合的常態商品。</td></tr>';
+ return '<tr><td>'+esc(m?.product_code||"待確認")+'</td><td><details><summary>'+esc(m?.name||r.product_name)+'</summary><p>已購買 '+num(r.purchased)+'｜已到貨 '+num(r.received)+'｜已出貨 '+num(r.shipped)+'｜待到貨 '+num(r.pending)+'</p>'+r.sources.map(s=>'<p>'+esc(s.number)+' ｜'+esc(s.date)+' ｜'+(s.type==="purchase"?"進貨":"訂單")+' '+num(s.stockQuantity)+'</p>').join("")+'</details></td><td>'+esc(r.specification)+'</td>'+["onhand","reservedConfirmed","reservedUnpaid","available","shortage"].map(k=>'<td class="'+(r[k]<0||k==="shortage"&&r[k]>0?"inventory-negative":"")+'">'+num(r[k])+'</td>').join("")+'</tr>';
+ }).join(""):'<tr><td colspan="8">沒有符合的常態商品。</td></tr>';
  const sourceFilter=$("inventorySourceFilter").value;
  const src=result.sources.filter(s=>!s.cancelled&&(s.number+" "+s.name+" "+(s.spec||"")).toLowerCase().includes(term)&&(!sourceFilter||sourceFilter==="unmapped"&&!s.valid||sourceFilter===s.type));
  $("inventorySources").innerHTML=src.map(s=>'<article><strong>'+esc(s.number)+' ｜'+esc(s.date)+' ｜'+({purchase:"進貨",order:"一般訂單",personal:"代購訂單"}[s.type])+'</strong><p>'+esc(s.name)+' ｜'+esc(s.spec||"依主檔／待確認規格")+' × '+num(s.quantity)+'</p><p>'+(!s.valid?"待對應／來源已變更":s.binding.purpose!=="sale"?"已排除："+({sample:"試喝／公司用途",expense:"運費／包材／費用"}[s.binding.purpose]):esc(skuText(skus.find(k=>k.id===s.binding.sku_id)))+' ｜換算 '+num(s.binding.quantity_factor)+(s.type==="purchase"?' ｜已到貨 '+num(s.receivedQuantity??s.binding.received_quantity)+'／'+num(s.quantity):""))+'</p><button type="button" data-inventory-map="'+esc(s.type+":"+s.key)+'">'+(s.valid?"編輯對應／到貨":"設定規格對應")+'</button><details><summary>來源備註</summary><p>'+esc(s.notes)+'</p></details></article>').join("")||"<p>沒有符合條件的來源。</p>";
@@ -108,7 +108,7 @@ async function saveMap(e){
 function exportCsv(){
  if(!result)return;
  const cell=x=>{let v=String(x??"");if(typeof x!=="number"&&/^[\s\uFEFF]*[=+@-]/.test(v))v="'"+v;return '"'+v.replace(/"/g,'""')+'"';};
- const content=[["商品／規格","已購買","已到貨","已出貨","在手","未出貨需求","可用","待到貨","尚缺採購","採購減需求"],...result.rows.map(r=>[skuText(r),r.purchased,r.received,r.shipped,r.onhand,r.reserved,r.available,r.pending,r.shortage,r.balance])].map(row=>row.map(cell).join(",")).join("\r\n");
+ const content=[["商品／規格","已購買","已到貨","已出貨","在手","待備貨需求","待付款保留","可用","待到貨","需求缺額（含保留）","採購減需求"],...result.rows.map(r=>[skuText(r),r.purchased,r.received,r.shipped,r.onhand,r.reservedConfirmed,r.reservedUnpaid,r.available,r.pending,r.shortage,r.balance])].map(row=>row.map(cell).join(",")).join("\r\n");
  const url=URL.createObjectURL(new Blob(["\uFEFF"+content],{type:"text/csv;charset=utf-8"}));const a=document.createElement("a");a.href=url;a.download="庫存查詢-"+today()+".csv";a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 window.FreaInventory={

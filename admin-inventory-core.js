@@ -37,10 +37,11 @@ function calculate(data,skus,bindings,adjustments,options={}){
  const masterById=new Map((data.masterProducts||[]).map(m=>[m.id,m]));
  const regular=s=>!!s.product_master_id&&masterById.get(s.product_master_id)?.catalog_type!=="personal";
  const visibleSkus=options.scope==="regular"?skus.filter(regular):skus;
- const rows=new Map(visibleSkus.map(s=>[s.id,{...s,purchased:0,received:0,demand:0,shipped:0,adjusted:0,sources:[]}]));
+ const rows=new Map(visibleSkus.map(s=>[s.id,{...s,purchased:0,received:0,demand:0,shipped:0,adjusted:0,reservedConfirmed:0,reservedUnpaid:0,sources:[]}]));
  let unresolved=0,excluded=0;
  const visibleSources=[];
  for(const source of all){
+  if(source.type==="personal"&&!["confirmed","purchased","shipped","completed","cancelled"].includes(source.status))continue;
   if(source.status==="cancelled"){source.cancelled=true;continue;}
   const b=index.get(source.type+":"+source.key);
   if(options.scope==="regular"){
@@ -61,7 +62,7 @@ function calculate(data,skus,bindings,adjustments,options={}){
   r.sources.push({...source,stockQuantity:q});
   if(source.type==="purchase"){
    r.purchased+=q;r.received+=Math.min(source.quantity,Number(source.receivedQuantity??b.received_quantity))*Number(b.quantity_factor);
-  } else {r.demand+=q;if(["shipped","completed"].includes(source.status))r.shipped+=q;}
+  } else {r.demand+=q;if(["shipped","completed"].includes(source.status))r.shipped+=q;else if(source.type==="order"&&["pending_payment","payment_review"].includes(source.status))r.reservedUnpaid+=q;else r.reservedConfirmed+=q;}
  }
  for(const a of adjustments){const r=rows.get(a.sku_id);if(r)r.adjusted+=Number(a.quantity);}
  for(const r of rows.values()){
