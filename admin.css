@@ -20,8 +20,8 @@
 .admin-shell{min-height:100vh;display:grid;grid-template-columns:250px minmax(0,1fr)}
 .admin-sidebar{position:sticky;top:0;height:100vh;padding:34px 24px;background:var(--admin-dark);color:#fff;display:flex;flex-direction:column}
 .admin-sidebar .admin-wordmark{color:#fff}.admin-sidebar .admin-eyebrow{color:#cbb8a7;margin-top:4px}
-.admin-sidebar nav{display:grid;gap:8px;margin-top:44px}
-.admin-nav{border:0;background:transparent;color:#e9dfd5;text-align:left;padding:11px 14px;border-radius:8px;cursor:pointer}
+.admin-sidebar nav{display:grid;gap:2px;margin-top:22px}
+.admin-nav{border:0;background:transparent;color:#e9dfd5;text-align:left;padding:3px 14px;line-height:1.35;border-radius:8px;cursor:pointer}
 .admin-nav:hover,.admin-nav.is-active{background:rgba(255,255,255,.12);color:#fff}
 .admin-sidebar-foot{margin-top:auto;border-top:1px solid rgba(255,255,255,.18);padding-top:18px;display:grid;gap:10px;font-size:12px;color:#d7c9bd;overflow-wrap:anywhere}
 .admin-sidebar-foot button{width:max-content;border:0;background:transparent;color:#fff;padding:0;text-decoration:underline;cursor:pointer}
