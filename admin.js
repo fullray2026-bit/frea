@@ -963,8 +963,8 @@
   }
 
   function overviewRecords() {
-    return [...orders.map(o=>({...o,kind:"一般訂單",number:o.order_number,amount:o.total_amount,statusText:statusLabels[o.status]||o.status})),
-      ...personalRequests.map(o=>({...o,kind:"自選代購",number:o.request_number,amount:o.quote_amount,currency:o.quote_currency||(o.service_direction==="tw_to_jp"?"JPY":"TWD"),statusText:o.status==="purchased"&&o.service_direction==="tw_to_jp"?"台灣已下單":personalStatusLabels[o.status]||o.status}))]
+    return [...orders.map(o=>({...o,sourceType:"order",kind:"一般訂單",number:o.order_number,amount:o.total_amount,statusText:statusLabels[o.status]||o.status})),
+      ...personalRequests.map(o=>({...o,sourceType:"personal",kind:"自選代購",number:o.request_number,amount:o.quote_amount,currency:o.quote_currency||(o.service_direction==="tw_to_jp"?"JPY":"TWD"),statusText:o.status==="purchased"&&o.service_direction==="tw_to_jp"?"台灣已下單":personalStatusLabels[o.status]||o.status}))]
       .map(o=>({...o,name:profiles.find(p=>p.id===o.user_id)?.full_name||o.customer_name||o.recipient_name||"未填姓名"}))
       .sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
   }
@@ -982,7 +982,9 @@
     const rows=overviewFiltered(),target=byId("overviewPreview");
     byId("overviewDownload").disabled=!rows?.length;
     if(!rows){target.innerHTML='<p role="alert">起日不可晚於迄日。</p>';return;}
-    target.innerHTML='<p>共 '+rows.length+' 筆（依台灣時間，包含起訖日）</p><div style="overflow-x:auto"><table style="width:100%;text-align:left"><thead><tr><th>日期</th><th>類型</th><th>訂單編號</th><th>姓名</th><th>狀態</th><th>金額</th></tr></thead><tbody>'+
+    const totals=window.FreaOverview.revenueTotals({orders:rows.filter(o=>o.sourceType==="order"),personalRequests:rows.filter(o=>o.sourceType==="personal")});
+    const summary='<div class="overview-filter-summary"><span>共 '+rows.length+' 筆（依台灣時間，包含起訖日）</span><span class="overview-filter-revenue" title="依已成立訂單金額計算，非實際收款；待付款、詢問、僅報價及取消不列入業績。">期間業績總額：日幣 <strong>'+escapeHtml(formatMoney(totals.revenue.JPY,"JPY"))+'</strong>／台幣 <strong>'+escapeHtml(formatMoney(totals.revenue.TWD,"TWD"))+'</strong></span></div>'+(totals.revenueSkipped?'<p role="status">另有 '+totals.revenueSkipped+' 筆已成立訂單缺少有效金額或幣別，尚未計入業績。</p>':"");
+    target.innerHTML=summary+'<div style="overflow-x:auto"><table style="width:100%;text-align:left"><thead><tr><th>日期</th><th>類型</th><th>訂單編號</th><th>姓名</th><th>狀態</th><th>金額</th></tr></thead><tbody>'+
       rows.map(o=>'<tr><td>'+escapeHtml(overviewDay(o.created_at))+'</td><td>'+escapeHtml(o.kind)+'</td><td>'+escapeHtml(o.number)+'</td><td>'+escapeHtml(o.name)+'</td><td>'+escapeHtml(o.statusText)+'</td><td>'+escapeHtml(o.amount==null?"尚未報價":formatMoney(o.amount,o.currency))+'</td></tr>').join("")+'</tbody></table></div>';
   }
   function downloadOverview() {

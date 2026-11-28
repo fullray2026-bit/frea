@@ -3,12 +3,16 @@
 const closed=new Set(["shipped","completed","cancelled"]),normalRevenue=new Set(["paid","processing","shipped","completed"]),personalRevenue=new Set(["confirmed","purchased","shipped","completed"]);
 function monthKey(value){const date=new Date(value);if(!Number.isFinite(date.getTime()))return "";return new Intl.DateTimeFormat("sv-SE",{timeZone:"Asia/Taipei",year:"numeric",month:"2-digit"}).format(date).slice(0,7);}
 function counts(rows){return {total:rows.length,pending:rows.filter(r=>!closed.has(r.status)).length,completed:rows.filter(r=>r.status==="completed").length,shipped:rows.filter(r=>r.status==="shipped").length};}
-function calculate({orders=[],personalRequests=[],members=0},now=new Date()){
- const month=monthKey(now),valid=r=>r.status!=="cancelled",inMonth=r=>monthKey(r.created_at)===month;
- const regular=orders.filter(r=>valid(r)&&inMonth(r)),personal=personalRequests.filter(r=>valid(r)&&inMonth(r)),revenue={JPY:0,TWD:0};let revenueSkipped=0;
+function revenueTotals({orders=[],personalRequests=[]}){
+ const revenue={JPY:0,TWD:0};let revenueSkipped=0;
  const add=(r,type)=>{if(!(type==="order"?normalRevenue:personalRevenue).has(r.status))return;const raw=type==="order"?r.total_amount:r.quote_amount,currency=String((type==="order"?r.currency:r.quote_currency)||(type==="personal"&&r.service_direction==="tw_to_jp"?"JPY":"TWD")).toUpperCase();
  if(raw==null||raw===""||!Number.isFinite(Number(raw))||Number(raw)<0||!Object.hasOwn(revenue,currency)){revenueSkipped++;return;}revenue[currency]+=Math.round(Number(raw)*100);};
- regular.forEach(r=>add(r,"order"));personal.forEach(r=>add(r,"personal"));for(const c of Object.keys(revenue))revenue[c]/=100;
+ orders.forEach(r=>add(r,"order"));personalRequests.forEach(r=>add(r,"personal"));for(const c of Object.keys(revenue))revenue[c]/=100;
+ return {revenue,revenueSkipped};
+}
+function calculate({orders=[],personalRequests=[],members=0},now=new Date()){
+ const month=monthKey(now),valid=r=>r.status!=="cancelled",inMonth=r=>monthKey(r.created_at)===month;
+ const regular=orders.filter(r=>valid(r)&&inMonth(r)),personal=personalRequests.filter(r=>valid(r)&&inMonth(r)),{revenue,revenueSkipped}=revenueTotals({orders:regular,personalRequests:personal});
  const old=r=>{const key=monthKey(r.created_at);return key&&key<month&&!closed.has(r.status);};
  return {month,members,normal:counts(regular),personal:counts(personal),revenue,revenueSkipped,quoteWaiting:personal.filter(r=>["new","reviewing"].includes(r.status)).length,confirmWaiting:personal.filter(r=>r.status==="quoted").length,cancelled:[...orders,...personalRequests].filter(r=>inMonth(r)&&!valid(r)).length,backlog:{normal:orders.filter(old).length,personal:personalRequests.filter(old).length}};
 }
@@ -25,5 +29,5 @@ function render(data,now=new Date()){
  put("overviewRevenueNote","本月業績依已成立訂單金額，並非實收：一般已收款／備貨中／已出貨／已完成；代購已確認／已購買／已出貨／已完成。待付款、詢問、僅報價與取消不計金額；兩種幣別分開加總。"+(s.revenueSkipped?"另有 "+s.revenueSkipped+" 筆已成立訂單缺少有效金額或幣別，尚未計入。":""));
  return s;
 }
-const api={calculate,render,monthKey};root.FreaOverview=api;if(typeof module!=="undefined")module.exports=api;
+const api={calculate,render,monthKey,revenueTotals};root.FreaOverview=api;if(typeof module!=="undefined")module.exports=api;
 })(typeof window!=="undefined"?window:globalThis);
