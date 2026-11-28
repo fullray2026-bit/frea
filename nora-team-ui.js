@@ -15,8 +15,8 @@
  async function panel(name){if($('socialDialog').open)$('socialDialog').close();
   document.querySelectorAll('[data-work-panel]').forEach(e=>{e.hidden=e.dataset.workPanel!==name;});document.querySelectorAll('[data-panel]').forEach(e=>e.setAttribute('aria-pressed',String(e.dataset.panel===name)));
   if(name==='assets')await loadAssets();if(name==='artifacts')await loadArtifacts();if(name==='tasks')await loadTasks();
-  if(name==='brand'){const r=await api({action:'brand_get'});brandRevision=r.revision;$('brandContext').value=r.context;$('brandVersion').textContent=' 版本 '+r.revision;}
-  if(name==='publishing'&&!$('publishingFrame').getAttribute('src'))$('publishingFrame').src='admin-social.html?embedded=1&v=20261102';
+  if(name==='brand'){const r=await api({action:'brand_get'});brandRevision=r.revision;$('brandContext').value=r.context;$('brandVersion').textContent=' 版本 '+r.revision;window.FreaUnsaved?.mark($('brandForm'));}
+  if(name==='publishing'&&!$('publishingFrame').getAttribute('src'))$('publishingFrame').src='admin-social.html?embedded=1&v=four-fixes-20261128-1';
   if(name==='connections')renderConnections();
  }
  function selectRole(value){role=value;if(role==='iris')$('workMode').value='research';else if(role!=='leon')$('workMode').value='chat';$('imageOptions').hidden=$('workMode').value!=='image';document.querySelectorAll('[data-role]').forEach(e=>e.setAttribute('aria-pressed',String(e.dataset.role===role)));$('composerLabel').textContent='跟 '+names[role]+' 說說你的想法';controls();}
@@ -41,9 +41,9 @@
    const id=crypto.randomUUID(),path=userId+'/'+id+'.jpg';const r=await client.storage.from('nora-media').upload(path,blob,{contentType:'image/jpeg',upsert:false});if(r.error)throw Error('照片上傳未完成，請重試。');const registered=await api({action:'asset_register',id,name:file.name.slice(0,155),mime_type:'image/jpeg',source_type:sourceType});mergeAsset(registered.asset);selected.push(id);
   }attachmentView();say('照片已保存，傳送訊息後團隊就能分析。');
  }
- function fillArtifact(a={}){$('artifactId').value=a.id||'';$('artifactRevision').value=a.revision||0;$('artifactTitle').value=a.title||'';$('artifactKind').value=a.kind||'social';$('artifactContent').value=a.content||'';$('artifactState').textContent=a.id?(a.status==='approved'?'已確認・版本 '+a.revision:'草稿・版本 '+a.revision):'尚未儲存';artifactDirty=false;}
+ function fillArtifact(a={}){$('artifactId').value=a.id||'';$('artifactRevision').value=a.revision||0;$('artifactTitle').value=a.title||'';$('artifactKind').value=a.kind||'social';$('artifactContent').value=a.content||'';$('artifactState').textContent=a.id?(a.status==='approved'?'已確認・版本 '+a.revision:'草稿・版本 '+a.revision):'尚未儲存';artifactDirty=false;window.FreaUnsaved?.mark($('artifactForm'));}
  async function loadArtifacts(){const r=await api({action:'artifact_list'});if(!authenticated)return;artifacts=r.artifacts||[];$('artifactList').replaceChildren();for(const a of artifacts){const b=node('button',a.title+' · '+(a.status==='approved'?'已確認':'草稿'));b.type='button';b.onclick=()=>{if(artifactDirty)return say('目前有未儲存的修改，請先儲存作品。');fillArtifact(a);};$('artifactList').append(b);}const chosen=$('approvedCopy').value;$('approvedCopy').replaceChildren(new Option('無文字情境圖',''));for(const a of artifacts.filter(a=>a.status==='approved'))$('approvedCopy').add(new Option(a.title+'（版本 '+a.revision+'）',a.id));$('approvedCopy').value=chosen;}
- function taskFill(t={}){$('taskId').value=t.id||'';$('taskTitle').value=t.title||'';$('taskOwner').value=t.owner_role||'nora';$('taskDate').value=t.due_date||'';$('taskStatus').value=t.status||'todo';$('taskNotes').value=t.notes||'';}
+ function taskFill(t={}){$('taskId').value=t.id||'';$('taskTitle').value=t.title||'';$('taskOwner').value=t.owner_role||'nora';$('taskDate').value=t.due_date||'';$('taskStatus').value=t.status||'todo';$('taskNotes').value=t.notes||'';window.FreaUnsaved?.mark($('taskForm'));}
  async function loadTasks(){const r=await api({action:'task_list'});if(!authenticated)return;tasks=r.tasks||[];$('taskList').replaceChildren();for(const t of tasks){const b=node('button',(t.due_date||'待定日期')+' · '+names[t.owner_role]+' · '+t.title+' · '+({todo:'未開始',doing:'進行中',done:'已完成'}[t.status]));b.type='button';b.onclick=()=>taskFill(t);$('taskList').append(b);}if(!tasks.length)$('taskList').append(node('p','把要做的事放在這裡，團隊與你一起掌握節奏。'));}
  function renderConnections(){$('connectionList').replaceChildren();for(const [title,message]of [['團隊對話',capabilities.ai_configured?'金鑰已設定；實際使用時驗證模型':'尚未設定 OpenAI'],['照片分析',capabilities.photos?'私人素材庫已就緒':'尚未部署素材庫'],['網頁研究',capabilities.research_configured?'已具備呼叫設定；使用時驗證搜尋權限':'尚未設定'],['視覺製作',capabilities.image_configured?'已具備呼叫設定；使用時驗證圖片模型':'尚未設定'],['Meta 廣告報表',capabilities.meta_configured?'帳號與權杖已設定；請按讀取驗證':'尚未設定；可匯入 CSV'],['電子報寄送','提供文案與郵件草稿下載；寄信平台尚未串接']]){const card=node('article',null,'connection-card');card.append(node('h3',title),node('p',message));$('connectionList').append(card);}}
  document.querySelectorAll('[data-panel]').forEach(b=>b.onclick=()=>run(()=>panel(b.dataset.panel)));
@@ -56,7 +56,7 @@
  $('reportFile').onchange=()=>{const file=$('reportFile').files[0];$('reportFile').value='';if(!file)return;run(async()=>{if(file.size>100000)throw Error('報表檔案請小於 100 KB。');const content=await file.text();if(content.length>25000)throw Error('報表超過 25000 字，請保留重點欄位或分批匯入。');referenceText=content;$('message').value='請分析我附上的 '+file.name+' 報表，先確認期間、幣別與欄位，再提出建議。';selectRole('jack');say('報表已附上（'+content.length+' 字），按傳送後才交給 AI。');});};
  $('message').onkeydown=e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();$('composer').requestSubmit();}};
  $('composer').onsubmit=e=>{e.preventDefault();const message=$('message').value.trim();if(!message||!ready)return;run(async()=>{say($('workMode').value==='image'?'Leon 正在製圖，可能需要一至兩分鐘…':'團隊正在整理，完成後會自動保存。');
-   const r=await api({action:'send',conversation_id:activeId,request_id:crypto.randomUUID(),message,role,mode:$('workMode').value,asset_ids:[...selected],artifact_id:$('approvedCopy').value||null,no_text:!$('approvedCopy').value,reference_text:referenceText});if(!authenticated)return;activeId=r.conversation_id;for(const a of r.assets||[])mergeAsset(a);turns.push({user_text:message,assistant_text:r.answer,status:'completed',role:r.role||role,asset_ids:[...selected],generated_asset_ids:(r.assets||[]).map(a=>a.id),sources:r.sources||[],reference_text:referenceText});$('message').value='';selected=[];referenceText='';attachmentView();renderMessages();say('已保存對話。');try{await list();}catch{say('回覆已保存；清單暫未更新，請重新載入紀錄。');}
+   const r=await api({action:'send',conversation_id:activeId,request_id:crypto.randomUUID(),message,role,mode:$('workMode').value,asset_ids:[...selected],artifact_id:$('approvedCopy').value||null,no_text:!$('approvedCopy').value,reference_text:referenceText});if(!authenticated)return;activeId=r.conversation_id;for(const a of r.assets||[])mergeAsset(a);turns.push({user_text:message,assistant_text:r.answer,status:'completed',role:r.role||role,asset_ids:[...selected],generated_asset_ids:(r.assets||[]).map(a=>a.id),sources:r.sources||[],reference_text:referenceText});$('message').value='';window.FreaUnsaved?.mark($('composer'));selected=[];referenceText='';attachmentView();renderMessages();say('已保存對話。');try{await list();}catch{say('回覆已保存；清單暫未更新，請重新載入紀錄。');}
   });};
  $('export').onclick=()=>download('frea-team-conversation.txt',turns.map(t=>'Sammi：\n'+t.user_text+'\n\n'+(names[t.role]||'fréa小芙')+'：\n'+(t.assistant_text||'（未完成）')+(t.sources?.length?'\n\n來源：\n'+t.sources.map(s=>s.title+' '+s.url).join('\n'):'')).join('\n\n——\n\n'));
  $('newArtifact').onclick=()=>{if(artifactDirty)return say('請先儲存目前作品。');fillArtifact();};
@@ -68,7 +68,7 @@
  $('handoffArtifact').onclick=()=>run(async()=>{if(artifactDirty||!$('artifactId').value)throw Error('請先儲存作品。');await loadAssets();if(!assets.length)throw Error('請先上傳一張照片或製作圖片，再建立社群草稿。');$('socialAsset').replaceChildren(...assets.map(a=>new Option(a.name+(a.source_type==='illustration'?'（示意）':''),a.id)));$('socialTitle').value=$('artifactTitle').value.slice(0,24);$('socialFacebook').value=$('artifactContent').value.slice(0,5000);$('socialInstagram').value=$('artifactContent').value.slice(0,2200);socialRequestId=crypto.randomUUID();$('socialDialog').showModal();});
  $('closeSocial').onclick=()=>$('socialDialog').close();
  $('socialForm').onsubmit=e=>{e.preventDefault();run(async()=>{const r=await api({action:'social_prepare',request_id:socialRequestId,artifact_id:$('artifactId').value,revision:Number($('artifactRevision').value),asset_id:$('socialAsset').value,title:$('socialTitle').value,facebook_text:$('socialFacebook').value,instagram_text:$('socialInstagram').value});$('socialDialog').close();await panel('publishing');$('publishingFrame').src='admin-social.html?embedded=1&draft='+encodeURIComponent(r.draft_id);say('草稿已交接，請在社群管理核對圖片與文字，再送 LINE 審核。');});};
- $('brandForm').onsubmit=e=>{e.preventDefault();run(async()=>{const r=await api({action:'brand_save',context:$('brandContext').value,revision:brandRevision});brandRevision=r.revision;$('brandVersion').textContent=' 版本 '+r.revision;say('品牌資料已更新，夥伴的新回覆會使用這一版。');});};
+ $('brandForm').onsubmit=e=>{e.preventDefault();run(async()=>{const r=await api({action:'brand_save',context:$('brandContext').value,revision:brandRevision});brandRevision=r.revision;$('brandVersion').textContent=' 版本 '+r.revision;window.FreaUnsaved?.mark($('brandForm'));say('品牌資料已更新，夥伴的新回覆會使用這一版。');});};
  $('newTask').onclick=()=>taskFill();
  $('taskForm').onsubmit=e=>{e.preventDefault();run(async()=>{await api({action:'task_save',id:$('taskId').value||null,title:$('taskTitle').value,owner_role:$('taskOwner').value,due_date:$('taskDate').value||null,status:$('taskStatus').value,notes:$('taskNotes').value});taskFill();await loadTasks();say('待辦已保存。');});};
  $('calendarExport').onclick=()=>{const esc=s=>String(s).replaceAll('\\','\\\\').replaceAll('\n','\\n').replaceAll(',','\\,').replaceAll(';','\\;'),lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//frea//fréa小芙 Studio//ZH'];for(const t of tasks.filter(t=>t.due_date&&t.status!=='done'))lines.push('BEGIN:VEVENT','UID:'+t.id+'@thefrea.com','DTSTAMP:'+new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,''),'DTSTART;VALUE=DATE:'+t.due_date.replaceAll('-',''),'SUMMARY:'+esc(t.title),'DESCRIPTION:'+esc(names[t.owner_role]+'\n'+t.notes),'END:VEVENT');lines.push('END:VCALENDAR');download('frea-content-calendar.ics',lines.join('\r\n'),'text/calendar;charset=utf-8');};
@@ -100,7 +100,19 @@
    renderMessages();
    const status=await api({action:'status'});
    ready=!!status.ready;capabilities=status.capabilities||{};say(status.message);
-   await list();await loadArtifacts();controls();
+   await list();await loadArtifacts();controls();window.FreaAdminFrame?.register(async()=>{
+    if(busy)throw Error('目前正在處理工作，請完成後再重新整理。');if(!authenticated)throw Error('請重新登入。');
+    const status=await api({action:'status'});ready=!!status.ready;capabilities=status.capabilities||{};say(status.message);
+    await list();if(activeId)await loadConversation(activeId);await loadAssets();await loadArtifacts();await loadTasks();
+    const visible=document.querySelector('[data-work-panel]:not([hidden])')?.dataset.workPanel;
+    if(visible)await panel(visible);
+    const chosen=artifacts.find(a=>a.id===$('artifactId').value);fillArtifact(chosen);
+    const task=tasks.find(t=>t.id===$('taskId').value);taskFill(task);
+    $('message').value='';selected=[];referenceText='';attachmentView();
+    const frame=$('publishingFrame');if(frame.getAttribute('src')){if(!frame.contentWindow.FreaAdminFrame)throw Error('社群發布頁尚未準備好，請稍後重試。');await frame.contentWindow.FreaAdminFrame.refresh();}
+    artifactDirty=false;controls();
+   },()=>artifactDirty||busy||selected.length>0||!!referenceText);
+   
   }catch(error){(authenticated?say:value=>{$('authMessage').textContent=value;})(error.message);}
  }
 

@@ -137,7 +137,7 @@
     }
   }
 
-  async function loadData() {
+  async function loadData(options={}) {
     refreshBankRate();
     showMessage("adminGlobalMessage", "正在讀取最新資料…");
     let loadingTimeout;
@@ -163,7 +163,7 @@
     const failed = [profileResult, accountResult, applicationResult, addressResult, ezwayResult, orderResult, personalResult, productResult, masterResult, costResult, supplierResult, purchaseResult, categoryResult, categoryLinkResult].find(result => result.error);
     if (failed) {
       showMessage("adminGlobalMessage", failed.error.message || "資料讀取失敗。", "error");
-      return;
+      return false;
     }
     profiles = profileResult.data || [];
     memberAccounts = accountResult.data || [];
@@ -179,10 +179,12 @@
     purchaseOrders = purchaseResult.data || [];
     productCategories=categoryResult.data||[];productCategoryLinks=categoryLinkResult.data||[];renderProductCategoryOptions();
     renderAll();
-    showMessage("adminGlobalMessage", "資料更新時間：" + new Date().toLocaleTimeString("zh-TW"), "success");
+    if(!options.deferStatus)showMessage("adminGlobalMessage", "資料更新時間：" + new Date().toLocaleTimeString("zh-TW"), "success");
+    return true;
     } catch (error) {
       console.error("Admin data loading failed", error);
       showMessage("adminGlobalMessage", error.message || "資料顯示失敗，請重新整理後再試。", "error");
+      return false;
     } finally {
       clearTimeout(loadingTimeout);
     }
@@ -206,7 +208,7 @@
       document.querySelector('[data-admin-panel="'+(type==="order"?"orders":"personal")+'"]').scrollIntoView({behavior:"smooth",block:"start"});
     }});
     renderPurchases();
-    window.FreaInventory?.setData({orders,personalRequests,masterProducts,products,purchaseOrders},loadData)?.then(renderOrders);
+    window.FreaInventory?.setData({orders,personalRequests,masterProducts,products,purchaseOrders},loadData)?.then(()=>{renderOrders();renderPersonalRequests();});
   }
 
   function productSlug(brand, name) {
@@ -862,7 +864,7 @@
         personalStatusOptions(request.status).replace('日本已下單', japan ? '台灣已下單' : '日本已下單') + '</select></label><button type="button" data-preview-personal>報價單預覽</button><label>後台備註<textarea data-personal-note rows="1" placeholder="僅供管理使用">' +
         escapeHtml(request.admin_note || "") + '</textarea></label><button type="button" class="danger" data-delete-personal>刪除訂單</button><button class="admin-save" type="button" data-save-personal>儲存變更</button></div></article>';
     }).join("");
-    window.FreaPersonalView.compact(target,filtered,{purchaseOrders,relations:window.FreaPurchaseRelations,money:formatMoney,day:overviewDay,labels:personalStatusLabels,safeUrl:safeHttpUrl});
+    window.FreaPersonalView.compact(target,filtered,{purchaseOrders,relations:window.FreaPurchaseRelations,inventory:window.FreaInventory?.editorData(),money:formatMoney,day:overviewDay,labels:personalStatusLabels,safeUrl:safeHttpUrl});
     target.querySelectorAll("[data-personal-id]").forEach(recalculatePersonalQuote);
     renderBankRate();
   }
@@ -941,12 +943,13 @@
         }, 20000);
       });
       const { data, error } = await Promise.race([
-        Promise.resolve(client.from("personal_shopping_requests").update(updates)
-          .eq("id", id).select("id,items,status,quote_amount,quote_details,admin_note,updated_at")
-          .abortSignal(controller.signal).single()),
+        Promise.resolve(client.rpc("admin_save_personal_request",{
+          p_id:id,p_expected_updated_at:card.dataset.expectedUpdatedAt||personalRequests.find(x=>String(x.id)===String(id))?.updated_at,
+          p_changes:updates
+        }).abortSignal(controller.signal)),
         timeout
       ]);
-      if (error) throw error;
+      if (error) {if(error.code==="40001"){card.querySelector("[data-personal-note]").focus();throw new Error("這筆代購單已被其他視窗更新，尚未覆蓋資料；目前輸入已保留，請先複製需要保留的內容，再重新整理核對。");}throw error;}
       if (!data) throw new Error("未收到儲存結果，請重新整理確認。");
       const request = personalRequests.find(item => String(item.id) === String(id));
       if (request) Object.assign(request, data);
@@ -1203,9 +1206,11 @@
     finally {button.disabled=false;button.textContent="儲存變更";}
   }
 
-  function switchView(view) {
-    if(view === "nora"){const frame=byId("adminNoraFrame");if(!frame.getAttribute("src"))frame.src="admin-nora.html?embedded=1&v=single-heading-20261128-1";}
-    if(view === "social"){const frame=byId("adminSocialFrame");if(!frame.getAttribute("src"))frame.src="admin-social.html?embedded=1&v=20261013-navigation1";}
+  function switchView(view,guarded=false) {
+    const current=document.querySelector("[data-admin-panel]:not([hidden])")?.dataset.adminPanel;
+    if(current!==view&&!guarded&&window.FreaUnsaved&&!window.FreaUnsaved.confirm("切換頁面"))return false;
+    if(view === "nora"){const frame=byId("adminNoraFrame");if(!frame.getAttribute("src"))frame.src="admin-nora.html?embedded=1&v=four-fixes-20261128-1";}
+    if(view === "social"){const frame=byId("adminSocialFrame");if(!frame.getAttribute("src"))frame.src="admin-social.html?embedded=1&v=four-fixes-20261128-1";}
     if (view === "costs" || view === "personal") refreshBankRate();
     document.querySelectorAll("[data-admin-panel]").forEach(panel => {
       panel.hidden = panel.dataset.adminPanel !== view;
@@ -1242,9 +1247,20 @@
   });
 
   document.querySelectorAll("[data-admin-view]").forEach(button => {
-    button.addEventListener("click", () => switchView(button.dataset.adminView));
+    button.addEventListener("click", () => switchView(button.dataset.adminView,true));
   });
-  byId("adminRefresh").addEventListener("click", async()=>{await loadData();await window.FreaMerchandising?.refreshActive();});
+  byId("adminRefresh").addEventListener("click", async()=>{
+    const b=byId("adminRefresh");if(b.disabled)return;b.disabled=true;
+    try{
+      const active=document.querySelector("[data-admin-panel]:not([hidden])")?.dataset.adminPanel;
+      if(!await loadData({deferStatus:true}))return;
+      const merch=await window.FreaMerchandising?.refreshActive();if(merch===false)throw Error("分類／活動設定重讀失敗，請重試。");
+      const id=active==="social"?"adminSocialFrame":active==="nora"?"adminNoraFrame":null;
+      if(id){const frame=byId(id);if(!frame?.contentWindow?.FreaAdminFrame)throw Error("工作室尚未準備好，請稍後重新整理。");await frame.contentWindow.FreaAdminFrame.refresh();}
+      showMessage("adminGlobalMessage","資料更新時間："+new Date().toLocaleTimeString("zh-TW",{timeZone:"Asia/Tokyo"}),"success");
+    }catch(e){showMessage("adminGlobalMessage","重新整理未完成："+(e.message||"請稍後重試")+"；未更新成功時間。","error");}
+    finally{b.disabled=false;}
+  });
   byId("memberSearch").addEventListener("input", renderMembers);
   byId("memberRows").addEventListener("click", async event => {
     const save = event.target.closest("[data-save-member]");
