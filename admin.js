@@ -1244,7 +1244,7 @@
   document.querySelectorAll("[data-admin-view]").forEach(button => {
     button.addEventListener("click", () => switchView(button.dataset.adminView));
   });
-  byId("adminRefresh").addEventListener("click", loadData);
+  byId("adminRefresh").addEventListener("click", async()=>{await loadData();await window.FreaMerchandising?.refreshActive();});
   byId("memberSearch").addEventListener("input", renderMembers);
   byId("memberRows").addEventListener("click", async event => {
     const save = event.target.closest("[data-save-member]");

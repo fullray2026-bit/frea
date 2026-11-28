@@ -11,3 +11,28 @@
 #masterMerchandising{border-top:1px solid var(--admin-line);padding-top:18px}#masterMerchandising h3{margin:0 0 8px}#masterMerchandising fieldset{border:1px solid var(--admin-line);border-radius:8px;margin:16px 0;padding:12px}#masterMerchandising .master-merch-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}#masterMerchandising .master-merch-choices label{display:flex;align-items:center;gap:8px}#masterMerchandising input[type=checkbox]{width:18px;height:18px;flex-shrink:0}#masterMerchandising button{border:1px solid var(--admin-line);border-radius:7px;padding:8px 12px;background:var(--admin-panel);color:var(--admin-ink);cursor:pointer}#masterMerchandising>small{display:block;margin-top:8px}@media(max-width:760px){#masterMerchandising .master-merch-choices{grid-template-columns:1fr}}
 
 #masterMerchandising{grid-column:1/-1}
+
+[data-admin-panel="merchActivities"] .merch-root{font-size:13px}
+[data-admin-panel="merchActivities"] #merchMessage:empty{display:none}
+[data-admin-panel="merchActivities"] .admin-section>p{margin:8px 0;line-height:1.5;font-size:12px}
+[data-admin-panel="merchActivities"] .activity-tools{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+[data-admin-panel="merchActivities"] .activity-tools small{color:#897869;font-size:12px}
+[data-admin-panel="merchActivities"] .primary-action{margin-top:8px;padding:7px 11px;font-size:13px;min-height:34px}
+[data-admin-panel="merchActivities"] .activity-tools .primary-action{margin-top:0}
+[data-admin-panel="merchActivities"] .setting{padding:12px 14px;margin:10px 0}
+[data-admin-panel="merchActivities"] h3{font-size:15px;margin:0 0 5px}
+[data-admin-panel="merchActivities"] .activity-sort-row,[data-admin-panel="merchActivities"] .selected-row{padding:5px 0;gap:8px;min-height:34px}
+[data-admin-panel="merchActivities"] .sort-buttons button{min-width:32px;padding:3px 8px;min-height:28px}
+[data-admin-panel="merchActivities"] .activity-editor{margin:8px 0}
+[data-admin-panel="merchActivities"] .activity-editor>summary{padding:9px 12px;font-size:13px;gap:8px;min-height:22px}
+[data-admin-panel="merchActivities"] .setting label{margin:7px 0;font-size:13px}
+[data-admin-panel="merchActivities"] input,[data-admin-panel="merchActivities"] select,[data-admin-panel="merchActivities"] textarea{padding:6px 8px;font-size:13px}
+[data-admin-panel="merchActivities"] .fields{gap:10px}
+[data-admin-panel="merchActivities"] .image-editor{grid-template-columns:120px minmax(0,1fr);gap:12px}
+[data-admin-panel="merchActivities"] .activity-preview{width:120px;height:90px}
+[data-admin-panel="merchActivities"] .checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px;margin-top:6px}
+[data-admin-panel="merchActivities"] .checks label{display:flex;align-items:flex-start;gap:6px;line-height:1.4}
+[data-admin-panel="merchActivities"] h4{font-size:14px;margin:10px 0 5px}
+@media(max-width:760px){[data-admin-panel="merchActivities"] .activity-tools{flex-wrap:wrap}[data-admin-panel="merchActivities"] .checks{grid-template-columns:1fr}[data-admin-panel="merchActivities"] .image-editor{grid-template-columns:1fr}}
+
+[data-admin-panel="merchActivities"] .primary-action{background:#4d3d30;color:#fff;border-color:#4d3d30}
