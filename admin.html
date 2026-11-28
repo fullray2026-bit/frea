@@ -175,6 +175,14 @@
 .admin-main:has(>.admin-view:not([hidden]))>.admin-topbar .admin-eyebrow{display:none}
 .admin-main:has(>.admin-view:not([hidden])) #adminPageTitle{font-size:28px;margin:0;line-height:1.3}
 @media(max-width:650px){.admin-main:has(>.admin-view:not([hidden])){padding-top:14px}}
+
+/* Explicit shared header metrics take precedence over page-specific styles. */
+.admin-main:has(>.admin-view:not([hidden])){padding:20px 28px 70px!important;column-gap:16px!important;row-gap:0!important}
+.admin-main:has(>.admin-view:not([hidden]))>.admin-topbar>div{margin:0!important;padding:0!important;align-self:center}
+.admin-main:has(>.admin-view:not([hidden])) #adminPageTitle{font-family:"Noto Serif TC","PMingLiU",serif!important;font-size:28px!important;font-weight:500!important;font-style:normal!important;line-height:1.3!important;letter-spacing:normal!important;margin:0!important;padding:0!important;color:var(--admin-ink,#493c32)!important}
+.admin-main:has(>.admin-view:not([hidden]))>#adminGlobalMessage{font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif!important;font-size:13px!important;font-weight:400!important;line-height:1.5!important;letter-spacing:normal!important;margin:0!important;padding:0!important;align-self:center}
+.admin-main:has(>.admin-view:not([hidden])) #adminRefresh{font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif!important;font-size:14px!important;font-weight:400!important;line-height:1.5!important;letter-spacing:normal!important;box-sizing:border-box!important;height:44px!important;min-height:44px!important;padding:9px 15px!important;margin:0!important;align-self:center}
+@media(max-width:650px){.admin-main:has(>.admin-view:not([hidden])){padding:14px 14px 50px!important;column-gap:8px!important;row-gap:8px!important}}
 </style></head>
 <body class="admin-page">
   <main>
